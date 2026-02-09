@@ -117,10 +117,16 @@ void Cfg::initFonts()
 
     // Example packaged font:
    engine::FontManager::Instance().RegisterAppFont(
+       L"default",
+       Uri(L"ms-appx:///Assets/Fonts/bubbly.ttf"),
+       L"Spicy Sale");
+   fonts.emplace(Fonts::Default, L"default");
+
+   engine::FontManager::Instance().RegisterAppFont(
        L"bubbly",
        Uri(L"ms-appx:///Assets/Fonts/bubbly.ttf"),
-       L"Press Start 2P");
-   fonts.emplace(Fonts::Default, L"bubbly");
+       L"Spicy Sale");
+   fonts.emplace(Fonts::Bubbly, L"bubbly");
 }
 
 

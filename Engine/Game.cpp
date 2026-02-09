@@ -27,12 +27,12 @@ namespace engine
     {
         co_await Cfg::InitializeAsync(sender);
 
-        m_hud.FontRef = Cfg::GetFont(Cfg::Fonts::UI);
-        m_hud.String = L"Space/X: SFX";
-        m_hud.FontSize = 22.0f;
-        m_hud.Color = winrt::Windows::UI::Colors::Blue();
-        m_hud.Position = { 10.0f, 10.0f };
-        m_hud.Invalidate();
+        //m_hud.FontRef = Cfg::GetFont(Cfg::Fonts::UI);
+        //m_hud.String = L"Space/X: SFX";
+        //m_hud.FontSize = 22.0f;
+        //m_hud.Color = winrt::Windows::UI::Colors::Blue();
+        //m_hud.Position = { 10.0f, 10.0f };
+        //m_hud.Invalidate();
 
         // If you want centered origin, you need creator:
         //m_hud.SetOriginTopLeft(sender); // or SetOriginCenter(sender)
@@ -134,8 +134,20 @@ namespace engine
         //ds.Transform(engine::Identity2D());
         //ds.DrawText(L"Space/X: SFX | WASD/LS: Move | Arrows/RS: Pan | Q/E+Triggers: Zoom | Z/C+LB/RB: Rotate | R/A: Reset",
             //10.0f, 10.0f, Colors::White());
+        engine::Text m_hud{};
+
+        m_hud.FontRef = Cfg::GetFont(L"bubbly");
+        m_hud.String = L"Space/X: SFX";
+        m_hud.FontSize = 22.0f;
+        m_hud.Color = winrt::Windows::UI::Colors::Blue();
+        m_hud.Position = { 10.0f, 10.0f };
+        m_hud.Invalidate();
 
         ds.Transform(engine::Identity2D());
         m_hud.Draw(ds, sender);
+
+        ds.Transform(engine::Identity2D());
+        ds.DrawText(L"Space/X: SFX | WASD/LS: Move | Arrows/RS: Pan | Q/E+Triggers: Zoom | Z/C+LB/RB: Rotate | R/A: Reset",
+            200.0f, 10.0f, Colors::White());
     }
 }

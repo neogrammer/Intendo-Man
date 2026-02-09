@@ -34,7 +34,6 @@ namespace engine
         ActionMap  m_actions{};
         Camera2D   m_camera{};
 
-        engine::Text m_hud{};
 
         Sprite m_player{};
         float2 m_cameraOffset{ 0,0 };
