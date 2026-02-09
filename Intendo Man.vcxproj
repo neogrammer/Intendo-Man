@@ -81,7 +81,7 @@
   <PropertyGroup Label="UserMacros">
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
-    <PackageCertificateThumbprint>608C8CBA0585FB402AC4A32A41A5561568CF3D29</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>3905ED2C095C443A9760F1B17ED88D70F7D3276F</PackageCertificateThumbprint>
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
     <AppxPackageDir>C:\dev\XboxGames\</AppxPackageDir>
