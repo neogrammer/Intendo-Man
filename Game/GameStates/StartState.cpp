@@ -1,45 +1,73 @@
 #include "pch.h"
 #include "StartState.h"
 
-std::wstring  StartState::type()
+#include "../../Engine/ActionMap.h"
+#include "../../Engine/Camera2D.h"
+#include "../../Engine/Renderer2D.h"
+#include "../../Engine/Text.h"
+
+namespace game
 {
-	// TODO: insert return statement here
-	return L"StartState";
 
-}
+	std::wstring  StartState::type()
+	{
+		// TODO: insert return statement here
+		return L"StartState";
+	}
 
-std::wstring StartState::getType()
-{
-	// TODO: insert return statement here
-	return L"StartState";
+	void StartState::enter()
+	{
+		uiStrings.clear();
 
-}
+	}
 
-StartState::StartState()
-	: GameState{}
-{
-}
+	void StartState::exit()
+	{
+		uiStrings.clear();
 
-StartState::StartState(const StartState&)
-{
-}
+	}
 
-StartState::StartState(StartState&&)
-{
-}
 
-StartState& StartState::operator=(const StartState&)
-{
-	// TODO: insert return statement here
-	return *this;
-}
 
-StartState& StartState::operator=(StartState&&)
-{
-	// TODO: insert return statement here
-	return *this;
-}
+	void StartState::processInput(const engine::ActionMap& actMap_)
+	{
+	}
 
-StartState::~StartState()
-{
+	void StartState::update(float dt_)
+	{
+	}
+
+	std::vector<engine::Text>& StartState::render(engine::Renderer2D& renderer_)
+	{
+		return uiStrings;
+	}
+
+	StartState::StartState()
+		: GameState{}
+	{
+	}
+
+	StartState::StartState(const StartState&)
+	{
+	}
+
+	StartState::StartState(StartState&&)
+	{
+	}
+
+	StartState& StartState::operator=(const StartState&)
+	{
+		// TODO: insert return statement here
+		return *this;
+	}
+
+	StartState& StartState::operator=(StartState&&)
+	{
+		// TODO: insert return statement here
+		return *this;
+	}
+
+	StartState::~StartState()
+	{
+	}
 }

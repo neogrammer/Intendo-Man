@@ -1,43 +1,72 @@
 #include "pch.h"
 #include "GameOverState.h"
 
-std::wstring GameOverState::type()
-{
-	// TODO: insert return statement here
-	return L"GameOverState";
-}
+#include "../../Engine/ActionMap.h"
+#include "../../Engine/Camera2D.h"
+#include "../../Engine/Renderer2D.h"
+#include "../../Engine/Text.h"
 
-std::wstring GameOverState::getType()
+namespace game
 {
-	// TODO: insert return statement here
-	return  L"GameOverState";
-}
 
-GameOverState::GameOverState()
-	: GameState{}
-{
-}
+	std::wstring GameOverState::type()
+	{
+		// TODO: insert return statement here
+		return L"GameOverState";
+	}
 
-GameOverState::GameOverState(const GameOverState&)
-{
-}
 
-GameOverState::GameOverState(GameOverState&&)
-{
-}
+	void GameOverState::enter()
+	{
+		uiStrings.clear();
 
-GameOverState& GameOverState::operator=(const GameOverState&)
-{
-	// TODO: insert return statement here
-	return *this;
-}
+	}
 
-GameOverState& GameOverState::operator=(GameOverState&&)
-{
-	// TODO: insert return statement here
-	return *this;
-}
+	void GameOverState::exit()
+	{
+		uiStrings.clear();
 
-GameOverState::~GameOverState()
-{
+	}
+
+	void GameOverState::processInput(const engine::ActionMap& actMap_)
+	{
+	}
+
+	void GameOverState::update(float dt_)
+	{
+	}
+
+	std::vector<engine::Text>& GameOverState::render(engine::Renderer2D& renderer_)
+	{
+		return uiStrings;
+	}
+
+	GameOverState::GameOverState()
+		: GameState{}
+	{
+	}
+
+	GameOverState::GameOverState(const GameOverState&)
+	{
+	}
+
+	GameOverState::GameOverState(GameOverState&&)
+	{
+	}
+
+	GameOverState& GameOverState::operator=(const GameOverState&)
+	{
+		// TODO: insert return statement here
+		return *this;
+	}
+
+	GameOverState& GameOverState::operator=(GameOverState&&)
+	{
+		// TODO: insert return statement here
+		return *this;
+	}
+
+	GameOverState::~GameOverState()
+	{
+	}
 }

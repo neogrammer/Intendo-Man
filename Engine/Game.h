@@ -12,6 +12,9 @@
 #include <winrt/Windows.Foundation.h>
 
 #include "../Game/GameStates/PlayState.h"
+#include "../Game/Mgmt/GameManager.h"
+
+#include <memory>
 
 namespace engine
 {
@@ -34,11 +37,8 @@ namespace engine
     private:
         InputState m_input{};
         ActionMap  m_actions{};
-        Camera2D   m_camera{};
 
-        PlayState m_state{};
-        Sprite m_player{};
-        float2 m_cameraOffset{ 0,0 };
+        std::unique_ptr<game::GameManager> gameMgr{ nullptr };
 
         float m_time = 0.0f;
     };

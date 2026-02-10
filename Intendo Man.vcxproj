@@ -144,6 +144,7 @@
     <ClInclude Include="Game\GameStates\TitleState.h" />
     <ClInclude Include="Game\Mgmt\GameManager.h" />
     <ClInclude Include="Game\Mgmt\GameStateManager.h" />
+    <ClInclude Include="Game\Mgmt\game_states.h" />
     <ClInclude Include="Game\Resources\Cfg.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="App.h">

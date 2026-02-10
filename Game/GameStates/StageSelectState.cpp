@@ -1,45 +1,73 @@
 #include "pch.h"
 #include "StageSelectState.h"
 
-std::wstring  StageSelectState::type()
+#include "../../Engine/ActionMap.h"
+#include "../../Engine/Camera2D.h"
+#include "../../Engine/Renderer2D.h"
+#include "../../Engine/Text.h"
+
+namespace game
 {
-	// TODO: insert return statement here
-	return L"StageSelectState";
 
-}
+	std::wstring  StageSelectState::type()
+	{
+		// TODO: insert return statement here
+		return L"StageSelectState";
+	}
 
-std::wstring StageSelectState::getType()
-{
-	// TODO: insert return statement here
-	return L"StageSelectState";
+	void StageSelectState::enter()
+	{
+		uiStrings.clear();
 
-}
+	}
 
-StageSelectState::StageSelectState()
-	: GameState{}
-{
-}
+	void StageSelectState::exit()
+	{
+		uiStrings.clear();
 
-StageSelectState::StageSelectState(const StageSelectState&)
-{
-}
+	}
 
-StageSelectState::StageSelectState(StageSelectState&&)
-{
-}
 
-StageSelectState& StageSelectState::operator=(const StageSelectState&)
-{
-	// TODO: insert return statement here
-	return *this;
-}
 
-StageSelectState& StageSelectState::operator=(StageSelectState&&)
-{
-	// TODO: insert return statement here
-	return *this;
-}
+	void StageSelectState::processInput(const  engine::ActionMap& actMap_)
+	{
+	}
 
-StageSelectState::~StageSelectState()
-{
+	void StageSelectState::update(float dt_)
+	{
+	}
+
+	std::vector<engine::Text>& StageSelectState::render(engine::Renderer2D& renderer_)
+	{
+		return uiStrings;
+	}
+
+	StageSelectState::StageSelectState()
+		: GameState{}
+	{
+	}
+
+	StageSelectState::StageSelectState(const StageSelectState&)
+	{
+	}
+
+	StageSelectState::StageSelectState(StageSelectState&&)
+	{
+	}
+
+	StageSelectState& StageSelectState::operator=(const StageSelectState&)
+	{
+		// TODO: insert return statement here
+		return *this;
+	}
+
+	StageSelectState& StageSelectState::operator=(StageSelectState&&)
+	{
+		// TODO: insert return statement here
+		return *this;
+	}
+
+	StageSelectState::~StageSelectState()
+	{
+	}
 }

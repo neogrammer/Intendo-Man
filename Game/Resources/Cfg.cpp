@@ -30,10 +30,11 @@ winrt::Windows::Foundation::IAsyncAction Cfg::InitializeAsync(winrt::Microsoft::
     engine::FontManager::Instance().Clear();
     initFonts();
 
-
-    co_await engine::SoundManager::Instance().InitializeAsync();
     initSounds();
     initMusic();
+
+    co_await engine::SoundManager::Instance().InitializeAsync();
+
 
     co_return;
 }

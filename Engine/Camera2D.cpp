@@ -16,4 +16,13 @@ namespace engine
 
         return Multiply(Multiply(Multiply(t, r), s), c);
     }
+    float Camera2D::getWidth()
+    {
+        return m_viewportSize.x;
+    }
+    float Camera2D::getHeight()
+    {
+        return m_viewportSize.y;
+
+    }
 }

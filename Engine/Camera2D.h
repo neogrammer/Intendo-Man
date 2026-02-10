@@ -29,6 +29,10 @@ namespace engine
             return Invert(WorldToScreen());
         }
 
+        float getWidth();
+        float getHeight();
+
+
     private:
         float2 m_viewportSize{ 0,0 };
     };

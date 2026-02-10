@@ -3,49 +3,76 @@
 #include <iostream>
 
 #include "../Game/Resources/Cfg.h"
+#include "../../Engine/ActionMap.h"
+#include "../../Engine/Camera2D.h"
+#include "../../Engine/Renderer2D.h"
+#include "../../Engine/Text.h"
+#include <utility>
 
-std::wstring GameState::type()
+namespace game
 {
-	return L"GameState";
-}
+	std::wstring GameState::type()
+	{
+		return L"GameState";
+	}
 
-bool GameState::isType(const std::wstring& type_)
-{
-	Cfg::debugPrint(L"getType() " + getType() + L" : testType " + type_ );
+	bool GameState::isType(const std::wstring& type_)
+	{
+		Cfg::debugPrint(L"getType() " + getType() + L" : testType " + type_);
 
-	return (type_ == getType());
-}
+		return (type_ == getType());
+	}
 
-std::wstring GameState::getType()
-{
-	return L"GameState";
-}
+	std::wstring GameState::getType()
+	{
+		return type();
+	}
 
-GameState::GameState()
-	: GameStateBase{}
-{
-}
+	GameState::GameState()
+		: GameStateBase{}
+		, camera{nullptr}
+		, uiStrings{}
+		, actMap{nullptr}
+		, cameraOffset{ 0,0 }
+	{
 
-GameState::GameState(const GameState&)
-{
-}
+		camera = std::make_shared<engine::Camera2D>();
+		camera->Reset();
+		cameraOffset = { 0,0 };
+	}
 
-GameState::GameState(GameState&&)
-{
-}
+	GameState::GameState(const GameState& o)
+		: GameStateBase{}
+		, camera{ o.camera }
+		, uiStrings{}
+		, actMap{ nullptr }
+		, cameraOffset{ 0,0 }
+	{	
 
-GameState& GameState::operator=(const GameState&)
-{
-	// TODO: insert return statement here
-	return *this;
-}
+		
+	}
 
-GameState& GameState::operator=(GameState&&)
-{
-	// TODO: insert return statement here
-	return *this;
-}
+	GameState& GameState::operator=(const GameState& o)
+	{
+		camera = o.camera;
+		// TODO: insert return statement here
+		return *this;
+	}
 
-GameState::~GameState()
-{
+
+
+	GameState::~GameState()
+	{
+	}
+
+	std::shared_ptr<engine::Camera2D> GameState::getCamera()
+	{
+		if (!camera)
+			camera = std::make_shared<engine::Camera2D>();
+		return camera;
+	}
+	float2 GameState::getCamOffset()
+	{
+		return cameraOffset;
+	}
 }

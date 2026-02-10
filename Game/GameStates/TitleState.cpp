@@ -1,45 +1,73 @@
 #include "pch.h"
 #include "TitleState.h"
 
-std::wstring TitleState::type()
+#include "../../Engine/ActionMap.h"
+#include "../../Engine/Camera2D.h"
+#include "../../Engine/Renderer2D.h"
+#include "../../Engine/Text.h"
+
+namespace game
 {
-	// TODO: insert return statement here
-	return L"TitleState";
 
-}
+	std::wstring TitleState::type()
+	{
+		// TODO: insert return statement here
+		return L"TitleState";
+	}
 
-std::wstring TitleState::getType()
-{
-	// TODO: insert return statement here
-	return L"TitleState";
+	void TitleState::enter()
+	{
+		uiStrings.clear();
+	}
 
-}
+	void TitleState::exit()
+	{
+		uiStrings.clear();
 
-TitleState::TitleState()
-	: GameState{}
-{
-}
+	}
 
-TitleState::TitleState(const TitleState&)
-{
-}
+	void TitleState::processInput(const  engine::ActionMap& actMap_)
+	{
 
-TitleState::TitleState(TitleState&&)
-{
-}
+	}
 
-TitleState& TitleState::operator=(const TitleState&)
-{
-	// TODO: insert return statement here
-	return *this;
-}
+	void TitleState::update(float dt_)
+	{
+	}
 
-TitleState& TitleState::operator=(TitleState&&)
-{
-	// TODO: insert return statement here
-	return *this;
-}
+	std::vector<engine::Text>& TitleState::render(engine::Renderer2D& renderer_)
+	{
+		return uiStrings;
+	}
 
-TitleState::~TitleState()
-{
+
+
+	TitleState::TitleState()
+		: GameState{}
+	{
+	}
+
+	TitleState::TitleState(const TitleState&)
+	{
+	}
+
+	TitleState::TitleState(TitleState&&)
+	{
+	}
+
+	TitleState& TitleState::operator=(const TitleState&)
+	{
+		// TODO: insert return statement here
+		return *this;
+	}
+
+	TitleState& TitleState::operator=(TitleState&&)
+	{
+		// TODO: insert return statement here
+		return *this;
+	}
+
+	TitleState::~TitleState()
+	{
+	}
 }
