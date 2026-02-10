@@ -31,3 +31,5 @@
 #include <winrt/Windows.UI.h>
 
 #include <winrt/Microsoft.Graphics.Canvas.UI.Xaml.h>
+
+#include <winrt/Microsoft.Graphics.Canvas.Geometry.h>

@@ -22,6 +22,14 @@ struct Cfg
 	Cfg& operator=(const Cfg&) = delete;
 
 
+	static void debugPrint(const std::wstring& msg) {
+		std::wstring str = L"[ODS] ";
+		str.append(msg);
+		OutputDebugStringW(str.c_str());
+	};
+
+
+
 	//globals 
 	//static sol::state lua; // globals are bad, but we'll use it for simpler implementation
 	static winrt::Windows::Foundation::IAsyncAction InitializeAsync(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasAnimatedControl const& sender);

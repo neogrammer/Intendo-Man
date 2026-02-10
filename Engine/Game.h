@@ -11,6 +11,8 @@
 #include <winrt/Windows.UI.Core.h>
 #include <winrt/Windows.Foundation.h>
 
+#include "../Game/GameStates/PlayState.h"
+
 namespace engine
 {
     class Game final
@@ -34,7 +36,7 @@ namespace engine
         ActionMap  m_actions{};
         Camera2D   m_camera{};
 
-
+        PlayState m_state{};
         Sprite m_player{};
         float2 m_cameraOffset{ 0,0 };
 

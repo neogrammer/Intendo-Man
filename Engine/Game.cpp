@@ -10,6 +10,10 @@
 #include <chrono>
 #include <algorithm>
 #include "../Game/Resources/Cfg.h"
+#include <iostream>
+
+#include <windows.h>
+#include <string>
 
 namespace engine
 {
@@ -27,16 +31,6 @@ namespace engine
     {
         co_await Cfg::InitializeAsync(sender);
 
-        //m_hud.FontRef = Cfg::GetFont(Cfg::Fonts::UI);
-        //m_hud.String = L"Space/X: SFX";
-        //m_hud.FontSize = 22.0f;
-        //m_hud.Color = winrt::Windows::UI::Colors::Blue();
-        //m_hud.Position = { 10.0f, 10.0f };
-        //m_hud.Invalidate();
-
-        // If you want centered origin, you need creator:
-        //m_hud.SetOriginTopLeft(sender); // or SetOriginCenter(sender)
-
         m_player = Sprite(Cfg::GetTex(Cfg::Textures::Ship));
         m_player.Position = { 0.0f, 0.0f };
         m_player.SetOriginCenter();
@@ -46,6 +40,17 @@ namespace engine
         m_time = 0.0f;
 
         Cfg::PlayMusicAsync(L"theme", true, 0.25f);
+
+        if (m_state.isType(L"PlayState"))
+        {
+            Cfg::debugPrint(L"Winner");
+            //std::wcout << L"Winner!" << std::endl;
+        }
+        else
+        {
+            Cfg::debugPrint(L"No Dice!");
+        }
+
     }
 
     void Game::Update(
@@ -129,17 +134,14 @@ namespace engine
             renderer.Draw(m_player);
         }
 
-
-
-        //ds.Transform(engine::Identity2D());
-        //ds.DrawText(L"Space/X: SFX | WASD/LS: Move | Arrows/RS: Pan | Q/E+Triggers: Zoom | Z/C+LB/RB: Rotate | R/A: Reset",
-            //10.0f, 10.0f, Colors::White());
         engine::Text m_hud{};
 
         m_hud.FontRef = Cfg::GetFont(L"bubbly");
         m_hud.String = L"Space/X: SFX";
         m_hud.FontSize = 22.0f;
-        m_hud.Color = winrt::Windows::UI::Colors::Blue();
+        m_hud.OutlineThickness = 2;
+        m_hud.OutlineColor = winrt::Windows::UI::Colors::White();
+        m_hud.Color = winrt::Windows::UI::Colors::Green();
         m_hud.Position = { 10.0f, 10.0f };
         m_hud.Invalidate();
 
@@ -149,5 +151,7 @@ namespace engine
         ds.Transform(engine::Identity2D());
         ds.DrawText(L"Space/X: SFX | WASD/LS: Move | Arrows/RS: Pan | Q/E+Triggers: Zoom | Z/C+LB/RB: Rotate | R/A: Reset",
             200.0f, 10.0f, Colors::White());
+
+
     }
 }

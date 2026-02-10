@@ -54,6 +54,7 @@ namespace engine
         m_drawBounds = m_layout.DrawBounds();
 
         m_dirty = false;
+        m_geometry = nullptr;
     }
 
     winrt::Windows::Foundation::Rect Text::LocalBounds(
@@ -89,7 +90,6 @@ namespace engine
 
         auto old = ds.Transform();
 
-        // local -> world transform
         auto local =
             Multiply(
                 Multiply(
@@ -99,10 +99,45 @@ namespace engine
                     engine::Rotation(Rotation)),
                 engine::Translation(Position));
 
-        // compose with current transform (camera or identity)
         ds.Transform(Multiply(local, old));
 
-        ds.DrawTextLayout(m_layout, float2{ 0.0f, 0.0f }, Color);
+        bool doOutline = (OutlineThickness > 0.0f) && (OutlineColor.A != 0);
+
+        if (doOutline && Outline == OutlineMode::GeometryStroke)
+        {
+            if (!m_geometry)
+            {
+                // Create geometry from the text layout 
+                m_geometry = winrt::Microsoft::Graphics::Canvas::Geometry::CanvasGeometry::CreateText(m_layout);
+            }
+
+            // If you want SFML-ish "mostly outside" outline:
+            // draw stroke FIRST with width = 2*t, then fill; the fill covers the inner half.
+            float strokeW = OutlineThickness * 2.0f;
+
+            ds.DrawGeometry(m_geometry, OutlineColor, strokeW); // 
+            ds.FillGeometry(m_geometry, Color);                 // 
+        }
+        else if (doOutline && Outline == OutlineMode::OffsetCopies)
+        {
+            // Cheap, preserves DrawTextLayout rasterization; cost = many draws
+            int r = std::max<int>(1, (int)std::lround(OutlineThickness));
+
+            for (int y = -r; y <= r; ++y)
+            {
+                for (int x = -r; x <= r; ++x)
+                {
+                    if (x == 0 && y == 0) continue;
+                    ds.DrawTextLayout(m_layout, float2{ (float)x, (float)y }, OutlineColor);
+                }
+            }
+
+            ds.DrawTextLayout(m_layout, float2{ 0,0 }, Color);
+        }
+        else
+        {
+            ds.DrawTextLayout(m_layout, float2{ 0,0 }, Color);
+        }
 
         ds.Transform(old);
     }

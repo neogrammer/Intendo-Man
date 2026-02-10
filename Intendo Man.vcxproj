@@ -81,7 +81,7 @@
   <PropertyGroup Label="UserMacros">
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
-    <PackageCertificateThumbprint>3905ED2C095C443A9760F1B17ED88D70F7D3276F</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>608C8CBA0585FB402AC4A32A41A5561568CF3D29</PackageCertificateThumbprint>
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
     <AppxPackageDir>C:\dev\XboxGames\</AppxPackageDir>
@@ -134,6 +134,16 @@
     <ClInclude Include="Engine\SpriteBatchScope.h" />
     <ClInclude Include="Engine\Text.h" />
     <ClInclude Include="Engine\TextureStore.h" />
+    <ClInclude Include="Game\GameStates\GameOverState.h" />
+    <ClInclude Include="Game\GameStates\GameState.h" />
+    <ClInclude Include="Game\GameStates\GameStateBase.h" />
+    <ClInclude Include="Game\GameStates\MenuState.h" />
+    <ClInclude Include="Game\GameStates\PlayState.h" />
+    <ClInclude Include="Game\GameStates\StageSelectState.h" />
+    <ClInclude Include="Game\GameStates\StartState.h" />
+    <ClInclude Include="Game\GameStates\TitleState.h" />
+    <ClInclude Include="Game\Mgmt\GameManager.h" />
+    <ClInclude Include="Game\Mgmt\GameStateManager.h" />
     <ClInclude Include="Game\Resources\Cfg.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="App.h">
@@ -180,6 +190,16 @@
     <ClCompile Include="Engine\Texture.cpp" />
     <ClCompile Include="Engine\Texture.h" />
     <ClCompile Include="Engine\TextureStore.cpp" />
+    <ClCompile Include="Game\GameStates\GameOverState.cpp" />
+    <ClCompile Include="Game\GameStates\GameState.cpp" />
+    <ClCompile Include="Game\GameStates\GameStateBase.cpp" />
+    <ClCompile Include="Game\GameStates\MenuState.cpp" />
+    <ClCompile Include="Game\GameStates\PlayState.cpp" />
+    <ClCompile Include="Game\GameStates\StageSelectState.cpp" />
+    <ClCompile Include="Game\GameStates\StartState.cpp" />
+    <ClCompile Include="Game\GameStates\TitleState.cpp" />
+    <ClCompile Include="Game\Mgmt\GameManager.cpp" />
+    <ClCompile Include="Game\Mgmt\GameStateManager.cpp" />
     <ClCompile Include="Game\Resources\Cfg.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>

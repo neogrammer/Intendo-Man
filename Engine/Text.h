@@ -24,6 +24,16 @@ namespace engine
 
     struct Text final
     {
+        // Outline (SFML-like)
+        winrt::Windows::UI::Color OutlineColor = winrt::Windows::UI::Colors::Black();
+        float OutlineThickness = 0.0f; // in DIPs
+
+        enum class OutlineMode { None, GeometryStroke, OffsetCopies };
+        OutlineMode Outline = OutlineMode::GeometryStroke;
+
+        // cache geometry when using GeometryStroke
+        mutable winrt::Microsoft::Graphics::Canvas::Geometry::CanvasGeometry m_geometry{ nullptr };
+
         // Resource
         std::shared_ptr<Font> FontRef;
 
