@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "Engine/SoundManager.h"
 
-#include <winrt/Windows.Foundation.h>
 
 using namespace winrt;
 using namespace Windows::Foundation;

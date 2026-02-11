@@ -25,7 +25,7 @@ namespace game
 		std::shared_ptr<engine::Camera2D> camera;
 		float2 cameraOffset;
 		std::vector<engine::Text> uiStrings;
-		engine::ActionMap const * actMap{ nullptr };
+		engine::ActionMap const* actMap{ nullptr };
 
 	public:
 
@@ -34,6 +34,11 @@ namespace game
 
 		virtual void processInput(const engine::ActionMap& actMap_) = 0;
 		virtual void update(float dt_) = 0;
+
+		// Called right before rendering (GameManager::SyncObjects).
+		// Default: no-op (override in states that own AnimObjects).
+		virtual void syncObjects() {}
+
 		virtual std::vector<engine::Text>& render(engine::Renderer2D& renderer_) = 0;
 
 		bool isType(const std::wstring& type_);
@@ -41,9 +46,12 @@ namespace game
 
 
 		GameState();
-		GameState(const GameState&);
+		GameState(const GameState&) = delete;
 
-		GameState& operator=(const GameState&);
+		GameState& operator=(const GameState&) = delete;
+		GameState(GameState&&) = default;
+		GameState& operator=(GameState&&) = default;
+
 
 		virtual ~GameState();
 

@@ -1,13 +1,8 @@
 #include "pch.h"
 #include "Cfg.h"
 #include "../Engine/TextureStore.h"
-#include <winrt/Microsoft.Graphics.Canvas.UI.Xaml.h>
-#include <winrt/Windows.UI.Core.h>
-
-#include <winrt/Windows.UI.h>
 #include <chrono>
 #include <algorithm>
-#include <winrt/Windows.Foundation.h>
 
 using winrt::Windows::Foundation::Uri;
 
@@ -22,11 +17,11 @@ std::unordered_map<Cfg::Fonts, std::wstring> Cfg::fonts = {};
 winrt::Windows::Foundation::IAsyncAction Cfg::InitializeAsync(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasAnimatedControl const& sender)
 {
     // Textures
-    
+
     engine::TextureStore::Instance().SetResourceCreator(sender);
     engine::TextureStore::Instance().Clear();
     co_await initTextures();
-    
+
     engine::FontManager::Instance().Clear();
     initFonts();
 
@@ -53,9 +48,17 @@ void Cfg::initSounds()
 
 winrt::Windows::Foundation::IAsyncAction Cfg::initTextures()
 {
-    co_await engine::TextureStore::Instance().RegisterAndLoadAsync(L"ship", Uri(L"ms-appx:///Assets/Textures/Characters/Player/ship.png"));
-   textures.emplace(Textures::Ship, L"ship");
-   co_return;
+    co_await engine::TextureStore::Instance().RegisterAndLoadAsync(
+        L"ship",
+        Uri(L"ms-appx:///Assets/Textures/Characters/Player/ship.png"));
+    textures.emplace(Textures::Ship, L"ship");
+
+    co_await engine::TextureStore::Instance().RegisterAndLoadAsync(
+        L"PlayerAtlas",
+        Uri(L"ms-appx:///Assets/Textures/Characters/Player/player_atlas.png"));
+    textures.emplace(Textures::PlayerAtlas, L"PlayerAtlas");
+
+    co_return;
 }
 
 std::shared_ptr<engine::Font> Cfg::GetFont(std::wstring fontKey_)
@@ -117,17 +120,17 @@ void Cfg::initFonts()
     fonts.emplace(Fonts::UI, L"ui");
 
     // Example packaged font:
-   engine::FontManager::Instance().RegisterAppFont(
-       L"default",
-       Uri(L"ms-appx:///Assets/Fonts/bubbly.ttf"),
-       L"Spicy Sale");
-   fonts.emplace(Fonts::Default, L"default");
+    engine::FontManager::Instance().RegisterAppFont(
+        L"default",
+        Uri(L"ms-appx:///Assets/Fonts/bubbly.ttf"),
+        L"Spicy Sale");
+    fonts.emplace(Fonts::Default, L"default");
 
-   engine::FontManager::Instance().RegisterAppFont(
-       L"bubbly",
-       Uri(L"ms-appx:///Assets/Fonts/bubbly.ttf"),
-       L"Spicy Sale");
-   fonts.emplace(Fonts::Bubbly, L"bubbly");
+    engine::FontManager::Instance().RegisterAppFont(
+        L"bubbly",
+        Uri(L"ms-appx:///Assets/Fonts/bubbly.ttf"),
+        L"Spicy Sale");
+    fonts.emplace(Fonts::Bubbly, L"bubbly");
 }
 
 

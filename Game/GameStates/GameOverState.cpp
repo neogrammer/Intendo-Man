@@ -46,25 +46,6 @@ namespace game
 	{
 	}
 
-	GameOverState::GameOverState(const GameOverState&)
-	{
-	}
-
-	GameOverState::GameOverState(GameOverState&&)
-	{
-	}
-
-	GameOverState& GameOverState::operator=(const GameOverState&)
-	{
-		// TODO: insert return statement here
-		return *this;
-	}
-
-	GameOverState& GameOverState::operator=(GameOverState&&)
-	{
-		// TODO: insert return statement here
-		return *this;
-	}
 
 	GameOverState::~GameOverState()
 	{

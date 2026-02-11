@@ -47,25 +47,6 @@ namespace game
 	{
 	}
 
-	StartState::StartState(const StartState&)
-	{
-	}
-
-	StartState::StartState(StartState&&)
-	{
-	}
-
-	StartState& StartState::operator=(const StartState&)
-	{
-		// TODO: insert return statement here
-		return *this;
-	}
-
-	StartState& StartState::operator=(StartState&&)
-	{
-		// TODO: insert return statement here
-		return *this;
-	}
 
 	StartState::~StartState()
 	{

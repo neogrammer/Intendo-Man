@@ -1,14 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ApplicationDefinition Include="App.xaml" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="pch.cpp" />
-    <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
-    <ClCompile Include="Engine\Texture.h">
-      <Filter>Engine</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Game.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
@@ -42,9 +34,65 @@
     <ClCompile Include="Engine\Text.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
+    <ClCompile Include="Game\Objects\GameObject.cpp">
+      <Filter>Game\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Objects\AnimObject.cpp">
+      <Filter>Game\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Mgmt\GameManager.cpp">
+      <Filter>Game\Mgmt</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Mgmt\GameStateManager.cpp">
+      <Filter>Game\Mgmt</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameStates\GameOverState.cpp">
+      <Filter>Game\GameStates</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameStates\GameState.cpp">
+      <Filter>Game\GameStates</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameStates\GameStateBase.cpp">
+      <Filter>Game\GameStates</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameStates\PlayState.cpp">
+      <Filter>Game\GameStates</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameStates\StageSelectState.cpp">
+      <Filter>Game\GameStates</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameStates\StartState.cpp">
+      <Filter>Game\GameStates</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameStates\TitleState.cpp">
+      <Filter>Game\GameStates</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Mgmt\StageManager.cpp">
+      <Filter>Game\Mgmt</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameStates\MenuState.cpp">
+      <Filter>Game\GameStates</Filter>
+    </ClCompile>
+    <ClCompile Include="$(GeneratedFilesDir)module.g.cpp">
+      <Filter>App</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>App</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Map\Tile.cpp">
+      <Filter>Game\Map</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Map\Tilemap.cpp">
+      <Filter>Game\Map</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Map\Tileset.cpp">
+      <Filter>Game\Map</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Objects\Player.cpp">
+      <Filter>Game\Objects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pch.h" />
     <ClInclude Include="Engine\Math.h">
       <Filter>Engine</Filter>
     </ClInclude>
@@ -90,15 +138,68 @@
     <ClInclude Include="Engine\Text.h">
       <Filter>Engine</Filter>
     </ClInclude>
+    <ClInclude Include="Game\Objects\GameObject.h">
+      <Filter>Game\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Objects\AnimObject.h">
+      <Filter>Game\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Mgmt\game_states.h">
+      <Filter>Game\Mgmt</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Mgmt\GameManager.h">
+      <Filter>Game\Mgmt</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Mgmt\GameStateManager.h">
+      <Filter>Game\Mgmt</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameStates\GameOverState.h">
+      <Filter>Game\GameStates</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameStates\GameState.h">
+      <Filter>Game\GameStates</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameStates\GameStateBase.h">
+      <Filter>Game\GameStates</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameStates\MenuState.h">
+      <Filter>Game\GameStates</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameStates\PlayState.h">
+      <Filter>Game\GameStates</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameStates\StageSelectState.h">
+      <Filter>Game\GameStates</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameStates\StartState.h">
+      <Filter>Game\GameStates</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameStates\TitleState.h">
+      <Filter>Game\GameStates</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Texture.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Mgmt\StageManager.h">
+      <Filter>Game\Mgmt</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>App</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Map\Tile.h">
+      <Filter>Game\Map</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Map\Tilemap.h">
+      <Filter>Game\Map</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Map\Tileset.h">
+      <Filter>Game\Map</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Objects\Player.h">
+      <Filter>Game\Objects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Assets\LockScreenLogo.scale-200.png" />
-    <Image Include="Assets\SplashScreen.scale-200.png" />
-    <Image Include="Assets\Square150x150Logo.scale-200.png" />
-    <Image Include="Assets\Square44x44Logo.scale-200.png" />
-    <Image Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-    <Image Include="Assets\StoreLogo.png" />
-    <Image Include="Assets\Wide310x150Logo.scale-200.png" />
     <Image Include="Assets\Textures\Characters\Player\player_atlas.png">
       <Filter>Textures\Characters\Player</Filter>
     </Image>
@@ -108,20 +209,41 @@
     <Image Include="Assets\Textures\Characters\Player\ship.png">
       <Filter>Textures\Characters\Player</Filter>
     </Image>
+    <Image Include="Assets\SplashScreen.scale-200.png">
+      <Filter>Textures\XbxMain</Filter>
+    </Image>
+    <Image Include="Assets\Square44x44Logo.scale-200.png">
+      <Filter>Textures\XbxMain</Filter>
+    </Image>
+    <Image Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png">
+      <Filter>Textures\XbxMain</Filter>
+    </Image>
+    <Image Include="Assets\Square150x150Logo.scale-200.png">
+      <Filter>Textures\XbxMain</Filter>
+    </Image>
+    <Image Include="Assets\StoreLogo.png">
+      <Filter>Textures\XbxMain</Filter>
+    </Image>
+    <Image Include="Assets\Wide310x150Logo.scale-200.png">
+      <Filter>Textures\XbxMain</Filter>
+    </Image>
+    <Image Include="Assets\LockScreenLogo.scale-200.png">
+      <Filter>Textures\XbxMain</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
-    <AppxManifest Include="Package.appxmanifest" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="PropertySheet.props" />
-    <None Include="Intendo Man_TemporaryKey.pfx" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="readme.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Include="MainPage.xaml" />
+    <None Include="Intendo Man_TemporaryKey.pfx">
+      <Filter>App</Filter>
+    </None>
+    <None Include="packages.config">
+      <Filter>App</Filter>
+    </None>
+    <None Include="PropertySheet.props">
+      <Filter>App</Filter>
+    </None>
+    <None Include="Assets\Anims\Player.anm">
+      <Filter>Anims</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Textures">
@@ -151,6 +273,27 @@
     <Filter Include="Fonts">
       <UniqueIdentifier>{500b52fb-4a61-4cf2-9d50-61ec60bb8bf5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game\Objects">
+      <UniqueIdentifier>{c94c8b92-a189-424f-9882-7803d902bac8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Mgmt">
+      <UniqueIdentifier>{cf11dd62-77b4-4e3b-b021-7a684b473e66}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\GameStates">
+      <UniqueIdentifier>{d360934a-d6b0-4b61-b4ed-d8a1572d9844}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Textures\XbxMain">
+      <UniqueIdentifier>{60aa31ee-e3d6-4bf6-814e-b33421384ebf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="App">
+      <UniqueIdentifier>{9df1c943-0a5e-486c-a70f-bddf88e11595}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Map">
+      <UniqueIdentifier>{4f9e168c-c663-4148-888d-1b3665662fe9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Anims">
+      <UniqueIdentifier>{788bc38e-798f-448f-b71c-be1209afa3ac}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Media Include="Assets\Audio\blip.wav">
@@ -164,5 +307,25 @@
     <Font Include="Assets\Fonts\bubbly.ttf">
       <Filter>Fonts</Filter>
     </Font>
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <Filter>App</Filter>
+    </ApplicationDefinition>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="MainPage.xaml">
+      <Filter>App</Filter>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <AppxManifest Include="Package.appxmanifest">
+      <Filter>App</Filter>
+    </AppxManifest>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="readme.txt">
+      <Filter>App</Filter>
+    </Text>
   </ItemGroup>
 </Project>

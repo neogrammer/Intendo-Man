@@ -28,10 +28,11 @@ namespace game
 
 
 		GameOverState();
-		GameOverState(const GameOverState&);
-		GameOverState(GameOverState&&);
-		GameOverState& operator=(const GameOverState&);
-		GameOverState& operator=(GameOverState&&);
+		GameOverState(const GameOverState&) = delete;
+
+		GameOverState& operator=(const GameOverState&) = delete;
+		GameOverState(GameOverState&&) = default;
+		GameOverState& operator=(GameOverState&&) = default;
 		~GameOverState() override final;
 	};
 }

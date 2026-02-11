@@ -1,6 +1,7 @@
 #pragma once
 #include "GameManager.h"
-
+#include <unordered_map>
+#include <string>
 namespace engine
 {
 	class ActionMap;
@@ -20,13 +21,14 @@ namespace game
 
 	class GameStateManager
 	{
+		std::unordered_map<std::wstring, std::unique_ptr<game::GameState>> gameStates;
 		game::GameState* currState;
 	public:
 		GameStateManager();
-		GameStateManager(const GameStateManager&);
-		GameStateManager(GameStateManager&&);
-		GameStateManager& operator=(const GameStateManager&);
-		GameStateManager& operator=(GameStateManager&&);
+		GameStateManager(const GameStateManager&) = delete;
+		GameStateManager(GameStateManager&&) = default;
+		GameStateManager& operator=(const GameStateManager&) = delete;
+		GameStateManager& operator=(GameStateManager&&) = default;
 		~GameStateManager();
 
 		void processInput(const engine::ActionMap& actMap_);
@@ -34,9 +36,8 @@ namespace game
 
 
 		void update(float dt_);
+		void SyncObjects();
 		std::vector<engine::Text>& render(engine::Renderer2D& renderer_);
-
-		game::PlayState* pState;
 		float2 getCamOffset();
 	};
 }

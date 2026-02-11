@@ -46,26 +46,6 @@ namespace game
 	{
 	}
 
-	MenuState::MenuState(const MenuState&)
-	{
-	}
-
-	MenuState::MenuState(MenuState&&)
-	{
-	}
-
-	MenuState& MenuState::operator=(const MenuState&)
-	{
-		// TODO: insert return statement here
-		return *this;
-	}
-
-	MenuState& MenuState::operator=(MenuState&&)
-	{
-		// TODO: insert return statement here
-		return *this;
-	}
-
 	MenuState::~MenuState()
 	{
 	}

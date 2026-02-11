@@ -11,39 +11,24 @@ namespace game
 {
 
 	GameStateManager::GameStateManager()
+		: gameStates{}
+		, currState{ nullptr }
 	{
-		pState = new game::PlayState{};
-		pState->enter();
-		currState = pState;
+		gameStates.emplace(std::pair<std::wstring, std::unique_ptr<GameState>>{ L"StartState", std::make_unique<game::StartState>() });
+		gameStates.emplace(std::pair<std::wstring, std::unique_ptr<GameState>>{L"TitleState", std::make_unique<game::TitleState>()});
+		gameStates.emplace(std::pair<std::wstring, std::unique_ptr<GameState>>{L"PlayState", std::make_unique<game::PlayState>()});
+		gameStates.emplace(std::pair<std::wstring, std::unique_ptr<GameState>>{L"GameOverState", std::make_unique<game::GameOverState>()});
+		gameStates.emplace(std::pair<std::wstring, std::unique_ptr<GameState>>{L"StageSelectState", std::make_unique<game::StageSelectState>()});
+		gameStates.emplace(std::pair<std::wstring, std::unique_ptr<GameState>>{L"MenuState", std::make_unique<game::MenuState>()});
 
-	}
+		currState = gameStates.at(L"PlayState").get();
+		currState->enter();
 
-	GameStateManager::GameStateManager(const GameStateManager&)
-	{
-	}
-
-	GameStateManager::GameStateManager(GameStateManager&&)
-	{
-	}
-
-	GameStateManager& GameStateManager::operator=(const GameStateManager&)
-	{
-		// TODO: insert return statement here
-		return *this;
-	}
-
-	GameStateManager& GameStateManager::operator=(GameStateManager&&)
-	{
-		// TODO: insert return statement here
-		return *this;
 	}
 
 	GameStateManager::~GameStateManager()
 	{
 		currState->exit();
-
-		if (pState)
-			delete pState;
 	}
 
 	void GameStateManager::processInput(const engine::ActionMap& actMap_)
@@ -73,6 +58,15 @@ namespace game
 		}
 
 		currState->update(dt_);
+	}
+
+
+	void GameStateManager::SyncObjects()
+	{
+		if (currState)
+		{
+			currState->syncObjects();
+		}
 	}
 
 	std::vector<engine::Text>& GameStateManager::render(engine::Renderer2D& renderer_)

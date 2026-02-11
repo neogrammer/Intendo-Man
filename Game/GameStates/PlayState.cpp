@@ -1,20 +1,17 @@
 #include "pch.h"
 #include "PlayState.h"
+
 #include "../Resources/Cfg.h"
 #include "../../Engine/ActionMap.h"
 #include "../../Engine/Camera2D.h"
 #include "../../Engine/Renderer2D.h"
 #include "../../Engine/Text.h"
-#include "../../Engine/Sprite.h"
-
-
+#include "../Objects/Player.h"
 
 namespace game
 {
-
-	std::wstring  PlayState::type()
+	std::wstring PlayState::type()
 	{
-		// TODO: insert return statement here
 		return L"PlayState";
 	}
 
@@ -22,11 +19,55 @@ namespace game
 	{
 		Cfg::PlayMusicAsync(L"theme", true, 0.25f);
 		uiStrings.clear();
-		player = std::make_unique<engine::Sprite>(Cfg::GetTex(Cfg::Textures::Ship));
-		player->Position = float2{ 450.0f, 450.0f };
-		player->SetOriginCenter();
 
-		
+		// --- Player (AnimObject)
+		// You can load from a file:
+		// player = std::make_unique<game::AnimObject>(L"Assets\\Anims\\Player.anm");
+		// ...or load from text (handy while iterating):
+		player = std::make_unique<game::Player>();
+
+		const std::wstring shipTestAnm = LR"(
+# Minimal test anim that points at the existing Ship texture.
+[object]
+position = 450 450
+start_anim = idle
+
+[anim idle]
+texture        = ship
+frame_size     = 481 611
+start_col      = 0
+start_row      = 0
+start_px       = 0 0
+pitch          = 1
+frames         = 1
+uni_directional= true
+
+offsets = (0,0)
+sizes   = (481,611)
+delays  = 0.10
+
+looping    = true
+loop_wait  = false
+loop_delay = 0
+)";
+
+		//player->LoadFromAnmText(shipTestAnm);
+
+
+
+		// --- HUD
+		engine::Text m_hud{};
+
+		m_hud.FontRef = Cfg::GetFont(L"bubbly");
+		m_hud.String = L"Space/X: SFX";
+		m_hud.FontSize = 22.0f;
+		m_hud.OutlineThickness = 2;
+		m_hud.OutlineColor = winrt::Windows::UI::Colors::White();
+		m_hud.Color = winrt::Windows::UI::Colors::Green();
+		m_hud.Position = { 10.0f, 10.0f };
+		m_hud.Invalidate();
+
+		uiStrings.push_back(m_hud);
 	}
 
 	void PlayState::exit()
@@ -39,32 +80,34 @@ namespace game
 
 	void PlayState::processInput(const engine::ActionMap& actMap_)
 	{
-		   // do this in the playstate
-		   if (actMap_.Pressed(engine::Action::ResetView))
-		   {
-			  camera->Reset();
-			  cameraOffset = { 0,0 };
-		   }
+		// do this in the playstate
+		if (actMap_.Pressed(engine::Action::ResetView))
+		{
+			camera->Reset();
+			cameraOffset = { 0,0 };
+		}
 
-		   if (actMap_.Pressed(engine::Action::Fire))
-		   {
-				  Cfg::PlaySfx(L"blip");
-		   }
+		if (actMap_.Pressed(engine::Action::Fire))
+		{
+			Cfg::PlaySfx(L"blip");
+		}
 
-		   actMap = &actMap_;
+		actMap = &actMap_;
 	}
 
 	void PlayState::update(float dt_)
 	{
-		
-
-		if (actMap)
+		if (player)
 		{
-			//   // Player movement (MoveAxis = WASD + left stick)
+			player->Update(dt_);
+		}
+
+		if (actMap && player)
+		{
+			// Player movement (MoveAxis = WASD + left stick)
 			float2 move = actMap->MoveAxis();
 			float playerSpeed = 300.0f;
-			player->Position.x += move.x * playerSpeed * dt_;
-			player->Position.y += move.y * playerSpeed * dt_;
+			player->Move(float2{ move.x * playerSpeed * dt_, move.y * playerSpeed * dt_ });
 
 			// Camera pan offset (PanAxis = arrows + right stick)
 			float2 pan = actMap->PanAxis();
@@ -86,59 +129,38 @@ namespace game
 			actMap = nullptr;
 		}
 
-		// Follow player with user pan offset
-		   camera->Position = { player->Position.x + cameraOffset.x, player->Position.y + cameraOffset.y };
-		   player->Rotation = dt_ * 0.5f;
+		// Follow player with user pan offset (use center of collider box)
+		if (player)
+		{
+			auto const pos = player->GetWorldPosition();
+			auto const size = player->GetWorldSize();
+			float2 center{ pos.x + (size.x * 0.5f), pos.y + (size.y * 0.5f) };
+			camera->Position = { center.x + cameraOffset.x, center.y + cameraOffset.y };
+		}
+	}
 
-  
-}
+	void PlayState::syncObjects()
+	{
+		if (player)
+		{
+			player->SyncToBase();
+		}
+	}
 
 	std::vector<engine::Text>& PlayState::render(engine::Renderer2D& renderer_)
 	{
+		if (player)
+		{
+			renderer_.Draw(*player->getSprite());
+		}
 
-		renderer_.Draw(*player);
-
-
-		engine::Text m_hud{};
-
-		m_hud.FontRef = Cfg::GetFont(L"bubbly");
-		m_hud.String = L"Space/X: SFX";
-		m_hud.FontSize = 22.0f;
-		m_hud.OutlineThickness = 2;
-		m_hud.OutlineColor = winrt::Windows::UI::Colors::White();
-		m_hud.Color = winrt::Windows::UI::Colors::Green();
-		m_hud.Position = { 10.0f, 10.0f };
-		m_hud.Invalidate();
-
-		uiStrings.push_back(m_hud);
-		
 		return uiStrings;
 	}
 
 	PlayState::PlayState()
 		: GameState{}
-		, player{nullptr}
+		, player{ nullptr }
 	{
-	}
-
-	PlayState::PlayState(const PlayState&)
-	{
-	}
-
-	PlayState::PlayState(PlayState&&)
-	{
-	}
-
-	PlayState& PlayState::operator=(const PlayState&)
-	{
-		// TODO: insert return statement here
-		return *this;
-	}
-
-	PlayState& PlayState::operator=(PlayState&&)
-	{
-		// TODO: insert return statement here
-		return *this;
 	}
 
 	PlayState::~PlayState()

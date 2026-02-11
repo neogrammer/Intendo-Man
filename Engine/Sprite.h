@@ -8,6 +8,12 @@
 #include <memory>
 #include <optional>
 
+namespace game
+{
+    class GameObject;
+}
+
+
 namespace engine
 {
     using winrt::Windows::Foundation::Rect;
@@ -48,5 +54,6 @@ namespace engine
 
     private:
         float2 ComputeBitmapSpaceOrigin() const noexcept;
+
     };
 }

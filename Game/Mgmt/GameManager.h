@@ -18,18 +18,19 @@ namespace game
 	class GameManager
 	{
 		std::unique_ptr<GameStateManager> gStateMgr{ nullptr };
-		
+
 	public:
 		GameManager();
-		GameManager(const GameManager&);
-		GameManager(GameManager&&);
-		GameManager& operator=(const GameManager&);
-		GameManager& operator=(GameManager&&);
+		GameManager(const GameManager&) = delete;
+		GameManager(GameManager&&) = default;
+		GameManager& operator=(const GameManager&) = delete;
+		GameManager& operator=(GameManager&&) = default;
 		~GameManager();
 
 		void processInput(const engine::ActionMap& actMap_);
 		std::shared_ptr<engine::Camera2D> getCamera();
 		void update(float dt_);
+		void SyncObjects();
 		std::vector<engine::Text>& render(engine::Renderer2D& renderer_);
 	};
 }

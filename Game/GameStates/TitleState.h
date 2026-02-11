@@ -24,10 +24,11 @@ namespace game
 		void update(float dt_) override final;
 		std::vector<engine::Text>& render(engine::Renderer2D& renderer_) override final;
 		TitleState();
-		TitleState(const TitleState&);
-		TitleState(TitleState&&);
-		TitleState& operator=(const TitleState&);
-		TitleState& operator=(TitleState&&);
+		TitleState(const TitleState&) = delete;
+
+		TitleState& operator=(const TitleState&) = delete;
+		TitleState(TitleState&&) = default;
+		TitleState& operator=(TitleState&&) = default;
 		~TitleState() override final;
 	};
 }

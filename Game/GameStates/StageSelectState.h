@@ -26,10 +26,11 @@ namespace game
 		std::vector<engine::Text>& render(engine::Renderer2D& renderer_) override final;
 
 		StageSelectState();
-		StageSelectState(const StageSelectState&);
-		StageSelectState(StageSelectState&&);
-		StageSelectState& operator=(const StageSelectState&);
-		StageSelectState& operator=(StageSelectState&&);
+		StageSelectState(const StageSelectState&) = delete;
+
+		StageSelectState& operator=(const StageSelectState&) = delete;
+		StageSelectState(StageSelectState&&) = default;
+		StageSelectState& operator=(StageSelectState&&) = default;
 		~StageSelectState() override final;
 	};
 }

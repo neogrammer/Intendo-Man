@@ -41,24 +41,6 @@ namespace game
 		cameraOffset = { 0,0 };
 	}
 
-	GameState::GameState(const GameState& o)
-		: GameStateBase{}
-		, camera{ o.camera }
-		, uiStrings{}
-		, actMap{ nullptr }
-		, cameraOffset{ 0,0 }
-	{	
-
-		
-	}
-
-	GameState& GameState::operator=(const GameState& o)
-	{
-		camera = o.camera;
-		// TODO: insert return statement here
-		return *this;
-	}
-
 
 
 	GameState::~GameState()

@@ -25,10 +25,11 @@ namespace game
 		std::vector<engine::Text>& render(engine::Renderer2D& renderer_) override final;
 
 		MenuState();
-		MenuState(const MenuState&);
-		MenuState(MenuState&&);
-		MenuState& operator=(const MenuState&);
-		MenuState& operator=(MenuState&&);
+		MenuState(const MenuState&) = delete;
+
+		MenuState& operator=(const MenuState&) = delete;
+		MenuState(MenuState&&) = default;
+		MenuState& operator=(MenuState&&) = default;
 		~MenuState() override final;
 	};
 }

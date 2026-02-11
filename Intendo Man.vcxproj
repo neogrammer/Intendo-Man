@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.220531.1\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.220531.1\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup Label="Globals">
@@ -142,9 +142,16 @@
     <ClInclude Include="Game\GameStates\StageSelectState.h" />
     <ClInclude Include="Game\GameStates\StartState.h" />
     <ClInclude Include="Game\GameStates\TitleState.h" />
+    <ClInclude Include="Game\Map\Tile.h" />
+    <ClInclude Include="Game\Map\Tilemap.h" />
+    <ClInclude Include="Game\Map\Tileset.h" />
     <ClInclude Include="Game\Mgmt\GameManager.h" />
     <ClInclude Include="Game\Mgmt\GameStateManager.h" />
     <ClInclude Include="Game\Mgmt\game_states.h" />
+    <ClInclude Include="Game\Mgmt\StageManager.h" />
+    <ClInclude Include="Game\Objects\AnimObject.h" />
+    <ClInclude Include="Game\Objects\GameObject.h" />
+    <ClInclude Include="Game\Objects\Player.h" />
     <ClInclude Include="Game\Resources\Cfg.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="App.h">
@@ -189,7 +196,7 @@
     <ClCompile Include="Engine\Sprite.cpp" />
     <ClCompile Include="Engine\Text.cpp" />
     <ClCompile Include="Engine\Texture.cpp" />
-    <ClCompile Include="Engine\Texture.h" />
+    <ClInclude Include="Engine\Texture.h" />
     <ClCompile Include="Engine\TextureStore.cpp" />
     <ClCompile Include="Game\GameStates\GameOverState.cpp" />
     <ClCompile Include="Game\GameStates\GameState.cpp" />
@@ -199,8 +206,15 @@
     <ClCompile Include="Game\GameStates\StageSelectState.cpp" />
     <ClCompile Include="Game\GameStates\StartState.cpp" />
     <ClCompile Include="Game\GameStates\TitleState.cpp" />
+    <ClCompile Include="Game\Map\Tile.cpp" />
+    <ClCompile Include="Game\Map\Tilemap.cpp" />
+    <ClCompile Include="Game\Map\Tileset.cpp" />
     <ClCompile Include="Game\Mgmt\GameManager.cpp" />
     <ClCompile Include="Game\Mgmt\GameStateManager.cpp" />
+    <ClCompile Include="Game\Mgmt\StageManager.cpp" />
+    <ClCompile Include="Game\Objects\AnimObject.cpp" />
+    <ClCompile Include="Game\Objects\GameObject.cpp" />
+    <ClCompile Include="Game\Objects\Player.cpp" />
     <ClCompile Include="Game\Resources\Cfg.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -222,6 +236,9 @@
     </Midl>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\Anims\Player.anm">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+    </None>
     <None Include="Intendo Man_TemporaryKey.pfx" />
     <None Include="packages.config" />
     <None Include="PropertySheet.props" />

@@ -47,26 +47,6 @@ namespace game
 	{
 	}
 
-	TitleState::TitleState(const TitleState&)
-	{
-	}
-
-	TitleState::TitleState(TitleState&&)
-	{
-	}
-
-	TitleState& TitleState::operator=(const TitleState&)
-	{
-		// TODO: insert return statement here
-		return *this;
-	}
-
-	TitleState& TitleState::operator=(TitleState&&)
-	{
-		// TODO: insert return statement here
-		return *this;
-	}
-
 	TitleState::~TitleState()
 	{
 	}

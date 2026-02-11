@@ -4,33 +4,14 @@
 
 using namespace engine;
 
-namespace game 
+namespace game
 {
 
 	GameManager::GameManager()
 	{
-        gStateMgr = std::make_unique<GameStateManager>();
+		gStateMgr = std::make_unique<GameStateManager>();
 	}
 
-	GameManager::GameManager(const GameManager&)
-	{
-	}
-
-	GameManager::GameManager(GameManager&&)
-	{
-	}
-
-	GameManager& GameManager::operator=(const GameManager&)
-	{
-		// TODO: insert return statement here
-		return *this;
-	}
-
-	GameManager& GameManager::operator=(GameManager&&)
-	{
-		// TODO: insert return statement here
-		return *this;
-	}
 
 	GameManager::~GameManager()
 	{
@@ -41,8 +22,8 @@ namespace game
 
 
 
-        // pass actions down
-        gStateMgr->processInput(actMap_);
+		// pass actions down
+		gStateMgr->processInput(actMap_);
 
 
 	}
@@ -54,8 +35,17 @@ namespace game
 	{
 		gStateMgr->update(dt_);
 	}
+
+	void GameManager::SyncObjects()
+	{
+		gStateMgr->SyncObjects();
+	}
+
 	std::vector<engine::Text>& GameManager::render(engine::Renderer2D& renderer_)
 	{
+		// Make sure any AnimObjects have pushed their current frame into the base GameObject values
+		// before the state renders.
+		SyncObjects();
 		return gStateMgr->render(renderer_);
 	}
 }

@@ -26,10 +26,11 @@ namespace game
 		std::vector<engine::Text>& render(engine::Renderer2D& renderer_) override final;
 
 		StartState();
-		StartState(const StartState&);
-		StartState(StartState&&);
-		StartState& operator=(const StartState&);
-		StartState& operator=(StartState&&);
+		StartState(const StartState&) = delete;
+
+		StartState& operator=(const StartState&) = delete;
+		StartState(StartState&&) = default;
+		StartState& operator=(StartState&&) = default;
 		~StartState() override final;
 	};
 }

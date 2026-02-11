@@ -6,13 +6,12 @@
 #include "Engine/Matrix2D.h"
 #include "Engine/SoundManager.h"
 
-#include <winrt/Windows.UI.h>
 #include <chrono>
 #include <algorithm>
 #include "../Game/Resources/Cfg.h"
 #include <iostream>
 
-#include <windows.h>
+
 #include <string>
 
 namespace engine
@@ -83,11 +82,11 @@ namespace engine
             ds.Transform(cam->WorldToScreen());
             DrawGrid(ds);
 
-            std::vector<engine::Text> uiStrings{};
+            std::vector<engine::Text>* uiStrings{};
             {
                 engine::Renderer2D renderer(ds);
                 // pass renderer down to the state
-                uiStrings = gameMgr->render(renderer);
+                uiStrings = &gameMgr->render(renderer);
             }
 
             engine::Renderer2D renderer(ds);
@@ -96,7 +95,7 @@ namespace engine
             // HUD strings to draw = renderer.Draw(m_player);
             // for each (HUD string).Draw(ds, sender);
             ds.Transform(engine::Identity2D());
-            for (auto& str : uiStrings)
+            for (auto& str : *uiStrings)
             {
                 str.Draw(ds, sender);
             }

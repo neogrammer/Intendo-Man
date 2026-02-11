@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Engine/Sprite.h"
 
+#include "../Game/Objects/GameObject.h"
+
 namespace engine
 {
     void Sprite::SetOriginCenter()
@@ -30,7 +32,7 @@ namespace engine
         // We expose SFML-like origin relative to SourceRect, and translate here.
         if (SourceRect)
         {
-            return { Origin.x + SourceRect->X, Origin.y + SourceRect->Y };
+            return { Origin.x + SourceRect->Width, Origin.y + SourceRect->Height };
         }
         return Origin;
     }
@@ -43,7 +45,10 @@ namespace engine
         }
 
         auto const bmp = TextureRef->Bitmap;
+        
+       
         auto const originInBitmap = ComputeBitmapSpaceOrigin();
+
 
         if (SourceRect)
         {

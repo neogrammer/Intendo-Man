@@ -1,0 +1,607 @@
+# Player.anm
+# Texture: Assets/Textures/Characters/Player/player_atlas.png
+# Grid: 17 cols, 26 rows, cell = 130x160
+# Left-facing rows are +13 from the right-facing row (rows 0-12 -> 13-25).
+
+[object]
+position   = 320 180
+world_size = 130 160
+start_anim = idle
+
+[anim teleport_start]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 0
+start_row      = 0
+start_row_left = 13
+pitch          = 17
+frames         = 2
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.43
+looping        = waits
+
+[anim teleport_land]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 2
+start_row      = 0
+start_row_left = 13
+pitch          = 17
+frames         = 15
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = idle
+
+[anim idle]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 0
+start_row      = 1
+start_row_left = 14
+pitch          = 17
+frames         = 3
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = true
+
+[anim idle_blink]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 4
+start_row      = 1
+start_row_left = 14
+pitch          = 17
+frames         = 3
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = idle
+
+[anim run]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 0
+start_row      = 2
+start_row_left = 15
+pitch          = 17
+frames         = 12
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = frame2
+
+[anim jump_rise]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 0
+start_row      = 5
+start_row_left = 18
+pitch          = 17
+frames         = 4
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = waits
+
+[anim jump_peak]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 4
+start_row      = 5
+start_row_left = 18
+pitch          = 17
+frames         = 1
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = waits
+
+[anim fall]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 5
+start_row      = 5
+start_row_left = 18
+pitch          = 17
+frames         = 3
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = waits
+
+[anim land]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 8
+start_row      = 5
+start_row_left = 18
+pitch          = 17
+frames         = 3
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = idle
+
+[anim shoot_start]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 8
+start_row      = 1
+start_row_left = 14
+pitch          = 17
+frames         = 3
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = shoot
+
+[anim shoot]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 12
+start_row      = 1
+start_row_left = 14
+pitch          = 17
+frames         = 1
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = waits
+
+[anim dash]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 14
+start_row      = 2
+start_row_left = 15
+pitch          = 17
+frames         = 1
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = waits
+
+[anim crouch]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 15
+start_row      = 2
+start_row_left = 15
+pitch          = 17
+frames         = 1
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = waits
+
+[anim runshoot]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 0
+start_row      = 3
+start_row_left = 16
+pitch          = 17
+frames         = 12
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = frame2
+
+[anim jumpshoot_rise]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 0
+start_row      = 6
+start_row_left = 19
+pitch          = 17
+frames         = 4
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = waits
+
+[anim jumpshoot_peak]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 4
+start_row      = 6
+start_row_left = 19
+pitch          = 17
+frames         = 1
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = waits
+
+[anim fallshoot]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 5
+start_row      = 6
+start_row_left = 19
+pitch          = 17
+frames         = 3
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = waits
+
+[anim landshoot]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 8
+start_row      = 6
+start_row_left = 19
+pitch          = 17
+frames         = 3
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = idle
+
+[anim crouchshoot]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 15
+start_row      = 3
+start_row_left = 16
+pitch          = 17
+frames         = 1
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = waits
+
+[anim runcharge]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 0
+start_row      = 4
+start_row_left = 17
+pitch          = 17
+frames         = 12
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = frame2
+
+[anim jumpcharge_rise]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 0
+start_row      = 7
+start_row_left = 20
+pitch          = 17
+frames         = 4
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = waits
+
+[anim jumpcharge_peak]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 4
+start_row      = 7
+start_row_left = 20
+pitch          = 17
+frames         = 1
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = waits
+
+[anim fallcharge]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 5
+start_row      = 7
+start_row_left = 20
+pitch          = 17
+frames         = 3
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = waits
+
+[anim landcharge]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 8
+start_row      = 7
+start_row_left = 20
+pitch          = 17
+frames         = 3
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = idle
+
+[anim crouchcharge]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 15
+start_row      = 4
+start_row_left = 17
+pitch          = 17
+frames         = 1
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = waits
+
+[anim chargeshot_full]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 0
+start_row      = 9
+start_row_left = 22
+pitch          = 17
+frames         = 10
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = idle
+
+[anim chargeshot_partial]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 0
+start_row      = 8
+start_row_left = 21
+pitch          = 17
+frames         = 6
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = idle
+
+[anim wallgrab]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 0
+start_row      = 10
+start_row_left = 23
+pitch          = 17
+frames         = 3
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = wallslide
+
+[anim wallslide]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 3
+start_row      = 10
+start_row_left = 23
+pitch          = 17
+frames         = 1
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = waits
+
+[anim wallkick]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 5
+start_row      = 10
+start_row_left = 23
+pitch          = 17
+frames         = 1
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = jump_rise frame1(oppositedirection)
+
+[anim wallgrabshoot]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 0
+start_row      = 11
+start_row_left = 24
+pitch          = 17
+frames         = 3
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = wallslideshoot
+
+[anim wallslideshoot]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 3
+start_row      = 11
+start_row_left = 24
+pitch          = 17
+frames         = 1
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = waits
+
+[anim wallkickshoot]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 5
+start_row      = 11
+start_row_left = 24
+pitch          = 17
+frames         = 1
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = jumpshoot_rise frame1(oppositedirection)
+
+[anim wallgrabcharge]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 0
+start_row      = 12
+start_row_left = 25
+pitch          = 17
+frames         = 3
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = wallslidecharge
+
+[anim wallslidecharge]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 3
+start_row      = 12
+start_row_left = 25
+pitch          = 17
+frames         = 1
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = waits
+
+[anim wallkickcharge]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 5
+start_row      = 12
+start_row_left = 25
+pitch          = 17
+frames         = 1
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = jumpcharge_rise frame1(oppositedirection)
+
+[anim blank]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 3
+start_row      = 1
+start_row_left = 14
+pitch          = 17
+frames         = 1
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = waits
+
+[anim hit]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 10
+start_row      = 10
+start_row_left = 23
+pitch          = 17
+frames         = 7
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = idle
+
+[anim die]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 10
+start_row      = 11
+start_row_left = 24
+pitch          = 17
+frames         = 5
+uni_directional= false
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = blank
+
+[anim charge]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+frames         = 2
+uni_directional= false
+rects          = (12,1) (0,8) (12,14) (0,21)
+pitch          = 17
+offsets        = (0,0)
+sizes          = (130,160)
+delays         = 0.13
+looping        = true

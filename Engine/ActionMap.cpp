@@ -169,7 +169,7 @@ namespace engine
         }
         m_zoom = std::clamp(zoom, -1.0f, 1.0f);
 
-        float rot = (Down(Action::RotCW) ? 1.0f : 0.0f) - (Down(Action::RotCCW) ? 1.0f : 0.0f);
+        float rot = (Down(Action::RotCCW) ? 1.0f : 0.0f) - (Down(Action::RotCW) ? 1.0f : 0.0f);
         m_rotate = std::clamp(rot, -1.0f, 1.0f);
     }
 }

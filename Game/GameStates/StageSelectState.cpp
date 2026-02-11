@@ -47,25 +47,6 @@ namespace game
 	{
 	}
 
-	StageSelectState::StageSelectState(const StageSelectState&)
-	{
-	}
-
-	StageSelectState::StageSelectState(StageSelectState&&)
-	{
-	}
-
-	StageSelectState& StageSelectState::operator=(const StageSelectState&)
-	{
-		// TODO: insert return statement here
-		return *this;
-	}
-
-	StageSelectState& StageSelectState::operator=(StageSelectState&&)
-	{
-		// TODO: insert return statement here
-		return *this;
-	}
 
 	StageSelectState::~StageSelectState()
 	{
