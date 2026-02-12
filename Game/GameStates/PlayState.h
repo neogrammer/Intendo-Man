@@ -39,6 +39,7 @@ namespace game
 		void syncObjects() override final;
 
 		std::vector<engine::Text>& render(engine::Renderer2D& renderer_) override final;
+		float getTmapTileHeight();
 
 		PlayState();
 		PlayState(const PlayState&) = delete;

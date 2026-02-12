@@ -48,4 +48,15 @@ namespace game
 		SyncObjects();
 		return gStateMgr->render(renderer_);
 	}
+
+	bool GameManager::hasTmap()
+	{
+		return (gStateMgr->hasTmap());
+	}
+
+	float GameManager::getTmapTileHeight()
+	{
+		return gStateMgr->getTmapTileHeight();
+	}
 }
+

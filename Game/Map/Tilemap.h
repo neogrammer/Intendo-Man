@@ -16,11 +16,31 @@ namespace game
 {
 	class Tilemap
 	{
+		enum class Transitioning
+		{
+			Up,
+			Down,
+			None
+		};
+
 		std::unique_ptr<game::Tileset> tileset;
 		std::vector<std::unique_ptr<game::Tile>> tiles;
 
 		std::vector<Tile*> getTilesOnScreen(engine::Camera2D cam_);
 		std::vector<Tile*> getSolidTilesOnScreen(engine::Camera2D cam_);
+
+		int pitch{ 0 };
+
+		int currentLevel{ 0 };
+		float currentTopTile{ 0.f };
+		float currentBottomTile{ 13.5f };
+
+		int levels{ 1 };
+
+		std::vector<float> topOfLevels{};
+		std::vector<float> bottomOfLevels{};
+		Transitioning transitioning{ Transitioning::None };
+
 	public:
 		Tilemap();
 		explicit Tilemap(Cfg::Textures texID_, winrt::Windows::Foundation::Numerics::float2 sizeTile_, int pitchSheet_, int numTilesSheet_);
@@ -39,5 +59,7 @@ namespace game
 		void addTile(int index_, float2 worldPos_);
 
 		void render(engine::Renderer2D& renderer_, engine::Camera2D camera_);
+		inline int getPitch() { return pitch; }
+		float2 getTileSize();
 	};
 }

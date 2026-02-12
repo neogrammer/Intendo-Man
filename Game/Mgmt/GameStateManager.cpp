@@ -77,4 +77,15 @@ namespace game
 	{
 		return currState->getCamOffset();
 	}
+	bool GameStateManager::hasTmap()
+	{
+		return (currState->getType() == L"PlayState");
+	}
+	float GameStateManager::getTmapTileHeight()
+	{
+		auto* tmp = dynamic_cast<PlayState*>(currState);
+		if (!tmp) { return 1.f; }
+
+		return tmp->getTmapTileHeight();
+	}
 }

@@ -54,15 +54,17 @@ loop_wait  = false
 loop_delay = 0
 )";
 
+		tmap = std::make_unique<game::Tilemap>(Cfg::Textures::Tileset1, winrt::Windows::Foundation::Numerics::float2{ 40.f,40.f }, 16, 256);
+		tmap->loadTileset(L"ms-appx:///Assets/Datas/Tilesets/tileset2.tst");
+		tmap->loadTilemap(L"ms-appx:///Assets/Datas/Tilemaps/tilemap1.map");
+
 		//player->LoadFromAnmText(shipTestAnm);
-
-
 
 		// --- HUD
 		engine::Text m_hud{};
 
 		m_hud.FontRef = Cfg::GetFont(L"bubbly");
-		m_hud.String = L"Space/X: SFX";
+		m_hud.String = L"Cool Text Bitches!";
 		m_hud.FontSize = 22.0f;
 		m_hud.OutlineThickness = 2;
 		m_hud.OutlineColor = winrt::Windows::UI::Colors::White();
@@ -73,9 +75,7 @@ loop_delay = 0
 		uiStrings.push_back(m_hud);
 
 
-		tmap = std::make_unique<game::Tilemap>(Cfg::Textures::Tileset1, winrt::Windows::Foundation::Numerics::float2{ 40.f,40.f }, 16, 256);
-		tmap->loadTileset(L"ms-appx:///Assets/Datas/Tilesets/tileset2.tst");
-		tmap->loadTilemap(L"ms-appx:///Assets/Datas/Tilemaps/tilemap1.map");
+
 
 	}
 
@@ -141,13 +141,51 @@ loop_delay = 0
 			actMap = nullptr;
 		}
 
+		float camHalfW = camera->getWidth() * 0.5f;
+		float camHalfH = camera->getHeight() * 0.5f;
+
+		float leftBound = camera->Position.x - camHalfW + (camera->getWidth() / 3.f);
+		float rightBound = camera->Position.x + camHalfW - (camera->getWidth() / 3.f);
+
 		// Follow player with user pan offset (use center of collider box)
 		if (player)
 		{
 			auto const pos = player->GetWorldPosition();
 			auto const size = player->GetWorldSize();
-			float2 center{ pos.x + (size.x * 0.5f), pos.y + (size.y * 0.5f) };
-			camera->Position = { center.x + cameraOffset.x, center.y + cameraOffset.y };
+
+			float playerCenterX = pos.x + (size.x * 0.5f);
+
+			float camHalfW = camera->getWidth() * 0.5f;
+			float camHalfH = camera->getHeight() * 0.5f;
+
+			float leftBound = camera->Position.x - camHalfW + (camera->getWidth() / 3.f);
+			float rightBound = camera->Position.x + camHalfW - (camera->getWidth() / 3.f);
+
+			float newCamX = camera->Position.x;
+
+			// Only move if outside middle third
+			if (playerCenterX < leftBound)
+			{
+				newCamX -= (leftBound - playerCenterX);
+			}
+			else if (playerCenterX > rightBound)
+			{
+				newCamX += (playerCenterX - rightBound);
+			}
+
+			// Clamp to tilemap
+			float worldWidth = tmap->getPitch() * tmap->getTileSize().x;
+
+			newCamX = std::min<float>(
+				std::max<float>(newCamX, camHalfW),
+				worldWidth - camHalfW
+			);
+
+			camera->Position = { newCamX + cameraOffset.x, camHalfH + cameraOffset.y };
+		}
+		else
+		{
+			camera->Position = { camHalfW, camHalfH };
 		}
 	}
 
@@ -169,6 +207,11 @@ loop_delay = 0
 		}
 
 		return uiStrings;
+	}
+
+	float PlayState::getTmapTileHeight()
+	{
+		return tmap->getTileSize().y;
 	}
 
 	PlayState::PlayState()

@@ -32,5 +32,8 @@ namespace game
 		void update(float dt_);
 		void SyncObjects();
 		std::vector<engine::Text>& render(engine::Renderer2D& renderer_);
+
+		bool hasTmap();
+		float getTmapTileHeight();
 	};
 }

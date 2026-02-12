@@ -44,11 +44,15 @@ namespace game
 
 	Tilemap::Tilemap()
 	{
+		topOfLevels.push_back(0.f);
+		bottomOfLevels.push_back(13.5f);
 	}
 
 	Tilemap::Tilemap(Cfg::Textures texID_, float2 sizeTile_, int pitchSheet_, int numTilesSheet_)
 		: tileset{ std::make_unique<Tileset>(texID_, sizeTile_, pitchSheet_, numTilesSheet_) }
 	{
+		topOfLevels.push_back(0.f);
+		bottomOfLevels.push_back(13.5f);
 	}
 
 	Tilemap::~Tilemap()
@@ -98,6 +102,7 @@ namespace game
 		int rows = 0;
 
 		iFile >> cols >> rows;
+		pitch = cols;
 
 		tiles.reserve(cols * rows);
 
@@ -128,6 +133,11 @@ namespace game
 	{
 		for (auto& t : getTilesOnScreen(camera_))
 			renderer_.Draw(*t->getSprite());	
+	}
+
+	float2 Tilemap::getTileSize()
+	{
+		return { tileset->tileW(), tileset->tileH()};
 	}
 
 }

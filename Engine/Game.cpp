@@ -49,7 +49,10 @@ namespace engine
 
         auto s = sender.Size();
         auto cam = gameMgr->getCamera();
-        cam->SetViewportSize({ static_cast<float>(s.Width), static_cast<float>(s.Height) });
+        constexpr float VIRTUAL_W = 960.0f;
+        constexpr float VIRTUAL_H = 540.0f;
+
+        cam->SetViewportSize({ VIRTUAL_W,VIRTUAL_H });    //static_cast<float>(s.Width), static_cast<float>(s.Height) });
         float dt = std::chrono::duration<float>(args.Timing().ElapsedTime).count();
         m_time += dt;
         m_input.Update();
@@ -79,7 +82,36 @@ namespace engine
         auto ds = args.DrawingSession();
         ds.Clear(Colors::Black());
         {
-            ds.Transform(cam->WorldToScreen());
+            {
+                constexpr float VIRTUAL_W = 960.0f;
+                constexpr float VIRTUAL_H = 540.0f;
+
+                auto s = sender.Size();
+                float actualW = (float)s.Width;
+                float actualH = (float)s.Height;
+                
+
+
+                float scale = std::min<float>(actualW / VIRTUAL_W, actualH / VIRTUAL_H);
+                       
+
+                engine::float2 offset;
+                
+               
+                offset = { (actualW - VIRTUAL_W * scale) * 0.5f,(actualH - VIRTUAL_H * scale) * 0.5f };
+
+
+                // world -> virtual screen (camera), then virtual->actual (scale+letterbox)
+                ds.Transform(engine::Multiply(
+                    cam->WorldToScreen(),
+                    engine::Multiply(engine::Scale(scale), engine::Translation(offset))
+                ));
+                float sx = actualW / VIRTUAL_W;
+                float sy = actualH / VIRTUAL_H;
+                ds.Transform(engine::Multiply(cam->WorldToScreen(), engine::Scale({ sx, sy })));
+            }
+
+            //ds.Transform(cam->WorldToScreen());
             DrawGrid(ds);
 
             std::vector<engine::Text>* uiStrings{};
@@ -99,8 +131,8 @@ namespace engine
             {
                 str.Draw(ds, sender);
             }
-            ds.DrawText(L"Space/X: SFX | WASD/LS: Move | Arrows/RS: Pan | Q/E+Triggers: Zoom | Z/C+LB/RB: Rotate | R/A: Reset",
-                200.0f, 10.0f, Colors::White());
+            //ds.DrawText(L"Space/X: SFX | WASD/LS: Move | Arrows/RS: Pan | Q/E+Triggers: Zoom | Z/C+LB/RB: Rotate | R/A: Reset",
+            //    200.0f, 10.0f, Colors::White());
         }
     }
 }

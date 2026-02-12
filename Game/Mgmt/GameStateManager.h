@@ -39,5 +39,9 @@ namespace game
 		void SyncObjects();
 		std::vector<engine::Text>& render(engine::Renderer2D& renderer_);
 		float2 getCamOffset();
+
+		bool hasTmap();
+		float getTmapTileHeight();
+
 	};
 }
