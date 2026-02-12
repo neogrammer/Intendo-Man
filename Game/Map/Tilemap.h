@@ -33,6 +33,7 @@ namespace game
 		Tilemap& operator=(Tilemap&& o) = default;
 
 		void loadTileset(const std::wstring& filename_);
+		void loadTilemap(const std::wstring& filename_);
 
 		void addTiles(const std::wstring& filename_);
 		void addTile(int index_, float2 worldPos_);

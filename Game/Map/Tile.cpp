@@ -12,7 +12,7 @@ namespace game
 
 	}
 
-	game::Tile::Tile(Cfg::Textures texID_, float2 worldSize_, float2 frameSize_, bool solid_, float2 texPosition_, float2 textureOffset_, float2 worldPosition_)
+	Tile::Tile(Cfg::Textures texID_, float2 worldSize_, float2 frameSize_, bool solid_, float2 texPosition_, float2 textureOffset_, float2 worldPosition_)
 		: GameObject{ texID_, worldPosition_, worldSize_, frameSize_, texPosition_, textureOffset_ }
 		, solid{ solid_ }
 	{
@@ -23,7 +23,7 @@ namespace game
 
 	}
 
-	bool game::Tile::isSolid()
+	bool Tile::isSolid()
 	{
 		return solid;
 	}

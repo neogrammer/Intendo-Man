@@ -3,22 +3,31 @@
 #include "GameState.h"
 #include "../Objects/AnimObject.h"
 
+#include "../Resources/Cfg.h"
+#include <memory>
+
+#include <winrt/Windows.Foundation.Numerics.h>
+
 namespace engine
 {
 	class ActionMap;
 	class Camera2D;
 	struct Text;
 	class Renderer2D;
+	
 }
 
 namespace game
 {
+	class Tilemap;
+
 	class PlayState : public game::GameState
 	{
 		std::wstring type() override final;
 
 		std::unique_ptr<game::AnimObject> player{ nullptr };
-
+		std::unique_ptr<game::Tilemap> tmap{ nullptr };
+	
 	public:
 		void enter() override final;
 		void exit() override final;

@@ -2,6 +2,7 @@
 #include "Tileset.h"
 #include <fstream>
 #include <cassert>
+#include "../Engine/Utils.h"
 
 namespace game
 {
@@ -9,12 +10,12 @@ namespace game
 
 	using winrt::Windows::Foundation::Numerics::float2;
 
-	game::Tileset::Tileset()
+	Tileset::Tileset()
 	{
 		tiles.clear();
 	}
 
-	game::Tileset::Tileset(Cfg::Textures texID_, float2 size_, int pitch_, int numTiles_)
+	Tileset::Tileset(Cfg::Textures texID_, float2 size_, int pitch_, int numTiles_)
 		: texID{ texID_ }
 		, tw {size_.x}
 		, th{ size_.y }
@@ -24,44 +25,59 @@ namespace game
 		tiles.clear();
 	}
 
-	game::Tileset::~Tileset()
+	Tileset::~Tileset()
 	{
 	}
 
-	void game::Tileset::addTiles(const std::wstring& filename_)
+	void Tileset::addTiles(const std::wstring& filename_)
 	{
-		std::ifstream iFile{ filename_ };
+		std::wstring content;
 
-		if (!iFile.is_open()) return;
+		if (filename_.rfind(L"ms-appx:///", 0) == 0)
+		{
+			content = util::ReadAppxTextFileSync(filename_);
+			if (content.empty())
+				return;
+		}
+		else
+		{
+			std::wifstream file(filename_);
+			if (!file.is_open())
+				return;
+
+			std::wstringstream ss;
+			ss << file.rdbuf();
+			content = ss.str();
+		}
+
+		std::wistringstream iFile(content);
 
 		tiles.clear();
-
 		tiles.reserve(numTiles);
 
-		int numRows = (int)std::ceil((float)numTiles / (float)pitch);
+		int numRows = static_cast<int>(std::ceil((float)numTiles / (float)pitch));
 
 		for (int y = 0; y < numRows; y++)
+		{
 			for (int x = 0; x < pitch; x++)
 			{
-
-				int s;
+				int s = 0;
 				iFile >> s;
-				
+
 				float2 pos = { x * tw, y * th };
-
-				addTile(((s == 1) ? true : false) , pos);
+				addTile((s == 1), pos);
 			}
-
-		iFile.close();
-
+		}
 	}
 
-	void game::Tileset::addTile(bool solid_, float2 texPosition_)
+	void Tileset::addTile(bool solid_, float2 texPosition_)
 	{
-		tiles.emplace_back(std::make_unique<Tile>(texID, float2{ tw, th }, float2{ tw, th }, solid_, texPosition_, float2{ 0.f,0.f }, float2{ 0.f,0.f }));
+		std::unique_ptr<Tile> t = std::make_unique<Tile>(texID, float2{ tw, th }, float2{ tw, th }, solid_, texPosition_, float2{ 0.f,0.f }, float2{ 0.f,0.f });
+
+		tiles.emplace_back(std::move(t));
 	}
 
-	std::unique_ptr<game::Tile> game::Tileset::copyTile(int index_, float2 worldPos_)
+	std::unique_ptr<Tile> Tileset::copyTile(int index_, float2 worldPos_)
 	{
 		assert(numTiles > 0);
 

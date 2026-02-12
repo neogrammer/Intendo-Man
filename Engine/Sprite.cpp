@@ -15,6 +15,7 @@ namespace engine
 
         if (SourceRect)
         {
+           
             Origin = { SourceRect->Width * 0.5f, SourceRect->Height * 0.5f };
         }
         else
@@ -32,7 +33,7 @@ namespace engine
         // We expose SFML-like origin relative to SourceRect, and translate here.
         if (SourceRect)
         {
-            return { Origin.x + SourceRect->Width, Origin.y + SourceRect->Height };
+            return { Origin.x, Origin.y };
         }
         return Origin;
     }

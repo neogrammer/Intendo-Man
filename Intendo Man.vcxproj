@@ -134,6 +134,7 @@
     <ClInclude Include="Engine\SpriteBatchScope.h" />
     <ClInclude Include="Engine\Text.h" />
     <ClInclude Include="Engine\TextureStore.h" />
+    <ClInclude Include="Engine\Utils.h" />
     <ClInclude Include="Game\GameStates\GameOverState.h" />
     <ClInclude Include="Game\GameStates\GameState.h" />
     <ClInclude Include="Game\GameStates\GameStateBase.h" />
@@ -184,6 +185,7 @@
     <Image Include="Assets\Textures\Characters\Player\player_atlas.png" />
     <Image Include="Assets\Textures\Characters\Player\ship.png" />
     <Image Include="Assets\Textures\Tilesets\tileset1.png" />
+    <Image Include="Assets\Textures\Tilesets\tileset2.png" />
     <Image Include="Assets\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
   <ItemGroup>
@@ -198,6 +200,7 @@
     <ClCompile Include="Engine\Texture.cpp" />
     <ClInclude Include="Engine\Texture.h" />
     <ClCompile Include="Engine\TextureStore.cpp" />
+    <ClCompile Include="Engine\Utils.cpp" />
     <ClCompile Include="Game\GameStates\GameOverState.cpp" />
     <ClCompile Include="Game\GameStates\GameState.cpp" />
     <ClCompile Include="Game\GameStates\GameStateBase.cpp" />
@@ -239,6 +242,16 @@
     <None Include="Assets\Anims\Player.anm">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
     </None>
+    <Text Include="Assets\Datas\Tilemaps\tilemap1.map">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <FileType>Document</FileType>
+    </Text>
+    <Text Include="Assets\Datas\Tilesets\tileset2.tst">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <FileType>Document</FileType>
+    </Text>
     <None Include="Intendo Man_TemporaryKey.pfx" />
     <None Include="packages.config" />
     <None Include="PropertySheet.props" />

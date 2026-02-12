@@ -30,6 +30,7 @@ namespace game
 		Tileset& operator=(const Tileset& o) = delete;
 		Tileset& operator=(Tileset&& o) = default;
 
+
 		void addTiles(const std::wstring& filename_);
 
 		void addTile(bool solid_, winrt::Windows::Foundation::Numerics::float2 texPosition_);

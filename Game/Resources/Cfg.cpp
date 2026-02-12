@@ -58,6 +58,11 @@ winrt::Windows::Foundation::IAsyncAction Cfg::initTextures()
         Uri(L"ms-appx:///Assets/Textures/Characters/Player/player_atlas.png"));
     textures.emplace(Textures::PlayerAtlas, L"PlayerAtlas");
 
+    co_await engine::TextureStore::Instance().RegisterAndLoadAsync(
+        L"Tileset1",
+        Uri(L"ms-appx:///Assets/Textures/Tilesets/tileset2.png"));
+    textures.emplace(Textures::Tileset1, L"Tileset1");
+
     co_return;
 }
 

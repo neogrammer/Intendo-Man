@@ -7,15 +7,18 @@
 #include "../../Engine/Renderer2D.h"
 #include "../../Engine/Text.h"
 #include "../Objects/Player.h"
+#include "../Map/Tilemap.h"
 
 namespace game
 {
+	using winrt::Windows::Foundation::Numerics::float2;
+
 	std::wstring PlayState::type()
 	{
 		return L"PlayState";
 	}
 
-	void PlayState::enter()
+	void game::PlayState::enter()
 	{
 		Cfg::PlayMusicAsync(L"theme", true, 0.25f);
 		uiStrings.clear();
@@ -68,10 +71,19 @@ loop_delay = 0
 		m_hud.Invalidate();
 
 		uiStrings.push_back(m_hud);
+
+
+		tmap = std::make_unique<game::Tilemap>(Cfg::Textures::Tileset1, winrt::Windows::Foundation::Numerics::float2{ 40.f,40.f }, 16, 256);
+		tmap->loadTileset(L"ms-appx:///Assets/Datas/Tilesets/tileset2.tst");
+		tmap->loadTilemap(L"ms-appx:///Assets/Datas/Tilemaps/tilemap1.map");
+
 	}
 
 	void PlayState::exit()
 	{
+		tmap.reset();
+		tmap = nullptr;
+
 		engine::SoundManager::Instance().StopMusic();
 		uiStrings.clear();
 		player.reset();
@@ -149,6 +161,8 @@ loop_delay = 0
 
 	std::vector<engine::Text>& PlayState::render(engine::Renderer2D& renderer_)
 	{
+		tmap->render(renderer_, *camera);
+
 		if (player)
 		{
 			renderer_.Draw(*player->getSprite());

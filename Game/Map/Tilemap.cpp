@@ -4,6 +4,7 @@
 #include "../../Engine/Renderer2D.h"
 #include <fstream>
 #include <cassert>
+#include <Engine/Utils.h>
 
 
 namespace game
@@ -13,7 +14,7 @@ namespace game
 
 	using winrt::Windows::Foundation::Numerics::float2;
 
-	std::vector<game::Tile*> game::Tilemap::getTilesOnScreen(engine::Camera2D cam_)
+	std::vector<game::Tile*> Tilemap::getTilesOnScreen(engine::Camera2D cam_)
 	{
 
 		std::vector<Tile*> tmp{};
@@ -41,65 +42,89 @@ namespace game
 		return tmp;
 	}
 
-	game::Tilemap::Tilemap()
+	Tilemap::Tilemap()
 	{
 	}
 
-	game::Tilemap::Tilemap(Cfg::Textures texID_, float2 sizeTile_, int pitchSheet_, int numTilesSheet_)
+	Tilemap::Tilemap(Cfg::Textures texID_, float2 sizeTile_, int pitchSheet_, int numTilesSheet_)
 		: tileset{ std::make_unique<Tileset>(texID_, sizeTile_, pitchSheet_, numTilesSheet_) }
 	{
 	}
 
-	game::Tilemap::~Tilemap()
+	Tilemap::~Tilemap()
 	{
 	}
 
 
-
-	void game::Tilemap::loadTileset(const std::wstring& filename_)
+	void Tilemap::loadTileset(const std::wstring& filename_)
 	{
 		tileset->addTiles(filename_);
 	}
 
-	void game::Tilemap::addTiles(const std::wstring& filename_)
+	void Tilemap::loadTilemap(const std::wstring& filename_)
+	{
+		addTiles(filename_);
+	}
+
+	void Tilemap::addTiles(const std::wstring& filename_)
 	{
 		bool h = tileset->hasTiles();
 		assert(h);
 
-		std::ifstream iFile{ filename_ };
+		std::wstring content;
 
-		if (!iFile.is_open()) return;
+		if (filename_.rfind(L"ms-appx:///", 0) == 0)
+		{
+			content = util::ReadAppxTextFileSync(filename_);
+			if (content.empty())
+				return;
+		}
+		else
+		{
+			std::wifstream file(filename_);
+			if (!file.is_open())
+				return;
+
+			std::wstringstream ss;
+			ss << file.rdbuf();
+			content = ss.str();
+		}
+
+		std::wistringstream iFile(content);
 
 		tiles.clear();
 
-		int cols, rows;
+		int cols = 0;
+		int rows = 0;
 
 		iFile >> cols >> rows;
+
 		tiles.reserve(cols * rows);
 
-
 		for (int y = 0; y < rows; y++)
+		{
 			for (int x = 0; x < cols; x++)
 			{
-
-				int idx;
+				int idx = 0;
 				iFile >> idx;
 
-				float2 pos = { x * tileset->tileW(), y * tileset->tileH() };
+				float2 pos =
+				{
+					x * tileset->tileW(),
+					y * tileset->tileH()
+				};
 
 				addTile(idx, pos);
 			}
-
-
-		iFile.close();
+		}
 	}
 
-	void game::Tilemap::addTile(int index_, float2 worldPos_)
+	void Tilemap::addTile(int index_, float2 worldPos_)
 	{
 		tiles.emplace_back(std::move(tileset->copyTile(index_, worldPos_)));
 	}
 
-	void game::Tilemap::render(engine::Renderer2D& renderer_, engine::Camera2D camera_)
+	void Tilemap::render(engine::Renderer2D& renderer_, engine::Camera2D camera_)
 	{
 		for (auto& t : getTilesOnScreen(camera_))
 			renderer_.Draw(*t->getSprite());	
