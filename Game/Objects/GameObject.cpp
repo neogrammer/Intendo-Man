@@ -52,6 +52,12 @@ namespace game
         return Rect{ worldPosition.x, worldPosition.y, worldSize.x, worldSize.y };
     }
 
+    Rect& GameObject::getWorldRectRef() noexcept
+    {
+        rect = Rect{ worldPosition.x, worldPosition.y, worldSize.x, worldSize.y };
+        return rect;
+    }
+
     bool GameObject::intersects(GameObject const& other) const noexcept
     {
         auto const a = getWorldRect();

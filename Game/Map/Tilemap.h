@@ -26,8 +26,7 @@ namespace game
 		std::unique_ptr<game::Tileset> tileset;
 		std::vector<std::unique_ptr<game::Tile>> tiles;
 
-		std::vector<Tile*> getTilesOnScreen(engine::Camera2D cam_);
-		std::vector<Tile*> getSolidTilesOnScreen(engine::Camera2D cam_);
+		
 
 		int pitch{ 0 };
 
@@ -61,5 +60,8 @@ namespace game
 		void render(engine::Renderer2D& renderer_, engine::Camera2D camera_);
 		inline int getPitch() { return pitch; }
 		float2 getTileSize();
+
+		std::vector<Tile*> getTilesOnScreen(engine::Camera2D cam_);
+		std::vector<Tile*> getSolidTilesOnScreen(engine::Camera2D cam_);
 	};
 }

@@ -91,6 +91,10 @@
     <ClCompile Include="Game\Objects\Player.cpp">
       <Filter>Game\Objects</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Utils.cpp" />
+    <ClCompile Include="Systems\PhysicsSys.cpp">
+      <Filter>Systems</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Math.h">
@@ -198,6 +202,10 @@
     <ClInclude Include="Game\Objects\Player.h">
       <Filter>Game\Objects</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Utils.h" />
+    <ClInclude Include="Systems\PhysicsSys.h">
+      <Filter>Systems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\Textures\Characters\Player\player_atlas.png">
@@ -230,6 +238,7 @@
     <Image Include="Assets\LockScreenLogo.scale-200.png">
       <Filter>Textures\XbxMain</Filter>
     </Image>
+    <Image Include="Assets\Textures\Tilesets\tileset2.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Intendo Man_TemporaryKey.pfx">
@@ -294,6 +303,9 @@
     <Filter Include="Anims">
       <UniqueIdentifier>{788bc38e-798f-448f-b71c-be1209afa3ac}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Systems">
+      <UniqueIdentifier>{fd34ed82-93af-4834-8532-d728469bf375}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Media Include="Assets\Audio\blip.wav">
@@ -327,5 +339,7 @@
     <Text Include="readme.txt">
       <Filter>App</Filter>
     </Text>
+    <Text Include="Assets\Datas\Tilemaps\tilemap1.map" />
+    <Text Include="Assets\Datas\Tilesets\tileset2.tst" />
   </ItemGroup>
 </Project>

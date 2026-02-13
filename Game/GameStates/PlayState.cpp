@@ -8,6 +8,7 @@
 #include "../../Engine/Text.h"
 #include "../Objects/Player.h"
 #include "../Map/Tilemap.h"
+#include "../Systems/PhysicsSys.h"
 
 namespace game
 {
@@ -116,11 +117,36 @@ loop_delay = 0
 
 		if (actMap && player)
 		{
+			float playerPrevYVel{ 0.f };
+			float playerAccumGrav{ 0.f };
+			static bool movedDownYet{ false };
+			static float amt = 0.f;
+			amt = 0.f;
 			// Player movement (MoveAxis = WASD + left stick)
 			float2 move = actMap->MoveAxis();
-			float playerSpeed = 300.0f;
-			player->Move(float2{ move.x * playerSpeed * dt_, move.y * playerSpeed * dt_ });
+			float playerSpeed = 300.f;
+	
+			if (player->isGrounded())
+			{
+				playerAccumGrav = 0;
+			}
+			else
+			{
+				playerAccumGrav += ((playerAccumGrav + 988.88f) * dt_ * dt_);
+			}
 
+			player->Move(float2{ move.x * playerSpeed * dt_, (move.y * playerSpeed * dt_) + playerAccumGrav });
+
+			
+			auto v = tmap->getSolidTilesOnScreen(*camera);
+			std::vector<game::GameObject*> tiles{};
+			for (auto& tile : v)
+			{
+				tiles.push_back(tile);
+			}
+			phys::handleCollisions(*player, tiles);
+			
+		
 			// Camera pan offset (PanAxis = arrows + right stick)
 			float2 pan = actMap->PanAxis();
 			float camPanSpeed = 450.0f;

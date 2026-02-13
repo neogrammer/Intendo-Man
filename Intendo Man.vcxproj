@@ -161,6 +161,7 @@
     <ClInclude Include="MainPage.h">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </ClInclude>
+    <ClInclude Include="Systems\PhysicsSys.h" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -198,6 +199,7 @@
     <ClCompile Include="Engine\Sprite.cpp" />
     <ClCompile Include="Engine\Text.cpp" />
     <ClCompile Include="Engine\Texture.cpp" />
+    <ClCompile Include="Systems\PhysicsSys.cpp" />
     <ClInclude Include="Engine\Texture.h" />
     <ClCompile Include="Engine\TextureStore.cpp" />
     <ClCompile Include="Engine\Utils.cpp" />

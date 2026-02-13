@@ -42,8 +42,24 @@ namespace game
         float rotationRad{ 0.0f };
         float4 tint{ 1.0f, 1.0f, 1.0f, 1.0f };
         engine::CanvasSpriteFlip flip{ engine::CanvasSpriteFlip::None };
+        bool onGround{ false };
+
+        winrt::Windows::Foundation::Rect rect{ 0L,0L,0L,0L };
+
+        bool affectedByGravity{ true };
+
 
     public:
+
+        inline void land() { onGround = true; }
+        inline void inAir() { onGround = false; }
+
+        inline bool isAffectedByGravity() { return affectedByGravity; }
+        inline void setAffectedByGravity(bool cond_) { affectedByGravity = cond_; }
+
+
+        inline bool isGrounded() { return onGround; }
+
         GameObject() = default;
 
         GameObject(
@@ -61,6 +77,7 @@ namespace game
         std::unique_ptr<engine::Sprite> getSprite() const;
 
         Rect getWorldRect() const noexcept;
+        Rect& getWorldRectRef() noexcept;
         bool intersects(GameObject const& other) const noexcept;
 
         // --- Basic accessors / mutators (still single values)
