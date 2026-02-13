@@ -14,6 +14,7 @@
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Numerics.h>
 
+
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -90,6 +91,8 @@ namespace game
         float m_loopElapsed{ 0.0f };
         bool m_waitingForLoop{ false };
 
+        std::unique_ptr<GameObject> under{ nullptr };
+
     public:
         AnimObject() = default;
         explicit AnimObject(std::wstring const& anmFilePath);
@@ -115,6 +118,8 @@ namespace game
         // Advances internal animation timers + current frame index.
         // Per your design: does NOT touch the base GameObject values.
         void Update(float dt);
+
+        GameObject* getUnder();
 
         // Copies current clip/frame data into the base GameObject values.
         void SyncToBase();

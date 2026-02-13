@@ -13,6 +13,10 @@ namespace game
         SyncToBase();
     }
 
+    Player::~Player()
+    {
+    }
+
     Player::Player(float2 startPos)
         : Player()
     {
@@ -21,6 +25,12 @@ namespace game
 
     void Player::SetAnim(AnimName anim, bool restart, uint32_t startFrame)
     {
+        currentAnimName = anim;
         Play(AnimKey(anim), restart, startFrame);
+    }
+
+    game::Player::AnimName Player::GetAnimName()
+    {
+        return this->currentAnimName;
     }
 }

@@ -5,7 +5,7 @@
 
 [object]
 position   = 320 180
-world_size = 130 160
+world_size = 50 100
 start_anim = idle
 
 [anim teleport_start]
@@ -18,8 +18,8 @@ start_row_left = 13
 pitch          = 17
 frames         = 2
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.43
 looping        = waits
 
@@ -33,8 +33,8 @@ start_row_left = 13
 pitch          = 17
 frames         = 15
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = idle
 
@@ -48,9 +48,9 @@ start_row_left = 14
 pitch          = 17
 frames         = 3
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
-delays         = 0.13
+offsets        = (40,27)
+sizes          = (50,100)
+delays         = 0.83
 looping        = true
 
 [anim idle_blink]
@@ -63,8 +63,8 @@ start_row_left = 14
 pitch          = 17
 frames         = 3
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = idle
 
@@ -78,8 +78,8 @@ start_row_left = 15
 pitch          = 17
 frames         = 12
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = frame2
 
@@ -93,8 +93,8 @@ start_row_left = 18
 pitch          = 17
 frames         = 4
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = waits
 
@@ -108,8 +108,8 @@ start_row_left = 18
 pitch          = 17
 frames         = 1
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = waits
 
@@ -123,8 +123,8 @@ start_row_left = 18
 pitch          = 17
 frames         = 3
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = waits
 
@@ -138,8 +138,8 @@ start_row_left = 18
 pitch          = 17
 frames         = 3
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = idle
 
@@ -153,8 +153,8 @@ start_row_left = 14
 pitch          = 17
 frames         = 3
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = shoot
 
@@ -168,8 +168,8 @@ start_row_left = 14
 pitch          = 17
 frames         = 1
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = waits
 
@@ -183,8 +183,8 @@ start_row_left = 15
 pitch          = 17
 frames         = 1
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = waits
 
@@ -198,8 +198,8 @@ start_row_left = 15
 pitch          = 17
 frames         = 1
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = waits
 
@@ -213,8 +213,8 @@ start_row_left = 16
 pitch          = 17
 frames         = 12
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = frame2
 
@@ -228,8 +228,8 @@ start_row_left = 19
 pitch          = 17
 frames         = 4
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = waits
 
@@ -243,8 +243,8 @@ start_row_left = 19
 pitch          = 17
 frames         = 1
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = waits
 
@@ -258,8 +258,8 @@ start_row_left = 19
 pitch          = 17
 frames         = 3
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = waits
 
@@ -273,8 +273,8 @@ start_row_left = 19
 pitch          = 17
 frames         = 3
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = idle
 
@@ -288,8 +288,8 @@ start_row_left = 16
 pitch          = 17
 frames         = 1
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = waits
 
@@ -303,8 +303,8 @@ start_row_left = 17
 pitch          = 17
 frames         = 12
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = frame2
 
@@ -318,8 +318,8 @@ start_row_left = 20
 pitch          = 17
 frames         = 4
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = waits
 
@@ -333,8 +333,8 @@ start_row_left = 20
 pitch          = 17
 frames         = 1
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = waits
 
@@ -348,8 +348,8 @@ start_row_left = 20
 pitch          = 17
 frames         = 3
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = waits
 
@@ -363,8 +363,8 @@ start_row_left = 20
 pitch          = 17
 frames         = 3
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = idle
 
@@ -378,8 +378,8 @@ start_row_left = 17
 pitch          = 17
 frames         = 1
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = waits
 
@@ -393,8 +393,8 @@ start_row_left = 22
 pitch          = 17
 frames         = 10
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = idle
 
@@ -408,8 +408,8 @@ start_row_left = 21
 pitch          = 17
 frames         = 6
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = idle
 
@@ -423,8 +423,8 @@ start_row_left = 23
 pitch          = 17
 frames         = 3
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = wallslide
 
@@ -438,8 +438,8 @@ start_row_left = 23
 pitch          = 17
 frames         = 1
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = waits
 
@@ -453,8 +453,8 @@ start_row_left = 23
 pitch          = 17
 frames         = 1
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = jump_rise frame1(oppositedirection)
 
@@ -468,8 +468,8 @@ start_row_left = 24
 pitch          = 17
 frames         = 3
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = wallslideshoot
 
@@ -483,8 +483,8 @@ start_row_left = 24
 pitch          = 17
 frames         = 1
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = waits
 
@@ -498,8 +498,8 @@ start_row_left = 24
 pitch          = 17
 frames         = 1
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = jumpshoot_rise frame1(oppositedirection)
 
@@ -513,8 +513,8 @@ start_row_left = 25
 pitch          = 17
 frames         = 3
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = wallslidecharge
 
@@ -528,8 +528,8 @@ start_row_left = 25
 pitch          = 17
 frames         = 1
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = waits
 
@@ -543,8 +543,8 @@ start_row_left = 25
 pitch          = 17
 frames         = 1
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = jumpcharge_rise frame1(oppositedirection)
 
@@ -558,8 +558,8 @@ start_row_left = 14
 pitch          = 17
 frames         = 1
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = waits
 
@@ -573,8 +573,8 @@ start_row_left = 23
 pitch          = 17
 frames         = 7
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = idle
 
@@ -588,8 +588,8 @@ start_row_left = 24
 pitch          = 17
 frames         = 5
 uni_directional= false
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = blank
 
@@ -601,7 +601,7 @@ frames         = 2
 uni_directional= false
 rects          = (12,1) (0,8) (12,14) (0,21)
 pitch          = 17
-offsets        = (0,0)
-sizes          = (130,160)
+offsets        = (40,27)
+sizes          = (50,100)
 delays         = 0.13
 looping        = true

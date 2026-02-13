@@ -17,8 +17,20 @@ namespace engine
 	
 }
 
+
+
 namespace game
 {
+
+	template<typename To, typename From>
+	std::unique_ptr<To> dynamic_unique_cast(std::unique_ptr<From>&& src) noexcept {
+		if (auto casted = dynamic_cast<To*>(src.get())) {
+			src.release(); // release ownership from src
+			return std::unique_ptr<To>(casted);
+		}
+		return nullptr; // cast failed
+	}
+
 	class Tilemap;
 
 	class PlayState : public game::GameState

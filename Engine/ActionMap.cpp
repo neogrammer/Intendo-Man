@@ -144,7 +144,7 @@ namespace engine
         float2 moveDigital
         {
             (Down(Action::MoveRight) ? 1.0f : 0.0f) - (Down(Action::MoveLeft) ? 1.0f : 0.0f),
-            (Down(Action::MoveDown) ? 1.0f : 0.0f) - (Down(Action::MoveUp) ? 1.0f : 0.0f)
+            (Down(Action::MoveDown) ? 0.0f : 0.0f) - (Down(Action::MoveUp) ? 0.0f : 0.0f)
         };
 
         float2 panDigital

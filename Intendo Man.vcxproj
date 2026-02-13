@@ -185,6 +185,7 @@
     <Image Include="Assets\StoreLogo.png" />
     <Image Include="Assets\Textures\Characters\Player\player_atlas.png" />
     <Image Include="Assets\Textures\Characters\Player\ship.png" />
+    <Image Include="Assets\Textures\Misc\under.png" />
     <Image Include="Assets\Textures\Tilesets\tileset1.png" />
     <Image Include="Assets\Textures\Tilesets\tileset2.png" />
     <Image Include="Assets\Wide310x150Logo.scale-200.png" />

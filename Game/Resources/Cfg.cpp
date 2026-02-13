@@ -63,6 +63,11 @@ winrt::Windows::Foundation::IAsyncAction Cfg::initTextures()
         Uri(L"ms-appx:///Assets/Textures/Tilesets/tileset2.png"));
     textures.emplace(Textures::Tileset1, L"Tileset1");
 
+    co_await engine::TextureStore::Instance().RegisterAndLoadAsync(
+        L"under",
+        Uri(L"ms-appx:///Assets/Textures/Misc/under.png"));
+    textures.emplace(Textures::Ship, L"under");
+
     co_return;
 }
 

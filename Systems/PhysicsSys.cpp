@@ -54,8 +54,8 @@ namespace phys
 				}
 				xDir = 1;
 			}
-			if (tmpX > tmpY) { xDir = 0.f; }
-			else if (tmpX < tmpY) { yDir = 0.f; }
+			if (tmpX > tmpY) { xDir = 0; }
+			else if (tmpX < tmpY) { yDir = 0; }
 
 			return {(float)posX, (float)posY, (float)tmpX, (float)tmpY};
 		}
@@ -98,6 +98,30 @@ namespace phys
 				resolveCollision(a, r, xDir, yDir);
 			}
 		}
+	}
+
+	void trustFall(game::AnimObject& a, std::vector<game::GameObject*>& bVec)
+	{
+		if (a.getUnder() == nullptr) { return; }
+
+		for (auto& b : bVec)
+		{
+			auto& tile = *b;
+
+			auto& c = *a.getUnder();
+
+			auto r1 = c.getWorldRect();
+			auto r2 = tile.getWorldRect();
+
+			if ((r1.X <= r2.X + r2.Width) && (r1.X + r1.Width > r2.X) && (r1.Y <= r2.Y + r2.Height) && (r1.Y + r1.Height > r2.Y))
+			{
+				// under is colliding
+				//a.land();
+				return;
+			}
+			
+		}
+    a.inAir();
 	}
 
 

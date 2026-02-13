@@ -47,16 +47,6 @@ namespace game
 
 	void GameStateManager::update(float dt_)
 	{
-		if (currState->isType(L"PlayState"))
-		{
-			Cfg::debugPrint(L"Winner");
-			//std::wcout << L"Winner!" << std::endl;
-		}
-		else
-		{
-			Cfg::debugPrint(L"No Dice!");
-		}
-
 		currState->update(dt_);
 	}
 

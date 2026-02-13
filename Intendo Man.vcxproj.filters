@@ -239,6 +239,9 @@
       <Filter>Textures\XbxMain</Filter>
     </Image>
     <Image Include="Assets\Textures\Tilesets\tileset2.png" />
+    <Image Include="Assets\Textures\Misc\under.png">
+      <Filter>Textures\Misc</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="Intendo Man_TemporaryKey.pfx">
@@ -305,6 +308,9 @@
     </Filter>
     <Filter Include="Systems">
       <UniqueIdentifier>{fd34ed82-93af-4834-8532-d728469bf375}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Textures\Misc">
+      <UniqueIdentifier>{1bee4257-18b4-4e5a-9a17-b93ebfc40716}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
