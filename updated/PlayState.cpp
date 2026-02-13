@@ -119,28 +119,24 @@ loop_delay = 0
 
 		if (actMap && player)
 		{
+			float playerPrevYVel{ 0.f };
 			float playerAccumGrav{ 0.f };
 			static bool movedDownYet{ false };
 			static float amt = 0.f;
 			amt = 0.f;
 			// Player movement (MoveAxis = WASD + left stick)
 			float2 move = actMap->MoveAxis();
-
+			
 			float playerSpeed = 300.f;
 
 			auto v = tmap->getSolidTilesOnScreen(*camera);
 			std::vector<game::GameObject*> tiles{};
-			tiles.clear();
-			tiles.reserve(64);
-
-
-			
-
-			float2 pan = actMap->PanAxis();
-			float camPanSpeed = 450.0f;
-			cameraOffset.x += pan.x * camPanSpeed * dt_;
-			cameraOffset.y += pan.y * camPanSpeed * dt_;
-
+			for (auto& tile : v)
+			{
+				tiles.push_back(tile);
+			}
+	
+			phys::trustFall(*player, tiles);
 
 			if (player->isGrounded())
 			{
@@ -149,71 +145,25 @@ loop_delay = 0
 			else
 			{
 				if (playerAccumGrav > 0.0001f)
-					playerAccumGrav += ((playerAccumGrav + 1988.88f) * dt_ * dt_);
+					playerAccumGrav += ((playerAccumGrav + 988.88f) * dt_ * dt_);
 				else
-					playerAccumGrav = 6.8f;
+					playerAccumGrav = 11.8f;
 			}
-
-			float2 delta{
-	move.x * playerSpeed * dt_,
-	(move.y * playerSpeed * dt_) + playerAccumGrav
-			};
-
-
-
-			// --- 2) Collision candidates: only solids overlapping the swept AABB
-
-			// Apply move + resolve
-			player->Move(delta);
-
-
-			auto const startR = player->getWorldRect();
-
-			float left = std::min<float>(startR.X, startR.X + delta.x);
-			float top = std::min<float>(startR.Y, startR.Y + delta.y);
-			float right = std::max<float>(startR.X + startR.Width, startR.X + startR.Width + delta.x);
-			float bottom = std::max<float>(startR.Y + startR.Height, startR.Y + startR.Height + delta.y);
-
-
-			winrt::Windows::Foundation::Rect sweepR{ left, top, right - left, bottom - top };
-			auto sweepTiles = tmap->getSolidTilesInRect(sweepR, 1);
-
-			tiles.clear();
-			tiles.reserve(sweepTiles.size());
-
-			for (auto* tile : sweepTiles)
-				tiles.push_back(tile);
-
-		
-
-			std::vector<game::GameObject*> vect;
-			if (auto* underObj = player->getUnder())
-			{
-				auto const underRect = underObj->getWorldRect();
-				auto underTiles = tmap->getSolidTilesInRect(underRect, 1);
-				vect.clear();
-				vect.reserve(underTiles.size());
-				for (auto* tile2 : underTiles)
-				{
-					vect.push_back(tile2);
-				}
-				phys::trustFall(*player, vect);
-			}
-			phys::handleCollisions(*player, tiles);
-
 
 			
+
+
 			auto& ptr = *dynamic_cast<Player*>(player.get());
 
 			if (move.x == -1 && player->IsFacingRight())
 			{
+				
 
-
-				if (ptr.GetAnimName() == game::Player::AnimName::Idle || ptr.GetAnimName() == game::Player::AnimName::Idle_Blink)
-				{
-					ptr.SetAnim(game::Player::AnimName::Run);
-				}
-
+					if (ptr.GetAnimName() == game::Player::AnimName::Idle || ptr.GetAnimName() == game::Player::AnimName::Idle_Blink)
+					{
+						ptr.SetAnim(game::Player::AnimName::Run);
+					}
+				
 				player->SetFacingRight(false);
 
 			}
@@ -260,27 +210,30 @@ loop_delay = 0
 
 
 
+			player->Move(float2{ move.x * playerSpeed * dt_, (move.y * playerSpeed * dt_) + playerAccumGrav });
 
 			
-
-
-
-
-
+			
+			
+			phys::handleCollisions(*player, tiles);
+			
 		
-			//// Camera pan offset (PanAxis = arrows + right stick)
+			// Camera pan offset (PanAxis = arrows + right stick)
+			float2 pan = actMap->PanAxis();
+			float camPanSpeed = 450.0f;
+			cameraOffset.x += pan.x * camPanSpeed * dt_;
+			cameraOffset.y += pan.y * camPanSpeed * dt_;
 
+			// Zoom (Q/E + triggers)
+			float zoomAxis = actMap->ZoomAxis();
+			float zoomRate = 1.25f;
+			camera->Zoom *= (1.0f + zoomAxis * zoomRate * dt_);
+			camera->Zoom = std::clamp<float>(camera->Zoom, 0.25f, 4.0f);
 
-			//// Zoom (Q/E + triggers)
-			//float zoomAxis = actMap->ZoomAxis();
-			//float zoomRate = 1.25f;
-			//camera->Zoom *= (1.0f + zoomAxis * zoomRate * dt_);
-			//camera->Zoom = std::clamp<float>(camera->Zoom, 0.25f, 4.0f);
-
-			//// Rotate (Z/C + bumpers)
-			//float rotAxis = actMap->RotateAxis();
-			//float rotSpeed = 1.5f;
-			//camera->RotationRad += rotAxis * rotSpeed * dt_;
+			// Rotate (Z/C + bumpers)
+			float rotAxis = actMap->RotateAxis();
+			float rotSpeed = 1.5f;
+			camera->RotationRad += rotAxis * rotSpeed * dt_;
 
 			actMap = nullptr;
 		}
@@ -299,6 +252,11 @@ loop_delay = 0
 
 			float playerCenterX = pos.x + (size.x * 0.5f);
 
+			float camHalfW = camera->getWidth() * 0.5f;
+			float camHalfH = camera->getHeight() * 0.5f;
+
+			float leftBound = camera->Position.x - camHalfW + (camera->getWidth() / 3.f);
+			float rightBound = camera->Position.x + camHalfW - (camera->getWidth() / 3.f);
 
 			float newCamX = camera->Position.x;
 
@@ -344,7 +302,7 @@ loop_delay = 0
 
 		if (player)
 		{
-			renderer_.Draw(player->getSprite());
+			renderer_.Draw(*player->getSprite());
 		}
 
 		return uiStrings;

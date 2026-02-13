@@ -74,7 +74,7 @@ namespace game
 
         // Create a sprite on-demand. Caller can immediately do:
         //    renderer.Draw(*obj.getSprite());
-        engine::Sprite getSprite() const;
+        std::unique_ptr<engine::Sprite> getSprite() const;
 
         Rect getWorldRect() const noexcept;
         Rect& getWorldRectRef() noexcept;

@@ -19,32 +19,32 @@ namespace game
     {
     }
 
-    engine::Sprite GameObject::getSprite() const
+    std::unique_ptr<engine::Sprite> GameObject::getSprite() const
     {
         // Note: Cfg::GetTex maps enum -> TextureStore key.
-        engine::Sprite out = engine::Sprite{ Cfg::GetTex(texID) };
+        auto out = std::make_unique<engine::Sprite>(Cfg::GetTex(texID));
 
         // Even if the texture is missing (nullptr), Renderer2D will skip invalid sprites.
-        out.Position = Sub(worldPosition, textureOffset);
-        out.Scale = scale;
-        out.Rotation = rotationRad;
-        out.Tint = tint;
-        out.Flip = flip;
+        out->Position = Sub(worldPosition, textureOffset);
+        out->Scale = scale;
+        out->Rotation = rotationRad;
+        out->Tint = tint;
+        out->Flip = flip;
 
         // Top-left origin (so Position is the top-left of the drawn frame)
-        out.Origin = { 0.0f, 0.0f };
+        out->Origin = { 0.0f, 0.0f };
 
         // Source rect (sprite sheet frame)
         if (frameSize.x > 0.0f && frameSize.y > 0.0f)
         {
-            out.SourceRect = Rect{ texPosition.x, texPosition.y, frameSize.x, frameSize.y };
+            out->SourceRect = Rect{ texPosition.x, texPosition.y, frameSize.x, frameSize.y };
         }
         else
         {
-            out.SourceRect.reset();
+            out->SourceRect.reset();
         }
 
-        return std::move(static_cast<engine::Sprite&&>(out));
+        return std::move(out);
     }
 
     Rect GameObject::getWorldRect() const noexcept

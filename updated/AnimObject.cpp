@@ -21,10 +21,7 @@ namespace game
         : AnimObject{}
     {
         LoadFromAnmFile(anmFilePath);
-        auto r = this->getWorldRect();
-        
-
-        under = std::make_unique<GameObject>(Cfg::Textures::Under, float2{ (float)r.X + (r.Width / 2.f), (float)r.Y + r.Height / 2.f }, float2{ this->GetWorldSize().x, 1.f }, float2{ 50.f,1.f }, float2{ 0.f,0.f }, float2{ 0.f,0.f });
+        under = std::make_unique<GameObject>(Cfg::Textures::Under, float2{ 0.f,0.f }, float2{ 60.f,1.f }, float2{ 60.f,1.f }, float2{ 0.f,0.f }, float2{ 0.f,0.f });
     }
 
     void AnimObject::clearClips()
@@ -940,12 +937,9 @@ void AnimObject::Update(float dt)
 
 GameObject* AnimObject::getUnder()
 {
-    if (!under) 
-    {
-        auto r = this->getWorldRect();
-        under = std::make_unique<GameObject>(Cfg::Textures::Under, float2{ (float)r.X + (r.Width / 2.f), (float)r.Y + r.Height / 2.f}, float2{ this->GetWorldSize().x, 1.f }, float2{ 50.f,1.f }, float2{ 0.f,0.f }, float2{ 0.f,0.f });
-    }
+    if (!under) { under = std::make_unique<GameObject>(Cfg::Textures::Under, float2{ 0.f,0.f }, float2{ 60.f,1.f }, float2{ 60.f,1.f }, float2{ 0.f,0.f }, float2{ 0.f,0.f }); }
 
+    under->SetWorldPosition(float2{ (float)this->GetWorldPosition().x + 35, (float)this->GetWorldPosition().y + this->GetWorldSize().y });
     return under.get();
 }
 

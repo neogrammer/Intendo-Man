@@ -91,9 +91,11 @@
     <ClCompile Include="Game\Objects\Player.cpp">
       <Filter>Game\Objects</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Utils.cpp" />
     <ClCompile Include="Systems\PhysicsSys.cpp">
       <Filter>Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Utils.cpp">
+      <Filter>Engine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -202,9 +204,11 @@
     <ClInclude Include="Game\Objects\Player.h">
       <Filter>Game\Objects</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Utils.h" />
     <ClInclude Include="Systems\PhysicsSys.h">
       <Filter>Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Utils.h">
+      <Filter>Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

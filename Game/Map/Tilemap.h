@@ -63,5 +63,6 @@ namespace game
 
 		std::vector<Tile*> getTilesOnScreen(engine::Camera2D cam_);
 		std::vector<Tile*> getSolidTilesOnScreen(engine::Camera2D cam_);
+		std::vector<Tile*> getSolidTilesInRect(winrt::Windows::Foundation::Rect const& worldRect_, int padTiles = 1);
 	};
 }

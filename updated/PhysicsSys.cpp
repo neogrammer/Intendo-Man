@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "PhysicsSys.h"
-#include "../Game/Map/Tile.h"
 
 namespace phys
 {
@@ -104,20 +103,27 @@ namespace phys
 	void trustFall(game::AnimObject& a, std::vector<game::GameObject*>& bVec)
 	{
 		if (a.getUnder() == nullptr) { return; }
+
 		for (auto& b : bVec)
 		{
 			auto& tile = *b;
-			if (!dynamic_cast<game::Tile*>(b)->isSolid()) { continue; }
-			auto& c = *a.getUnder();
-				auto r1 = c.getWorldRect();
-				auto r2 = tile.getWorldRect();
 
-				if ((r1.X <= r2.X + r2.Width) && (r1.X + r1.Width > r2.X) && (r1.Y <= r2.Y + r2.Height) && (r1.Y + r1.Height > r2.Y))
-				{
-					// under is colliding
-					return;
-				}
+			auto& c = *a.getUnder();
+
+			auto r1 = c.getWorldRect();
+			auto r2 = tile.getWorldRect();
+
+			if ((r1.X <= r2.X + r2.Width) && (r1.X + r1.Width > r2.X) && (r1.Y <= r2.Y + r2.Height) && (r1.Y + r1.Height > r2.Y))
+			{
+				// under is colliding
+				//a.land();
+				return;
+			}
+			
 		}
-		a.inAir();
+    a.inAir();
 	}
+
+
+
 }
