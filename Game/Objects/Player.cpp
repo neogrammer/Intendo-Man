@@ -12,16 +12,28 @@ namespace game
         m_animProfile.idle = AnimKey(AnimName::Idle);
         m_animProfile.run = AnimKey(AnimName::Run);
         m_animProfile.fall = AnimKey(AnimName::Fall);
+        m_animProfile.jumpRise = AnimKey(AnimName::Jump_Rise);
+        m_animProfile.jumpPeak = AnimKey(AnimName::Jump_Peak);
+        m_animProfile.fall = AnimKey(AnimName::Fall);
+        m_animProfile.land = AnimKey(AnimName::Land);
         m_animProfile.crouch = AnimKey(AnimName::Crouch);
         m_animProfile.dash = AnimKey(AnimName::Dash);
 
         m_animProfile.idleShoot = AnimKey(AnimName::Shoot);
         m_animProfile.runShoot = AnimKey(AnimName::RunShoot);
         m_animProfile.fallShoot = AnimKey(AnimName::FallShoot);
+        m_animProfile.jumpRiseShoot = AnimKey(AnimName::JumpShoot_Rise);
+        m_animProfile.jumpPeakShoot = AnimKey(AnimName::JumpShoot_Peak);
+        m_animProfile.fallShoot = AnimKey(AnimName::FallShoot);
+        m_animProfile.landShoot = AnimKey(AnimName::LandShoot);
 
         m_animProfile.idleCharge = AnimKey(AnimName::Charge);
         m_animProfile.runCharge = AnimKey(AnimName::RunCharge);
         m_animProfile.fallCharge = AnimKey(AnimName::FallCharge);
+        m_animProfile.jumpRiseCharge = AnimKey(AnimName::JumpCharge_Rise);
+        m_animProfile.jumpPeakCharge = AnimKey(AnimName::JumpCharge_Peak);
+        m_animProfile.fallCharge = AnimKey(AnimName::FallCharge);
+        m_animProfile.landCharge = AnimKey(AnimName::LandCharge);
 
         m_animProfile.hit = AnimKey(AnimName::Hit);
         m_animProfile.die = AnimKey(AnimName::Die);

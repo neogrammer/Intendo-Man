@@ -844,85 +844,6 @@ namespace game
     SyncToBase();
 }
 
-void AnimObject::PlaySynced(std::wstring const& name)
-{
-    const auto key = ToLower(Trim(name));
-
-    auto itNew = m_clips.find(key);
-    if (itNew == m_clips.end())
-    {
-        Cfg::debugPrint(L"AnimObject::PlaySynced: unknown anim \"" + key + L"\"\n");
-        return;
-    }
-
-    // No current clip? Fall back to a normal Play.
-    if (m_currentClip.empty())
-    {
-        Play(itNew->first, true);
-        return;
-    }
-
-    // Already on this clip: nothing to do.
-    if (m_currentClip == itNew->first)
-    {
-        m_playing = true;
-        return;
-    }
-
-    Clip const* oldClip = currentClip();
-    if (!oldClip || oldClip->framesPerDir == 0)
-    {
-        Play(itNew->first, true);
-        return;
-    }
-
-    // Remaining time on the current frame (old clip)
-    const size_t oldIdx = currentFrameLinearIndex(*oldClip);
-    float oldDelay = (oldIdx < oldClip->delays.size()) ? oldClip->delays[oldIdx] : 0.10f;
-    if (oldDelay <= 0.0001f) oldDelay = 0.0001f;
-
-    float remaining = oldDelay - m_animElapsed;
-    if (remaining < 0.0f) remaining = 0.0f;
-    if (remaining > oldDelay) remaining = oldDelay;
-
-    // Clamp frame index into the new clip
-    Clip const& newClip = itNew->second;
-    const uint32_t maxIndex = (newClip.framesPerDir > 0) ? (newClip.framesPerDir - 1u) : 0u;
-    const uint32_t newFrame = (newClip.framesPerDir > 0) ? std::min<uint32_t>(m_currentIndex, maxIndex) : 0u;
-
-    auto linearIndexFor = [&](Clip const& c, uint32_t frameIndex) noexcept -> size_t
-        {
-            const size_t dir = (c.uniDirectional || m_facingRight) ? 0u : 1u;
-            const size_t base = dir * static_cast<size_t>(c.framesPerDir);
-            size_t idx = base + static_cast<size_t>(frameIndex);
-
-            const size_t max = c.uniDirectional ? static_cast<size_t>(c.framesPerDir)
-                : static_cast<size_t>(c.framesPerDir) * 2u;
-            if (max == 0) return 0;
-            if (idx >= max) idx = max - 1;
-            return idx;
-        };
-
-    // Translate remaining-time carryover into the new clip's current frame.
-    const size_t newIdx = linearIndexFor(newClip, newFrame);
-    float newDelay = (newIdx < newClip.delays.size()) ? newClip.delays[newIdx] : 0.10f;
-    if (newDelay <= 0.0001f) newDelay = 0.0001f;
-
-    float newElapsed = newDelay - remaining;
-    if (newElapsed < 0.0f) newElapsed = 0.0f;
-    if (newElapsed > newDelay) newElapsed = newDelay;
-
-    // Commit transition.
-    m_currentClip = itNew->first;
-    m_currentIndex = newFrame;
-    m_animElapsed = newElapsed;
-
-    // We are in the middle of a frame; loop-wait doesn't apply.
-    m_waitingForLoop = false;
-    m_loopElapsed = 0.0f;
-    m_playing = true;
-}
-
 void AnimObject::SetFacingRight(bool right) noexcept
 {
     if (right == m_facingRight)
@@ -987,6 +908,77 @@ void AnimObject::Play(std::wstring const& name, bool restart, uint32_t startFram
         m_startDelayRemaining = std::max<float>(0.0f, it->second.startDelay);
     }
 
+    m_playing = true;
+}
+
+
+void AnimObject::PlaySynced(std::wstring const& name)
+{
+    auto key = ToLower(Trim(name));
+
+    auto itNew = m_clips.find(key);
+    if (itNew == m_clips.end())
+    {
+        Cfg::debugPrint(L"AnimObject::PlaySynced: unknown anim \"" + key + L"\"\n");
+        return;
+    }
+
+    // No current clip? Just start normally.
+    auto* oldClip = currentClip();
+    if (!oldClip || m_currentClip.empty() || oldClip->framesPerDir == 0)
+    {
+        Play(itNew->first, true);
+        return;
+    }
+
+    // Already on it -> no-op (but ensure playing)
+    if (m_currentClip == itNew->first)
+    {
+        m_playing = true;
+        return;
+    }
+
+    // --- Remaining time on the current frame
+    const size_t oldIdx = currentFrameLinearIndex(*oldClip);
+    float oldDelay = (oldIdx < oldClip->delays.size()) ? oldClip->delays[oldIdx] : 0.10f;
+    if (oldDelay <= 0.0001f) oldDelay = 0.0001f;
+
+    float remaining = oldDelay - m_animElapsed;
+    if (remaining < 0.0f) remaining = 0.0f;
+    if (remaining > oldDelay) remaining = oldDelay;
+
+    // --- Switch clips (keep same frame index, clamp if needed)
+    Clip const& newClip = itNew->second;
+    if (newClip.framesPerDir == 0)
+    {
+        Play(itNew->first, true);
+        return;
+    }
+
+    uint32_t maxIndex = (newClip.framesPerDir > 0) ? (newClip.framesPerDir - 1u) : 0u;
+    uint32_t newFrame = std::min<uint32_t>(m_currentIndex, maxIndex);
+
+    // new linear index for delay lookup
+    size_t dirOffset = 0;
+    if (!newClip.uniDirectional && !m_facingRight)
+        dirOffset = newClip.framesPerDir;
+
+    size_t newIdx = dirOffset + newFrame;
+    float newDelay = (newIdx < newClip.delays.size()) ? newClip.delays[newIdx] : 0.10f;
+    if (newDelay <= 0.0001f) newDelay = 0.0001f;
+
+    // Preserve "remaining time" by setting elapsed accordingly
+    float newElapsed = newDelay - remaining;
+    if (newElapsed < 0.0f) newElapsed = 0.0f;
+    if (newElapsed > newDelay) newElapsed = newDelay;
+
+    m_currentClip = itNew->first;
+    m_currentIndex = newFrame;
+    m_animElapsed = newElapsed;
+
+    // Any loop-wait should not carry across clips
+    m_waitingForLoop = false;
+    m_loopElapsed = 0.0f;
     m_playing = true;
 }
 

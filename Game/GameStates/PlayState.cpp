@@ -130,7 +130,6 @@ loop_delay = 0
 
 	
 			float playerSpeedX = player->CurrentFrameVelocity().x;
-			float playerSpeedY = 300.f;
 
 			auto v = tmap->getSolidTilesOnScreen(*camera);
 			std::vector<game::GameObject*> tiles{};
@@ -146,29 +145,65 @@ loop_delay = 0
 			cameraOffset.y += pan.y * camPanSpeed * dt_;
 
 
-			if (player->isGrounded())
+			// --- Jump/Gravity state (keep local for now; later you can move into Player)
+			static float velY = 0.0f;
+			static bool jumpCutApplied = false;
+
+			constexpr float gravity = 1988.88f;     // px/s^2 (down)
+			constexpr float jumpSpeed = 900.0f;     // px/s (up = negative)
+			constexpr float minJumpUpSpeed = 300.0f; // release early clamps to this (short hop)
+
+			// Jump input: using MoveUp as Jump (W / DPadUp).
+			// If you later add Action::Jump, swap these calls over.
+			bool jumpPressed = actMap->Pressed(engine::Action::MoveUp);
+			bool jumpReleased = actMap->Released(engine::Action::MoveUp);
+
+			// Track grounded transitions
+			bool wasGrounded = player->isGrounded();
+			bool justJumped = false;
+
+			if (wasGrounded)
 			{
-				playerAccumGrav = 0;
-			}
-			else
-			{
-				if (playerAccumGrav > 0.0001f)
-					playerAccumGrav += ((playerAccumGrav + 1988.88f) * dt_ * dt_);
-				else
-					playerAccumGrav = 6.8f;
+				velY = 0.0f;
+				jumpCutApplied = false;
 			}
 
-			float2 delta{
-	move.x * playerSpeedX * dt_,
-	(move.y * playerSpeedY * dt_) + playerAccumGrav
+			// Start jump
+			if (jumpPressed && wasGrounded)
+			{
+				velY = -jumpSpeed;
+				player->inAir();          // leave ground immediately
+				jumpCutApplied = false;
+				justJumped = true;
+			}
+
+			// Variable jump height: release early cuts the jump ONCE
+			if (jumpReleased && velY < 0.0f && !jumpCutApplied)
+			{
+				if (velY < -minJumpUpSpeed)
+					velY = -minJumpUpSpeed;
+				jumpCutApplied = true;
+			}
+
+			// Apply gravity while airborne
+			if (!player->isGrounded())
+			{
+				velY += gravity * dt_;
+			}
+
+			float2 delta
+			{
+				move.x * playerSpeedX * dt_,
+				velY * dt_
 			};
 
+			// --- Move + collisions
+			auto startPos = player->GetWorldPosition();
+			float expectedNewY = startPos.y + delta.y;
 
-
-			// --- 2) Collision candidates: only solids overlapping the swept AABB
-
-			// Apply move + resolve
 			player->Move(delta);
+
+			// (your sweep collection stays the same...)
 
 
 			auto const startR = player->getWorldRect();
@@ -212,16 +247,35 @@ loop_delay = 0
 			}
 			//////////////////////////////////////////////////////////////////////////////////////////////
 			
-			
+			bool nowGrounded = player->isGrounded();
+			bool justLanded = (nowGrounded && !wasGrounded);
+
+			// If we tried to move UP but got pushed DOWN by collision, we bonked our head.
+			// (No PhysicsSys changes needed.)
+			auto endPos = player->GetWorldPosition();
+			if (velY < 0.0f && endPos.y > expectedNewY + 0.01f)
+			{
+				velY = 0.0f;
+			}
+
+			// When grounded, kill vertical velocity
+			if (nowGrounded)
+			{
+				velY = 0.0f;
+			}
 
 			if (auto* p = dynamic_cast<Player*>(player.get()))
 			{
 				Player::AnimContext animCtx{};
 				animCtx.moveX = move.x;
-				animCtx.grounded = player->isGrounded();
+				animCtx.grounded = nowGrounded;
 
-				// Not wired yet in your input map, but you can start with Fire:
+				animCtx.justLanded = justLanded;
+				animCtx.justJumped = justJumped;
+
 				animCtx.wantShoot = actMap && actMap->Down(engine::Action::Fire);
+				// animCtx.wantCharge = ... (when you add an input for charge)
+				animCtx.velY = velY;
 
 				p->UpdateAnimation(dt_, animCtx);
 			}

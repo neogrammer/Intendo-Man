@@ -102,7 +102,7 @@ namespace engine
 
         // Reset view (R / A)
         Bind(Action::ResetView, VK::R);
-        Bind(Action::ResetView, GB::A);
+        Bind(Action::ResetView, GB::Y);
 
         // Fire test sound (Space / X)
         Bind(Action::Fire, VK::Space);
@@ -111,6 +111,8 @@ namespace engine
         // Pause (Esc / Menu)
         Bind(Action::Pause, VK::Escape);
         Bind(Action::Pause, GB::Menu);
+
+        Bind(Action::MoveUp, GB::A);
     }
 
     void ActionMap::Update(InputState const& input)

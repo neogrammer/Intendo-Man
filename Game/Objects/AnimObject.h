@@ -120,10 +120,11 @@ namespace game
         void LoadFromAnmFile(std::wstring const& path);
         void LoadFromAnmText(std::wstring const& text);
 
-        void PlaySynced(std::wstring const& name);
 
         // Animation control
         void Play(std::wstring const& name, bool restart = false, uint32_t startFrame = 0);
+
+        void PlaySynced(std::wstring const& name);
         void Stop() noexcept { m_playing = false; }
         void Resume() noexcept { m_playing = true; }
         bool IsPlaying() const noexcept { return m_playing; }

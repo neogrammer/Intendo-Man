@@ -3,14 +3,18 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <algorithm>
 
 namespace game::anim
 {
-    // Generic input to the shared animation state machine.
     struct AnimContext
     {
         float moveX{ 0.0f };
         bool grounded{ true };
+
+        // events (computed by PlayState)
+        bool justLanded{ false };
+        bool justJumped{ false };
 
         bool wantShoot{ false };
         bool wantCharge{ false };
@@ -23,30 +27,52 @@ namespace game::anim
         float velY{ 0.0f };
     };
 
-    enum class Locomotion : uint8_t { Idle, Run, AirFall, Crouch, Dash };
+    enum class Locomotion : uint8_t
+    {
+        Idle,
+        Run,
+        JumpRise,
+        JumpPeak,
+        Fall,
+        Land,
+        Crouch,
+        Dash
+    };
+
     enum class Overlay : uint8_t { None, Shoot, Charge };
 
-    // Optional clip-key mapping per actor.
     struct AnimProfile
     {
+        // base
         std::optional<std::wstring> idle;
         std::optional<std::wstring> run;
+        std::optional<std::wstring> jumpRise;
+        std::optional<std::wstring> jumpPeak;
         std::optional<std::wstring> fall;
+        std::optional<std::wstring> land;
         std::optional<std::wstring> crouch;
         std::optional<std::wstring> dash;
 
+        // shoot variants
         std::optional<std::wstring> idleShoot;
         std::optional<std::wstring> runShoot;
+        std::optional<std::wstring> jumpRiseShoot;
+        std::optional<std::wstring> jumpPeakShoot;
         std::optional<std::wstring> fallShoot;
+        std::optional<std::wstring> landShoot;
 
+        // charge variants
         std::optional<std::wstring> idleCharge;
         std::optional<std::wstring> runCharge;
+        std::optional<std::wstring> jumpRiseCharge;
+        std::optional<std::wstring> jumpPeakCharge;
         std::optional<std::wstring> fallCharge;
+        std::optional<std::wstring> landCharge;
 
+        // overrides
         std::optional<std::wstring> hit;
         std::optional<std::wstring> die;
 
-        // Strip any keys that are not present on the actor (prevents debug spam).
         template<class Actor>
         void ValidateAgainst(Actor const& a)
         {
@@ -56,13 +82,18 @@ namespace game::anim
                         o.reset();
                 };
 
-            check(idle);   check(run);    check(fall);  check(crouch); check(dash);
-            check(idleShoot); check(runShoot); check(fallShoot);
-            check(idleCharge); check(runCharge); check(fallCharge);
+            check(idle); check(run); check(jumpRise); check(jumpPeak); check(fall); check(land);
+            check(crouch); check(dash);
+
+            check(idleShoot); check(runShoot); check(jumpRiseShoot); check(jumpPeakShoot);
+            check(fallShoot); check(landShoot);
+
+            check(idleCharge); check(runCharge); check(jumpRiseCharge); check(jumpPeakCharge);
+            check(fallCharge); check(landCharge);
+
             check(hit); check(die);
         }
 
-        // Returns nullptr => "do nothing / keep whatever is playing"
         std::wstring const* Resolve(Locomotion loco, Overlay ov) const noexcept
         {
             auto ptr = [](std::optional<std::wstring> const& o) -> std::wstring const*
@@ -70,31 +101,38 @@ namespace game::anim
                     return o ? &(*o) : nullptr;
                 };
 
-            // 1) Try overlay variant
+            // --- overlay first
             if (ov == Overlay::Shoot)
             {
-                if (loco == Locomotion::Run)     if (auto p = ptr(runShoot))  return p;
-                if (loco == Locomotion::AirFall) if (auto p = ptr(fallShoot)) return p;
-                if (loco == Locomotion::Idle)    if (auto p = ptr(idleShoot)) return p;
+                if (loco == Locomotion::Run)      if (auto p = ptr(runShoot))      return p;
+                if (loco == Locomotion::JumpRise) if (auto p = ptr(jumpRiseShoot)) return p;
+                if (loco == Locomotion::JumpPeak) if (auto p = ptr(jumpPeakShoot)) return p;
+                if (loco == Locomotion::Fall)     if (auto p = ptr(fallShoot))     return p;
+                if (loco == Locomotion::Land)     if (auto p = ptr(landShoot))     return p;
+                if (loco == Locomotion::Idle)     if (auto p = ptr(idleShoot))     return p;
             }
             else if (ov == Overlay::Charge)
             {
-                if (loco == Locomotion::Run)     if (auto p = ptr(runCharge))  return p;
-                if (loco == Locomotion::AirFall) if (auto p = ptr(fallCharge)) return p;
-                if (loco == Locomotion::Idle)    if (auto p = ptr(idleCharge)) return p;
+                if (loco == Locomotion::Run)      if (auto p = ptr(runCharge))      return p;
+                if (loco == Locomotion::JumpRise) if (auto p = ptr(jumpRiseCharge)) return p;
+                if (loco == Locomotion::JumpPeak) if (auto p = ptr(jumpPeakCharge)) return p;
+                if (loco == Locomotion::Fall)     if (auto p = ptr(fallCharge))     return p;
+                if (loco == Locomotion::Land)     if (auto p = ptr(landCharge))     return p;
+                if (loco == Locomotion::Idle)     if (auto p = ptr(idleCharge))     return p;
             }
 
-            // 2) Fall back to base locomotion
-            if (loco == Locomotion::Run)     if (auto p = ptr(run))    return p;
-            if (loco == Locomotion::AirFall) if (auto p = ptr(fall))   return p;
-            if (loco == Locomotion::Crouch)  if (auto p = ptr(crouch)) return p;
-            if (loco == Locomotion::Dash)    if (auto p = ptr(dash))   return p;
-            if (loco == Locomotion::Idle)    if (auto p = ptr(idle))   return p;
+            // --- base fallback
+            if (loco == Locomotion::Run)      if (auto p = ptr(run))      return p;
+            if (loco == Locomotion::JumpRise) if (auto p = ptr(jumpRise)) return p;
+            if (loco == Locomotion::JumpPeak) if (auto p = ptr(jumpPeak)) return p;
+            if (loco == Locomotion::Fall)     if (auto p = ptr(fall))     return p;
+            if (loco == Locomotion::Land)     if (auto p = ptr(land))     return p;
+            if (loco == Locomotion::Crouch)   if (auto p = ptr(crouch))   return p;
+            if (loco == Locomotion::Dash)     if (auto p = ptr(dash))     return p;
+            if (loco == Locomotion::Idle)     if (auto p = ptr(idle))     return p;
 
-            // 3) Final fallback: idle
+            // --- final fallback
             if (auto p = ptr(idle)) return p;
-
-            // 4) Nothing defined => no-op
             return nullptr;
         }
     };
@@ -102,157 +140,162 @@ namespace game::anim
     class AnimatorSM
     {
     public:
-        static bool IsRunVariant(std::wstring const& key, AnimProfile const& profile) noexcept
-        {
-            auto eq = [&](std::optional<std::wstring> const& o) noexcept -> bool
-                {
-                    return o && *o == key;
-                };
-
-            return eq(profile.run) || eq(profile.runShoot) || eq(profile.runCharge);
-        }
-
-        bool m_holdRun{ false };
-        uint32_t m_holdRunFrameIndex{ 0 };
-
         template<class Actor>
         void Tick(Actor& a, float dt, AnimContext const& ctx, AnimProfile const& profile)
         {
-            // --- Facing (based on moveX sign)
-            const auto& currentKey = a.CurrentClipKey();
+            // Facing from moveX sign
             float dir = DeadZone(ctx.moveX);
             if (dir < 0.0f) a.SetFacingRight(false);
             else if (dir > 0.0f) a.SetFacingRight(true);
 
-
-
-            // --- Override states (dead/hit)
+            // --- hard overrides (dead/hit)
             if (ctx.dead)
             {
-                if (m_mode != Mode::Dead)
-                {
-                    m_mode = Mode::Dead;
-                    m_timeInState = 0.0f;
-                    TryPlay(a, profile.die, /*restart*/true);
-                }
-                else
-                {
-                    TryPlay(a, profile.die, /*restart*/false);
-                }
+                EnterMode(Mode::Dead);
+                TryPlay(a, profile.die, /*restart*/m_modeChanged);
+                m_prevVelY = ctx.velY;
                 return;
             }
-
             if (ctx.gotHit)
             {
-                if (m_mode != Mode::Hit)
-                {
-                    m_mode = Mode::Hit;
-                    m_timeInState = 0.0f;
-                    TryPlay(a, profile.hit, /*restart*/true);
-                }
-                else
-                {
-                    TryPlay(a, profile.hit, /*restart*/false);
-                }
+                EnterMode(Mode::Hit);
+                TryPlay(a, profile.hit, /*restart*/m_modeChanged);
+                m_prevVelY = ctx.velY;
                 return;
             }
+            EnterMode(Mode::Normal);
 
-            // Back to normal mode
-            if (m_mode != Mode::Normal)
-            {
-                m_mode = Mode::Normal;
-                m_timeInState = 0.0f;
-            }
-
-            // --- Overlay
+            // Overlay
             Overlay ov = Overlay::None;
             if (ctx.wantCharge) ov = Overlay::Charge;
             else if (ctx.wantShoot) ov = Overlay::Shoot;
 
+            // Landing trigger: force land for at least 1 frame (prevents “restart every frame”)
+            if (ctx.justLanded)
+            {
+                m_loco = Locomotion::Land;
+                m_overlay = ov;
+                m_timeInState = 0.0f;
+
+                // reset air tracking
+                m_inAir = false;
+                m_sawRising = false;
+                m_peakWindow = false;
+                m_jumpHeight = 0.0f;
+
+                if (auto* landKey = profile.Resolve(Locomotion::Land, ov))
+                {
+                    if (a.hasClip(*landKey))
+                    {
+                        if (a.CurrentClipKey() != *landKey)
+                            a.Play(*landKey, /*restart*/true);
+                        else
+                            a.Play(*landKey, /*restart*/false);
+                    }
+                }
+
+                m_prevVelY = ctx.velY;
+                return;
+            }
+
+            // If we are in land, keep it unless interrupted (movement / overlay / leaving ground)
+            if (IsLandVariant(a.CurrentClipKey(), profile))
+            {
+                if (ctx.grounded && DeadZone(ctx.moveX) == 0.0f && !ctx.wantShoot && !ctx.wantCharge)
+                {
+                    // allow swapping land <-> landshoot <-> landcharge without jitter
+                    if (auto* desired = profile.Resolve(Locomotion::Land, ov))
+                    {
+                        if (a.hasClip(*desired) && a.CurrentClipKey() != *desired)
+                            a.PlaySynced(*desired);
+                    }
+
+                    m_timeInState += dt;
+                    m_loco = Locomotion::Land;
+                    m_overlay = ov;
+                    m_prevVelY = ctx.velY;
+                    return;
+                }
+                // else: interrupted -> fall through to normal selection
+            }
+
+            // --- Air logic (JumpRise / JumpPeak / Fall)
+            if (!ctx.grounded)
+            {
+                const float feetY = a.GetWorldPosition().y + a.GetWorldSize().y;
+
+                if (!m_inAir)
+                {
+                    m_inAir = true;
+                    m_sawRising = false;
+                    m_peakWindow = false;
+                    m_jumpStartFeetY = feetY;
+                    m_apexFeetY = feetY;
+                    m_jumpHeight = 0.0f;
+                }
+
+                if (ctx.velY < -0.01f)
+                    m_sawRising = true;
+
+                // “95% up” approximation: enter peak when upward speed is small
+                // Tune this number to taste.
+                constexpr float peakEnterVel = 150.0f; // px/s
+                if (m_sawRising && !m_peakWindow && ctx.velY < 0.0f && ctx.velY > -peakEnterVel)
+                    m_peakWindow = true;
+
+                // Apex detection (crossing upward -> downward)
+                if (m_sawRising && m_prevVelY < 0.0f && ctx.velY >= 0.0f)
+                {
+                    m_apexFeetY = feetY;
+                    m_jumpHeight = (m_jumpStartFeetY - m_apexFeetY);
+                    if (m_jumpHeight < 0.0f) m_jumpHeight = 0.0f;
+                    m_peakWindow = true;
+                }
+
+                // “5% down” before switching to fall
+                if (m_peakWindow && ctx.velY > 0.0f && m_jumpHeight > 0.0f)
+                {
+                    float down = feetY - m_apexFeetY;
+                    float trigger = std::max<float>(2.0f, m_jumpHeight * 0.05f);
+                    if (down >= trigger)
+                        m_peakWindow = false;
+                }
+
+                Locomotion loco = Locomotion::Fall;
+                if (m_sawRising && m_peakWindow) loco = Locomotion::JumpPeak;
+                else if (ctx.velY < 0.0f) loco = Locomotion::JumpRise;
+                else loco = Locomotion::Fall;
+
+                ApplyDesired(a, profile, loco, ov);
+
+                if (loco != m_loco || ov != m_overlay)
+                {
+                    m_timeInState = 0.0f;
+                    m_loco = loco;
+                    m_overlay = ov;
+                }
+                else
+                {
+                    m_timeInState += dt;
+                }
+
+                m_prevVelY = ctx.velY;
+                return;
+            }
+
+            // grounded (not landing)
+            m_inAir = false;
+            m_sawRising = false;
+            m_peakWindow = false;
+            m_jumpHeight = 0.0f;
+
             Locomotion loco = Locomotion::Idle;
-            if (!ctx.grounded) loco = Locomotion::AirFall;
-            else if (ctx.wantDash) loco = Locomotion::Dash;
+            if (ctx.wantDash) loco = Locomotion::Dash;
             else if (ctx.wantCrouch) loco = Locomotion::Crouch;
-            else
-            {
-                //if (dir != 0.0f)
-                //{
-                //    m_holdRun = false;
-                //    loco = Locomotion::Run;
-                //}
-                //else
-                //{
-                //    const bool currentIsRunVariant = IsRunVariant(currentKey, profile);
-                //    if (currentIsRunVariant)
-                //    {
-                //        if (!m_holdRun)
-                //        {
-                //            m_holdRun = true;
-                //            m_holdRunFrameIndex = a.CurrentFrameIndex();
-                //        }
+            else if (DeadZone(ctx.moveX) != 0.0f) loco = Locomotion::Run;
 
-                //        // Hold run until the frame index advances.
-                //        if (a.CurrentFrameIndex() == m_holdRunFrameIndex)
-                //            loco = Locomotion::Run;
-                //        else
-                //        {
-                //            m_holdRun = false;
-                //            loco = Locomotion::Idle;
-                //        }
-                //    }
-                //    else
-                //    {
-                //        m_holdRun = false;
-                //        loco = Locomotion::Idle;
-                //    }
-                //}
-                dir = DeadZone(ctx.moveX);
-                const bool curRun = IsRunVariant(a.CurrentClipKey(), profile);
+            ApplyDesired(a, profile, loco, ov);
 
-                if (dir != 0.0f)
-                {
-                    // real movement -> real run
-                    m_holdRun = false;
-                    loco = Locomotion::Run;
-                }
-                else if (curRun)
-                {
-                    // transition moment: keep running until the frame index changes
-                    if (!m_holdRun)
-                    {
-                        m_holdRun = true;
-                        m_holdRunFrame = a.CurrentFrameIndex();
-                    }
-
-                    if (a.CurrentFrameIndex() == m_holdRunFrame)
-                        loco = Locomotion::Run;
-                    else
-                    {
-                        m_holdRun = false;
-                        loco = Locomotion::Idle;
-                    }
-                }
-                else
-                {
-                    m_holdRun = false;
-                    loco = Locomotion::Idle;
-                }
-            }
-
-            // --- Resolve -> clip key
-            auto* desired = profile.Resolve(loco, ov);
-            if (desired && a.hasClip(*desired))
-            {
-                const bool currentIsRunVariant = IsRunVariant(currentKey, profile);
-                const bool desiredIsRunVariant = IsRunVariant(*desired, profile);
-
-                if (currentIsRunVariant && desiredIsRunVariant && currentKey != *desired)
-                    a.PlaySynced(*desired);
-                else
-                    a.Play(*desired, /*restart*/false);
-            }
-
-            // Track semantic state time
             if (loco != m_loco || ov != m_overlay)
             {
                 m_timeInState = 0.0f;
@@ -263,20 +306,26 @@ namespace game::anim
             {
                 m_timeInState += dt;
             }
+
+            m_prevVelY = ctx.velY;
         }
 
         float TimeInState() const noexcept { return m_timeInState; }
 
     private:
-
-
-        uint32_t m_holdRunFrame{ 0 };
-
         enum class Mode : uint8_t { Normal, Hit, Dead };
 
         static constexpr float DeadZone(float x) noexcept
         {
             return (x < -0.20f) ? -1.0f : (x > 0.20f) ? 1.0f : 0.0f;
+        }
+
+        void EnterMode(Mode m) noexcept
+        {
+            m_modeChanged = (m != m_mode);
+            m_mode = m;
+            if (m_modeChanged)
+                m_timeInState = 0.0f;
         }
 
         template<class Actor>
@@ -287,9 +336,81 @@ namespace game::anim
             a.Play(*key, restart);
         }
 
+        static bool Eq(std::wstring const& k, std::optional<std::wstring> const& o) noexcept
+        {
+            return o && *o == k;
+        }
+
+        static bool IsRunVariant(std::wstring const& k, AnimProfile const& p) noexcept
+        {
+            return Eq(k, p.run) || Eq(k, p.runShoot) || Eq(k, p.runCharge);
+        }
+
+        static bool IsJumpRiseVariant(std::wstring const& k, AnimProfile const& p) noexcept
+        {
+            return Eq(k, p.jumpRise) || Eq(k, p.jumpRiseShoot) || Eq(k, p.jumpRiseCharge);
+        }
+
+        static bool IsJumpPeakVariant(std::wstring const& k, AnimProfile const& p) noexcept
+        {
+            return Eq(k, p.jumpPeak) || Eq(k, p.jumpPeakShoot) || Eq(k, p.jumpPeakCharge);
+        }
+
+        static bool IsFallVariant(std::wstring const& k, AnimProfile const& p) noexcept
+        {
+            return Eq(k, p.fall) || Eq(k, p.fallShoot) || Eq(k, p.fallCharge);
+        }
+
+        static bool IsLandVariant(std::wstring const& k, AnimProfile const& p) noexcept
+        {
+            return Eq(k, p.land) || Eq(k, p.landShoot) || Eq(k, p.landCharge);
+        }
+
+        static bool SameSyncGroup(std::wstring const& a, std::wstring const& b, AnimProfile const& p) noexcept
+        {
+            if (IsRunVariant(a, p) && IsRunVariant(b, p)) return true;
+            if (IsJumpRiseVariant(a, p) && IsJumpRiseVariant(b, p)) return true;
+            if (IsJumpPeakVariant(a, p) && IsJumpPeakVariant(b, p)) return true;
+            if (IsFallVariant(a, p) && IsFallVariant(b, p)) return true;
+            if (IsLandVariant(a, p) && IsLandVariant(b, p)) return true;
+            return false;
+        }
+
+        template<class Actor>
+        static void ApplyDesired(Actor& a, AnimProfile const& profile, Locomotion loco, Overlay ov)
+        {
+            auto* desired = profile.Resolve(loco, ov);
+            if (!desired || !a.hasClip(*desired))
+                return;
+
+            auto const& cur = a.CurrentClipKey();
+            if (cur == *desired)
+            {
+                // already playing; do not restart
+                return;
+            }
+
+            if (SameSyncGroup(cur, *desired, profile))
+                a.PlaySynced(*desired);
+            else
+                a.Play(*desired, /*restart*/false);
+        }
+
         Mode m_mode{ Mode::Normal };
+        bool m_modeChanged{ false };
+
         float m_timeInState{ 0.0f };
         Locomotion m_loco{ Locomotion::Idle };
         Overlay m_overlay{ Overlay::None };
+
+        // Jump/air tracking (per-actor instance)
+        bool  m_inAir{ false };
+        bool  m_sawRising{ false };
+        bool  m_peakWindow{ false };
+        float m_jumpStartFeetY{ 0.0f };
+        float m_apexFeetY{ 0.0f };
+        float m_jumpHeight{ 0.0f };
+
+        float m_prevVelY{ 0.0f };
     };
 }
