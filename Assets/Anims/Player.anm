@@ -52,9 +52,10 @@ frames         = 3
 uni_directional= false
 offsets        = (40,27)
 sizes          = (58,60)
-delays         = 0.23
-looping        = true
+delays         = 0.43
 start_delay = 0.50
+looping    = true
+loop_wait  = true
 loop_delay = 3.00
 
 [anim idle_blink]
@@ -146,7 +147,7 @@ frames         = 3
 uni_directional= false
 offsets        = (40,27)
 sizes          = (58,60)
-delays         = 0.13
+delays         = 0.04
 looping        = idle
 
 [anim shoot_start]
@@ -431,8 +432,8 @@ frames         = 2
 uni_directional= false
 offsets        = (40,27)
 sizes          = (58,60)
-delays = 0.16 0.16
-looping        = wallslide
+delays         = 0.16 0.16
+looping        = true
 
 [anim wallslide]
 texture        = PlayerAtlas
@@ -447,7 +448,7 @@ uni_directional= false
 offsets        = (40,27)
 sizes          = (58,60)
 delays         = 0.13
-looping        = waits
+looping        = true
 
 [anim wallkick]
 texture        = PlayerAtlas
@@ -462,7 +463,7 @@ uni_directional= false
 offsets        = (40,27)
 sizes          = (58,60)
 delays         = 0.13
-looping = jump_rise frame0
+looping        = waits
 
 [anim wallgrabshoot]
 texture        = PlayerAtlas
@@ -477,7 +478,7 @@ uni_directional= false
 offsets        = (40,27)
 sizes          = (58,60)
 delays         = 0.13
-looping        = wallslideshoot
+looping        = true
 
 [anim wallslideshoot]
 texture        = PlayerAtlas
@@ -492,7 +493,7 @@ uni_directional= false
 offsets        = (40,27)
 sizes          = (58,60)
 delays         = 0.13
-looping        = waits
+looping        = true
 
 [anim wallkickshoot]
 texture        = PlayerAtlas
@@ -507,7 +508,7 @@ uni_directional= false
 offsets        = (40,27)
 sizes          = (58,60)
 delays         = 0.13
-looping        = jumpshoot_rise frame1(oppositedirection)
+looping        = waits
 
 [anim wallgrabcharge]
 texture        = PlayerAtlas
@@ -522,7 +523,7 @@ uni_directional= false
 offsets        = (40,27)
 sizes          = (58,60)
 delays         = 0.13
-looping        = wallslidecharge
+looping        = true
 
 [anim wallslidecharge]
 texture        = PlayerAtlas
@@ -537,7 +538,7 @@ uni_directional= false
 offsets        = (40,27)
 sizes          = (58,60)
 delays         = 0.13
-looping        = waits
+looping        = true
 
 [anim wallkickcharge]
 texture        = PlayerAtlas
@@ -552,7 +553,7 @@ uni_directional= false
 offsets        = (40,27)
 sizes          = (58,60)
 delays         = 0.13
-looping        = jumpcharge_rise frame1(oppositedirection)
+looping        = waits
 
 [anim blank]
 texture        = PlayerAtlas
