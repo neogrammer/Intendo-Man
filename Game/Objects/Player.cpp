@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Player.h"
+#include <cmath>
 
 namespace game
 {
@@ -34,6 +35,21 @@ namespace game
         m_animProfile.jumpPeakCharge = AnimKey(AnimName::JumpCharge_Peak);
         m_animProfile.fallCharge = AnimKey(AnimName::FallCharge);
         m_animProfile.landCharge = AnimKey(AnimName::LandCharge);
+
+
+                // Wall set
+            m_animProfile.wallGrab = AnimKey(AnimName::WallGrab);
+        m_animProfile.wallSlide = AnimKey(AnimName::WallSlide);
+        m_animProfile.wallKick = AnimKey(AnimName::WallKick);
+        
+            m_animProfile.wallGrabShoot = AnimKey(AnimName::WallGrabShoot);
+        m_animProfile.wallSlideShoot = AnimKey(AnimName::WallSlideShoot);
+        m_animProfile.wallKickShoot = AnimKey(AnimName::WallKickShoot);
+        
+            m_animProfile.wallGrabCharge = AnimKey(AnimName::WallGrabCharge);
+        m_animProfile.wallSlideCharge = AnimKey(AnimName::WallSlideCharge);
+        m_animProfile.wallKickCharge = AnimKey(AnimName::WallKickCharge);
+        
 
         m_animProfile.hit = AnimKey(AnimName::Hit);
         m_animProfile.die = AnimKey(AnimName::Die);

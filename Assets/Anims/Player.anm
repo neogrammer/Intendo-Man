@@ -52,9 +52,10 @@ frames         = 3
 uni_directional= false
 offsets        = (40,27)
 sizes          = (58,60)
-delays         = 0.83
+delays         = 0.23
 looping        = true
 start_delay = 0.50
+loop_delay = 3.00
 
 [anim idle_blink]
 texture        = PlayerAtlas
@@ -426,11 +427,11 @@ start_col      = 0
 start_row      = 10
 start_row_left = 23
 pitch          = 17
-frames         = 3
+frames         = 2
 uni_directional= false
 offsets        = (40,27)
 sizes          = (58,60)
-delays         = 0.13
+delays = 0.16 0.16
 looping        = wallslide
 
 [anim wallslide]
@@ -461,7 +462,7 @@ uni_directional= false
 offsets        = (40,27)
 sizes          = (58,60)
 delays         = 0.13
-looping        = jump_rise frame1(oppositedirection)
+looping = jump_rise frame0
 
 [anim wallgrabshoot]
 texture        = PlayerAtlas

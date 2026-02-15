@@ -25,6 +25,12 @@ namespace game::anim
         bool dead{ false };
 
         float velY{ 0.0f };
+
+        // wall interaction (computed by PlayState)
+        bool touchWallLeft{ false };
+        bool touchWallRight{ false };
+        bool wallSliding{ false };
+        bool justWallJumped{ false }; // 1-tick event
     };
 
     enum class Locomotion : uint8_t
@@ -34,6 +40,10 @@ namespace game::anim
         JumpRise,
         JumpPeak,
         Fall,
+
+        WallGrab,
+        WallSlide,
+        WallKick,
         Land,
         Crouch,
         Dash
@@ -49,6 +59,11 @@ namespace game::anim
         std::optional<std::wstring> jumpRise;
         std::optional<std::wstring> jumpPeak;
         std::optional<std::wstring> fall;
+
+        std::optional<std::wstring> wallGrab;
+        std::optional<std::wstring> wallSlide;
+        std::optional<std::wstring> wallKick;
+
         std::optional<std::wstring> land;
         std::optional<std::wstring> crouch;
         std::optional<std::wstring> dash;
@@ -59,6 +74,12 @@ namespace game::anim
         std::optional<std::wstring> jumpRiseShoot;
         std::optional<std::wstring> jumpPeakShoot;
         std::optional<std::wstring> fallShoot;
+
+        std::optional<std::wstring> wallGrabShoot;
+        std::optional<std::wstring> wallSlideShoot;
+        std::optional<std::wstring> wallKickShoot;
+
+
         std::optional<std::wstring> landShoot;
 
         // charge variants
@@ -67,6 +88,12 @@ namespace game::anim
         std::optional<std::wstring> jumpRiseCharge;
         std::optional<std::wstring> jumpPeakCharge;
         std::optional<std::wstring> fallCharge;
+
+
+        std::optional<std::wstring> wallGrabCharge;
+        std::optional<std::wstring> wallSlideCharge;
+        std::optional<std::wstring> wallKickCharge;
+
         std::optional<std::wstring> landCharge;
 
         // overrides
@@ -83,14 +110,17 @@ namespace game::anim
                 };
 
             check(idle); check(run); check(jumpRise); check(jumpPeak); check(fall); check(land);
+            check(wallGrab); check(wallSlide); check(wallKick);
             check(crouch); check(dash);
 
             check(idleShoot); check(runShoot); check(jumpRiseShoot); check(jumpPeakShoot);
             check(fallShoot); check(landShoot);
+            check(wallGrabShoot); check(wallSlideShoot); check(wallKickShoot);
 
             check(idleCharge); check(runCharge); check(jumpRiseCharge); check(jumpPeakCharge);
-            check(fallCharge); check(landCharge);
-
+            check(fallCharge); 
+            check(wallGrabCharge); check(wallSlideCharge); check(wallKickCharge);
+            check(landCharge);
             check(hit); check(die);
         }
 
@@ -108,6 +138,9 @@ namespace game::anim
                 if (loco == Locomotion::JumpRise) if (auto p = ptr(jumpRiseShoot)) return p;
                 if (loco == Locomotion::JumpPeak) if (auto p = ptr(jumpPeakShoot)) return p;
                 if (loco == Locomotion::Fall)     if (auto p = ptr(fallShoot))     return p;
+                if (loco == Locomotion::WallGrab)  if (auto p = ptr(wallGrabShoot))  return p;
+                if (loco == Locomotion::WallSlide) if (auto p = ptr(wallSlideShoot)) return p;
+                if (loco == Locomotion::WallKick)  if (auto p = ptr(wallKickShoot))  return p;
                 if (loco == Locomotion::Land)     if (auto p = ptr(landShoot))     return p;
                 if (loco == Locomotion::Idle)     if (auto p = ptr(idleShoot))     return p;
             }
@@ -117,6 +150,10 @@ namespace game::anim
                 if (loco == Locomotion::JumpRise) if (auto p = ptr(jumpRiseCharge)) return p;
                 if (loco == Locomotion::JumpPeak) if (auto p = ptr(jumpPeakCharge)) return p;
                 if (loco == Locomotion::Fall)     if (auto p = ptr(fallCharge))     return p;
+
+                if (loco == Locomotion::WallGrab)  if (auto p = ptr(wallGrabCharge))  return p;
+                if (loco == Locomotion::WallSlide) if (auto p = ptr(wallSlideCharge)) return p;
+                if (loco == Locomotion::WallKick)  if (auto p = ptr(wallKickCharge))  return p;
                 if (loco == Locomotion::Land)     if (auto p = ptr(landCharge))     return p;
                 if (loco == Locomotion::Idle)     if (auto p = ptr(idleCharge))     return p;
             }
@@ -126,6 +163,10 @@ namespace game::anim
             if (loco == Locomotion::JumpRise) if (auto p = ptr(jumpRise)) return p;
             if (loco == Locomotion::JumpPeak) if (auto p = ptr(jumpPeak)) return p;
             if (loco == Locomotion::Fall)     if (auto p = ptr(fall))     return p;
+
+            if (loco == Locomotion::WallGrab)  if (auto p = ptr(wallGrab))  return p;
+            if (loco == Locomotion::WallSlide) if (auto p = ptr(wallSlide)) return p;
+            if (loco == Locomotion::WallKick)  if (auto p = ptr(wallKick))  return p;
             if (loco == Locomotion::Land)     if (auto p = ptr(land))     return p;
             if (loco == Locomotion::Crouch)   if (auto p = ptr(crouch))   return p;
             if (loco == Locomotion::Dash)     if (auto p = ptr(dash))     return p;
@@ -143,10 +184,30 @@ namespace game::anim
         template<class Actor>
         void Tick(Actor& a, float dt, AnimContext const& ctx, AnimProfile const& profile)
         {
-            // Facing from moveX sign
+
+            // Facing: prefer input; if no input, face the wall you're touching (when airborne).
+            const bool touchingWall = (!ctx.grounded) && (ctx.touchWallLeft || ctx.touchWallRight);
             float dir = DeadZone(ctx.moveX);
-            if (dir < 0.0f) a.SetFacingRight(false);
-            else if (dir > 0.0f) a.SetFacingRight(true);
+
+            if (dir < 0.0f) 
+            { 
+                a.SetFacingRight(false);
+            }
+            else if (dir > 0.0f)
+            {
+                a.SetFacingRight(true);
+            }
+            else if (touchingWall)
+               {
+                if (ctx.touchWallLeft && !ctx.touchWallRight)
+                {
+                    a.SetFacingRight(false);
+                }
+                else if (ctx.touchWallRight && !ctx.touchWallLeft) 
+                {
+                    a.SetFacingRight(true);
+                }
+            }
 
             // --- hard overrides (dead/hit)
             if (ctx.dead)
@@ -169,6 +230,46 @@ namespace game::anim
             Overlay ov = Overlay::None;
             if (ctx.wantCharge) ov = Overlay::Charge;
             else if (ctx.wantShoot) ov = Overlay::Shoot;
+
+
+                        // If we just wall-jumped, lock into wallkick briefly so it actually shows.
+               if (ctx.justWallJumped)
+                {
+               m_wallKickLock = true;
+               m_wallKickTime = 0.0f;
+               }
+             if (ctx.grounded)
+                 {
+                m_wallKickLock = false;
+                m_wallKickTime = 0.0f;
+                }
+            
+                if (m_wallKickLock && !ctx.grounded)
+                 {
+                constexpr float kWallKickMinTime = 0.10f; // tweak to taste
+                m_wallKickTime += dt;
+                
+                    ApplyDesired(a, profile, Locomotion::WallKick, ov);
+                
+                    if (Locomotion::WallKick != m_loco || ov != m_overlay)
+                     {
+                    m_timeInState = 0.0f;
+                    m_loco = Locomotion::WallKick;
+                    m_overlay = ov;
+                    }
+                 else
+                    {
+                   m_timeInState += dt;
+                   }
+                   if (m_wallKickTime >= kWallKickMinTime)
+                    {
+                   m_wallKickLock = false;
+                   }
+                
+                    m_prevVelY = ctx.velY;
+                return;
+                }
+            
 
             // Landing trigger: force land for at least 1 frame (prevents “restart every frame”)
             if (ctx.justLanded)
@@ -222,6 +323,57 @@ namespace game::anim
             // --- Air logic (JumpRise / JumpPeak / Fall)
             if (!ctx.grounded)
             {
+
+                const bool onWall = (ctx.touchWallLeft || ctx.touchWallRight);
+                const float dz = DeadZone(ctx.moveX);
+                
+                    const bool pressingIntoWall =
+                    (ctx.touchWallLeft && dz < 0.0f) ||
+                    (ctx.touchWallRight && dz > 0.0f);
+                
+                                    // Prefer wall slide if falling and pressing into a wall (or if PlayState already flagged it)
+                    const bool sliding = ctx.wallSliding || (onWall && pressingIntoWall && ctx.velY > 0.0f);
+                
+                    if (sliding)
+                    {
+                    ApplyDesired(a, profile, Locomotion::WallSlide, ov);
+                    
+                        if (Locomotion::WallSlide != m_loco || ov != m_overlay)
+                         {
+                        m_timeInState = 0.0f;
+                        m_loco = Locomotion::WallSlide;
+                        m_overlay = ov;
+                        }
+                     else
+                         {
+                        m_timeInState += dt;
+                        }
+                    
+                        m_prevVelY = ctx.velY;
+                    return;
+                    }
+                
+                                    // Optional wall grab (if you have the clip). Shows while rising / at apex if you’re clinging.
+                    if (onWall && pressingIntoWall && ctx.velY <= 0.0f)
+                     {
+                    ApplyDesired(a, profile, Locomotion::WallGrab, ov);
+                    
+                        if (Locomotion::WallGrab != m_loco || ov != m_overlay)
+                         {
+                        m_timeInState = 0.0f;
+                        m_loco = Locomotion::WallGrab;
+                        m_overlay = ov;
+                        }
+                     else
+                         {
+                        m_timeInState += dt;
+                        }
+                    
+                        m_prevVelY = ctx.velY;
+                    return;
+                    }
+                
+
                 const float feetY = a.GetWorldPosition().y + a.GetWorldSize().y;
 
                 if (!m_inAir)
@@ -361,6 +513,24 @@ namespace game::anim
             return Eq(k, p.fall) || Eq(k, p.fallShoot) || Eq(k, p.fallCharge);
         }
 
+
+
+        static bool IsWallGrabVariant(std::wstring const& k, AnimProfile const& p) noexcept
+             {
+            return Eq(k, p.wallGrab) || Eq(k, p.wallGrabShoot) || Eq(k, p.wallGrabCharge);
+            }
+        
+            static bool IsWallSlideVariant(std::wstring const& k, AnimProfile const& p) noexcept
+             {
+            return Eq(k, p.wallSlide) || Eq(k, p.wallSlideShoot) || Eq(k, p.wallSlideCharge);
+            }
+        
+            static bool IsWallKickVariant(std::wstring const& k, AnimProfile const& p) noexcept
+             {
+            return Eq(k, p.wallKick) || Eq(k, p.wallKickShoot) || Eq(k, p.wallKickCharge);
+            }
+        
+
         static bool IsLandVariant(std::wstring const& k, AnimProfile const& p) noexcept
         {
             return Eq(k, p.land) || Eq(k, p.landShoot) || Eq(k, p.landCharge);
@@ -372,6 +542,9 @@ namespace game::anim
             if (IsJumpRiseVariant(a, p) && IsJumpRiseVariant(b, p)) return true;
             if (IsJumpPeakVariant(a, p) && IsJumpPeakVariant(b, p)) return true;
             if (IsFallVariant(a, p) && IsFallVariant(b, p)) return true;
+           if (IsWallGrabVariant(a, p) && IsWallGrabVariant(b, p)) return true;
+           if (IsWallSlideVariant(a, p) && IsWallSlideVariant(b, p)) return true;
+           if (IsWallKickVariant(a, p) && IsWallKickVariant(b, p)) return true;
             if (IsLandVariant(a, p) && IsLandVariant(b, p)) return true;
             return false;
         }
@@ -412,5 +585,11 @@ namespace game::anim
         float m_jumpHeight{ 0.0f };
 
         float m_prevVelY{ 0.0f };
+
+
+        
+                    // Wall kick lock
+         bool  m_wallKickLock{ false };
+        float m_wallKickTime{ 0.0f };
     };
 }
