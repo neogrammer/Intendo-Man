@@ -118,248 +118,169 @@ loop_delay = 0
 		
 		}
 
-		if (actMap && player)
-		{
-			static float playerAccumGrav{ 0.f };
-
-			static float amt = 0.f;
-			amt = 0.f;
-			// Player movement (MoveAxis = WASD + left stick)
-			float2 move = actMap->MoveAxis();
-
-
-	
-			float playerSpeedX = player->CurrentFrameVelocity().x;
-
-			auto v = tmap->getSolidTilesOnScreen(*camera);
-			std::vector<game::GameObject*> tiles{};
-			tiles.clear();
-			tiles.reserve(64);
-
-
-
-
-			float2 pan = actMap->PanAxis();
-			float camPanSpeed = 450.0f;
-			cameraOffset.x += pan.x * camPanSpeed * dt_;
-			cameraOffset.y += pan.y * camPanSpeed * dt_;
-
-
-			// --- Jump/Gravity state (keep local for now; later you can move into Player)
-			static float velY = 0.0f;
-			static bool jumpCutApplied = false;
-
-			constexpr float gravity = 1988.88f;     // px/s^2 (down)
-			constexpr float jumpSpeed = 900.0f;     // px/s (up = negative)
-			constexpr float minJumpUpSpeed = 300.0f; // release early clamps to this (short hop)
-
-			// Jump input: using MoveUp as Jump (W / DPadUp).
-			// If you later add Action::Jump, swap these calls over.
-			bool jumpPressed = actMap->Pressed(engine::Action::MoveUp);
-			bool jumpReleased = actMap->Released(engine::Action::MoveUp);
-
-			// Track grounded transitions
-			bool wasGrounded = player->isGrounded();
-			bool justJumped = false;
-
-			if (wasGrounded)
-			{
-				velY = 0.0f;
-				jumpCutApplied = false;
-			}
-
-			// Start jump
-			if (jumpPressed && wasGrounded)
-			{
-				velY = -jumpSpeed;
-				player->inAir();          // leave ground immediately
-				jumpCutApplied = false;
-				justJumped = true;
-			}
-
-			// Variable jump height: release early cuts the jump ONCE
-			if (jumpReleased && velY < 0.0f && !jumpCutApplied)
-			{
-				if (velY < -minJumpUpSpeed)
-					velY = -minJumpUpSpeed;
-				jumpCutApplied = true;
-			}
-
-			// Apply gravity while airborne
-			if (!player->isGrounded())
-			{
-				velY += gravity * dt_;
-			}
-
-			float2 delta
-			{
-				move.x * playerSpeedX * dt_,
-				velY * dt_
-			};
-
-			// --- Move + collisions
-			auto startPos = player->GetWorldPosition();
-			float expectedNewY = startPos.y + delta.y;
-
-			player->Move(delta);
-
-			// (your sweep collection stays the same...)
-
-
-			auto const startR = player->getWorldRect();
-
-			float left = std::min<float>(startR.X, startR.X + delta.x);
-			float top = std::min<float>(startR.Y, startR.Y + delta.y);
-			float right = std::max<float>(startR.X + startR.Width, startR.X + startR.Width + delta.x);
-			float bottom = std::max<float>(startR.Y + startR.Height, startR.Y + startR.Height + delta.y);
-
-
-			winrt::Windows::Foundation::Rect sweepR{ left, top, right - left, bottom - top };
-			auto sweepTiles = tmap->getSolidTilesInRect(sweepR, 1);
-
-			tiles.clear();
-			tiles.reserve(sweepTiles.size());
-
-			for (auto* tile : sweepTiles)
-				tiles.push_back(tile);
-
-
-			///  GOES TOGETHER LIKE THIS, TRUSTFALL ONLY TELLS WHEN TO FALL NOT WHEN TO LAND. THAT IS HANDLED BY HANDLECOLLISIONS,
-			//     then when grounded, trustfall keeps checking and makes actor begin fallin when neccessary
-			phys::handleCollisions(*player, tiles);
-
-			// for all objects affected by gravity
-			if (player->isGrounded() && player->isAffectedByGravity())
-			{
-				std::vector<game::GameObject*> vect;
-				if (auto* underObj = player->getUnder())
-				{
-					auto const underRect = underObj->getWorldRect();
-					auto underTiles = tmap->getSolidTilesInRect(underRect, 1);
-					vect.clear();
-					vect.reserve(underTiles.size());
-					for (auto* tile2 : underTiles)
-					{
-						vect.push_back(tile2);
-					}
-					phys::trustFall(*player, vect);
-				}
-			}
-			//////////////////////////////////////////////////////////////////////////////////////////////
-			
-			bool nowGrounded = player->isGrounded();
-			bool justLanded = (nowGrounded && !wasGrounded);
-
-			// If we tried to move UP but got pushed DOWN by collision, we bonked our head.
-			// (No PhysicsSys changes needed.)
-			auto endPos = player->GetWorldPosition();
-			if (velY < 0.0f && endPos.y > expectedNewY + 0.01f)
-			{
-				velY = 0.0f;
-			}
-
-			// When grounded, kill vertical velocity
-			if (nowGrounded)
-			{
-				velY = 0.0f;
-			}
-
-			if (auto* p = dynamic_cast<Player*>(player.get()))
-			{
-				Player::AnimContext animCtx{};
-				animCtx.moveX = move.x;
-				animCtx.grounded = nowGrounded;
-
-				animCtx.justLanded = justLanded;
-				animCtx.justJumped = justJumped;
-
-				animCtx.wantShoot = actMap && actMap->Down(engine::Action::Fire);
-				// animCtx.wantCharge = ... (when you add an input for charge)
-				animCtx.velY = velY;
-
-				p->UpdateAnimation(dt_, animCtx);
-			}
-
-
-			//if (move.x == -1 && player->IsFacingRight())
-			//{
-
-
-			//	if (ptr.GetAnimName() == game::Player::AnimName::Idle || ptr.GetAnimName() == game::Player::AnimName::Idle_Blink)
-			//	{
-			//		ptr.SetAnim(game::Player::AnimName::Run);
-			//	}
-
-			//	player->SetFacingRight(false);
-
-			//}
-			//else if (move.x == 1 && !player->IsFacingRight())
-			//{
-
-
-			//	if (ptr.GetAnimName() == game::Player::AnimName::Idle || ptr.GetAnimName() == game::Player::AnimName::Idle_Blink)
-			//	{
-			//		ptr.SetAnim(game::Player::AnimName::Run);
-			//	}
-
-			//	player->SetFacingRight(true);
-
-			//}
-			//else if (move.x == 1 && player->IsFacingRight())
-			//{
-
-
-			//	if (ptr.GetAnimName() != game::Player::AnimName::Run)
-			//	{
-			//		ptr.SetAnim(game::Player::AnimName::Run);
-			//	}
-
-			//	player->SetFacingRight(true);
-
-			//}
-			//else if (move.x == -1 && !player->IsFacingRight())
-			//{
-
-
-			//	if (ptr.GetAnimName() != game::Player::AnimName::Run)
-			//	{
-			//		ptr.SetAnim(game::Player::AnimName::Run);
-			//	}
-
-			//	player->SetFacingRight(false);
-
-			//}
-			//else if (move.x == 0 && (ptr.GetAnimName() != game::Player::AnimName::Idle && ptr.GetAnimName() != game::Player::AnimName::Idle_Blink))
-			//{
-			//	ptr.SetAnim(game::Player::AnimName::Idle);
-			//}
-
-
-
-
-			
-
-
-
-
-
-		
-			//// Camera pan offset (PanAxis = arrows + right stick)
-
-
-			//// Zoom (Q/E + triggers)
-			//float zoomAxis = actMap->ZoomAxis();
-			//float zoomRate = 1.25f;
-			//camera->Zoom *= (1.0f + zoomAxis * zoomRate * dt_);
-			//camera->Zoom = std::clamp<float>(camera->Zoom, 0.25f, 4.0f);
-
-			//// Rotate (Z/C + bumpers)
-			//float rotAxis = actMap->RotateAxis();
-			//float rotSpeed = 1.5f;
-			//camera->RotationRad += rotAxis * rotSpeed * dt_;
-
-			actMap = nullptr;
-		}
+        if (actMap && player)
+        {
+            // --- Tunables
+            constexpr float playerSpeed = 300.0f;
+
+            constexpr float gravity = 1988.88f;     // px/s^2 (down)
+            constexpr float jumpSpeed = 900.0f;     // px/s (up is negative)
+            constexpr float jumpCutSpeed = 300.0f;  // release early clamps to this upward speed
+
+            constexpr float coyoteMax = 0.10f;      // seconds
+            constexpr float bufferMax = 0.10f;      // seconds
+
+            // --- State
+            static float velY = 0.0f;
+            static bool  jumpCutApplied = false;
+            static float coyoteTimer = 0.0f;
+            static float jumpBufferTimer = 0.0f;
+
+            // Input
+            float2 move = actMap->MoveAxis();
+            bool jumpPressed = actMap->Pressed(engine::Action::MoveUp);   // W / DPadUp
+            bool jumpHeld = actMap->Down(engine::Action::MoveUp);
+            bool jumpReleased = actMap->Released(engine::Action::MoveUp);
+
+            // Camera pan (keep)
+            float2 pan = actMap->PanAxis();
+            constexpr float camPanSpeed = 450.0f;
+            cameraOffset.x += pan.x * camPanSpeed * dt_;
+            cameraOffset.y += pan.y * camPanSpeed * dt_;
+
+            // Ground snapshot at start of frame
+            bool wasGrounded = player->isGrounded();
+
+            // Timers
+            coyoteTimer = wasGrounded ? coyoteMax : std::max<float>(0.0f, coyoteTimer - dt_);
+            jumpBufferTimer = jumpPressed ? bufferMax : std::max<float>(0.0f, jumpBufferTimer - dt_);
+
+            if (wasGrounded)
+            {
+                velY = 0.0f;
+                jumpCutApplied = false;
+            }
+
+            auto StartJump = [&](bool isHeldNow)
+                {
+                    velY = -jumpSpeed;
+                    player->inAir();           // leave ground immediately
+                    coyoteTimer = 0.0f;
+                    jumpBufferTimer = 0.0f;
+                    jumpCutApplied = false;
+
+                    // If jump begins but button isn't held, apply a short-hop cut immediately
+                    if (!isHeldNow)
+                    {
+                        if (velY < -jumpCutSpeed) velY = -jumpCutSpeed;
+                        jumpCutApplied = true;
+                    }
+                };
+
+            // Coyote jump (buffered or pressed this frame)
+            if (jumpBufferTimer > 0.0f && (wasGrounded || coyoteTimer > 0.0f))
+            {
+                StartJump(jumpHeld);
+            }
+
+            // Variable height: release early cuts upward speed once
+            if (jumpReleased && velY < 0.0f && !jumpCutApplied)
+            {
+                if (velY < -jumpCutSpeed) velY = -jumpCutSpeed;
+                jumpCutApplied = true;
+            }
+
+            // Gravity
+            if (!player->isGrounded())
+            {
+                velY += gravity * dt_;
+            }
+
+            // Final movement delta
+            float2 delta
+            {
+                move.x * playerSpeed * dt_,
+                velY * dt_
+            };
+
+            // Build sweep rect BEFORE moving (so tile query is correct)
+            auto const startPos = player->GetWorldPosition();
+            float expectedNewY = startPos.y + delta.y;
+
+            auto const r0 = player->getWorldRect();
+            float left = std::min<float>(r0.X, r0.X + delta.x);
+            float top = std::min<float>(r0.Y, r0.Y + delta.y);
+            float right = std::max<float>(r0.X + r0.Width, r0.X + r0.Width + delta.x);
+            float bottom = std::max<float>(r0.Y + r0.Height, r0.Y + r0.Height + delta.y);
+
+            winrt::Windows::Foundation::Rect sweepR{ left, top, right - left, bottom - top };
+            auto sweepTiles = tmap->getSolidTilesInRect(sweepR, 1);
+
+            std::vector<game::GameObject*> tiles;
+            tiles.reserve(sweepTiles.size());
+            for (auto* tile : sweepTiles)
+                tiles.push_back(tile);
+
+            // Move + collisions ONCE
+            player->Move(delta);
+            phys::handleCollisions(*player, tiles);
+
+            // trustFall ONCE (only “do I still have support?”)
+            if (player->isGrounded() && player->isAffectedByGravity())
+            {
+                std::vector<game::GameObject*> underVec;
+                if (auto* underObj = player->getUnder())
+                {
+                    auto const underRect = underObj->getWorldRect();
+                    auto underTiles = tmap->getSolidTilesInRect(underRect, 1);
+
+                    underVec.reserve(underTiles.size());
+                    for (auto* t : underTiles)
+                        underVec.push_back(t);
+
+                    phys::trustFall(*player, underVec);
+                }
+            }
+
+            bool nowGrounded = player->isGrounded();
+            bool landedThisFrame = (nowGrounded && !wasGrounded);
+
+            // Head bonk: tried to go up but got pushed down by collision
+            auto const endPos = player->GetWorldPosition();
+            if (velY < 0.0f && endPos.y > expectedNewY + 0.01f)
+            {
+                velY = 0.0f;
+            }
+
+            // Kill falling velocity when grounded
+            if (nowGrounded && velY > 0.0f)
+            {
+                velY = 0.0f;
+            }
+
+            // Jump buffer on landing (this completes “buffer time” feature)
+            if (nowGrounded && jumpBufferTimer > 0.0f)
+            {
+                StartJump(jumpHeld);
+                nowGrounded = false;
+                landedThisFrame = false; // we jump immediately; don’t play land
+            }
+
+            // Animation context
+            if (auto* p = dynamic_cast<Player*>(player.get()))
+            {
+                Player::AnimContext animCtx{};
+                animCtx.moveX = move.x;
+                animCtx.grounded = nowGrounded;
+                animCtx.justLanded = landedThisFrame;
+                animCtx.wantShoot = actMap->Down(engine::Action::Fire);
+                animCtx.velY = velY;
+
+                p->UpdateAnimation(dt_, animCtx);
+            }
+
+            actMap = nullptr;
+        }
 
 		float camHalfW = camera->getWidth() * 0.5f;
 		float camHalfH = camera->getHeight() * 0.5f;
