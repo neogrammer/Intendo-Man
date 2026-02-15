@@ -135,6 +135,8 @@
     <ClInclude Include="Engine\Text.h" />
     <ClInclude Include="Engine\TextureStore.h" />
     <ClInclude Include="Engine\Utils.h" />
+    <ClInclude Include="Game\Animation\AnimatorSM.h" />
+    <ClInclude Include="Game\Animation\AnimCommon.h" />
     <ClInclude Include="Game\GameStates\GameOverState.h" />
     <ClInclude Include="Game\GameStates\GameState.h" />
     <ClInclude Include="Game\GameStates\GameStateBase.h" />

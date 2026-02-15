@@ -210,6 +210,12 @@
     <ClInclude Include="Engine\Utils.h">
       <Filter>Engine</Filter>
     </ClInclude>
+    <ClInclude Include="Game\Animation\AnimatorSM.h">
+      <Filter>Game\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Animation\AnimCommon.h">
+      <Filter>Game\Animation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\Textures\Characters\Player\player_atlas.png">
@@ -315,6 +321,9 @@
     </Filter>
     <Filter Include="Textures\Misc">
       <UniqueIdentifier>{1bee4257-18b4-4e5a-9a17-b93ebfc40716}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Animation">
+      <UniqueIdentifier>{60f11ad2-cde4-4162-846f-3bc414edebe5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

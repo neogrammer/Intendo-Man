@@ -7,6 +7,8 @@
 position   = 320 180
 world_size = 50 100
 start_anim = idle
+collision_mode = frame
+collision_anchor = bottom_center
 
 [anim teleport_start]
 texture        = PlayerAtlas
@@ -52,6 +54,7 @@ offsets        = (40,27)
 sizes          = (58,60)
 delays         = 0.83
 looping        = true
+start_delay = 0.50
 
 [anim idle_blink]
 texture        = PlayerAtlas
@@ -80,8 +83,10 @@ frames         = 12
 uni_directional= false
 offsets        = (40,27)
 sizes          = (58,60)
-delays         = 0.13
+delays         = .02 .06 .11 .11 .11 .11 .11 .11 .11 .11 .11 .11  
 looping        = frame2
+start_delay = 0.00
+velocities  = (376,0) (376,0) (376,0) (376,0) (376,0) (376,0) (376,0) (376,0) (376,0) (376,0) (376,0) (376,0) (-376,0) (-376,0) (-376,0) (-376,0) (-376,0) (-376,0) (-376,0) (-376,0) (-376,0) (-376,0) (-376,0) (-376,0)
 
 [anim jump_rise]
 texture        = PlayerAtlas

@@ -21,10 +21,8 @@ namespace game
         : AnimObject{}
     {
         LoadFromAnmFile(anmFilePath);
-        auto r = this->getWorldRect();
-        
-
-        under = std::make_unique<GameObject>(Cfg::Textures::Under, float2{ (float)r.X + (r.Width / 2.f), (float)r.Y + r.Height / 2.f }, float2{ this->GetWorldSize().x, 1.f }, float2{ 50.f,1.f }, float2{ 0.f,0.f }, float2{ 0.f,0.f });
+        // getUnder updates the position of under when queried
+        getUnder();
     }
 
     void AnimObject::clearClips()
@@ -37,6 +35,12 @@ namespace game
         m_playing = true;
         m_facingRight = true;
         m_waitingForLoop = false;
+
+        // Reset parsed object-level settings to defaults
+        m_collisionMode = CollisionMode::Constant;
+        m_collisionAnchor = CollisionAnchor::TopLeft;
+        m_startDelayRemaining = 0.0f;
+      
     }
 
     bool AnimObject::hasClip(std::wstring const& name) const
@@ -55,6 +59,7 @@ namespace game
         }
         return out;
     }
+
 
     std::wstring AnimObject::ResolvePath(std::wstring const& path)
     {
@@ -499,6 +504,8 @@ namespace game
         // looping = true/false
         // loop_wait = true/false
         // loop_delay = f
+        // start_delay = f         (optional)
+        // velocities = (x,y) ...  (optional)
 
         clearClips();
 
@@ -527,6 +534,7 @@ namespace game
 
                 if (listKey == L"offsets") clip->offsets = ParseFloat2List(listBuffer);
                 else if (listKey == L"sizes") clip->sizes = ParseFloat2List(listBuffer);
+                else if (listKey == L"velocities") clip->velocities = ParseFloat2List(listBuffer);
                 else if (listKey == L"delays") clip->delays = ParseFloatList(listBuffer);
                 else if (listKey == L"rects")  clip->rects = ParseFloat2List(listBuffer);
 
@@ -541,6 +549,7 @@ namespace game
                 {
                     if (!c.offsets.empty()) c.framesPerDir = static_cast<uint32_t>(c.offsets.size());
                     else if (!c.sizes.empty()) c.framesPerDir = static_cast<uint32_t>(c.sizes.size());
+                    else if (!c.velocities.empty()) c.framesPerDir = static_cast<uint32_t>(c.velocities.size());
                     else if (!c.delays.empty()) c.framesPerDir = static_cast<uint32_t>(c.delays.size());
                     else if (!c.rects.empty())
                     {
@@ -613,8 +622,10 @@ namespace game
 
                 fixVec2(c.offsets, float2{ 0.0f, 0.0f });
                 fixVec2(c.sizes, (c.frameSize.x > 0.0f && c.frameSize.y > 0.0f) ? c.frameSize : float2{ 0.0f, 0.0f });
+                fixVec2(c.velocities, float2{ 0.0f, 0.0f });
                 fixFloat(c.delays, 0.10f);
 
+                if (c.startDelay < 0.0f) c.startDelay = 0.0f;
                 if (c.loopFromFrame >= c.framesPerDir)
                     c.loopFromFrame = 0;
 
@@ -706,6 +717,27 @@ namespace game
                 // Collision box size (constant for this object)
                 worldSize = ParseFloat2Pair(value, worldSize);
             }
+
+            else if (key == L"collision_mode")
+                 {
+                auto v = ToLower(Trim(value));
+                if (v == L"frame" || v == L"per_frame" || v == L"perframe" || v == L"animated")
+                     m_collisionMode = CollisionMode::Frame;
+                else
+                     m_collisionMode = CollisionMode::Constant;
+                }
+            else if (key == L"collision_anchor")
+            {
+                auto v = ToLower(Trim(value));
+                if (v == L"bottom_center" || v == L"bottomcenter" || v == L"feet")
+                    m_collisionAnchor = CollisionAnchor::BottomCenter;
+                else if (v == L"bottom_left" || v == L"bottomleft")
+                    m_collisionAnchor = CollisionAnchor::BottomLeft;
+                else if (v == L"center" || v == L"centre")
+                    m_collisionAnchor = CollisionAnchor::Center;
+                else
+                    m_collisionAnchor = CollisionAnchor::TopLeft;
+            }
         }
         else if (section == Section::Anim && clip)
         {
@@ -753,10 +785,16 @@ namespace game
             {
                 clip->uniDirectional = ParseBool(value, true);
             }
-            else if (key == L"offsets" || key == L"sizes" || key == L"delays" || key == L"rects")
+            else if (key == L"offsets" || key == L"sizes" || key == L"velocities" || key == L"delays" || key == L"rects")
             {
                 listKey = key;
                 listBuffer = value;
+            }
+            else if (key == L"start_delay")
+            {
+               clip->startDelay = ParseF32(value, 0.0f);
+               if (clip->startDelay < 0.0f) 
+                   clip->startDelay = 0.0f;
             }
             else if (key == L"looping")
             {
@@ -806,6 +844,124 @@ namespace game
     SyncToBase();
 }
 
+void AnimObject::PlaySynced(std::wstring const& name)
+{
+    const auto key = ToLower(Trim(name));
+
+    auto itNew = m_clips.find(key);
+    if (itNew == m_clips.end())
+    {
+        Cfg::debugPrint(L"AnimObject::PlaySynced: unknown anim \"" + key + L"\"\n");
+        return;
+    }
+
+    // No current clip? Fall back to a normal Play.
+    if (m_currentClip.empty())
+    {
+        Play(itNew->first, true);
+        return;
+    }
+
+    // Already on this clip: nothing to do.
+    if (m_currentClip == itNew->first)
+    {
+        m_playing = true;
+        return;
+    }
+
+    Clip const* oldClip = currentClip();
+    if (!oldClip || oldClip->framesPerDir == 0)
+    {
+        Play(itNew->first, true);
+        return;
+    }
+
+    // Remaining time on the current frame (old clip)
+    const size_t oldIdx = currentFrameLinearIndex(*oldClip);
+    float oldDelay = (oldIdx < oldClip->delays.size()) ? oldClip->delays[oldIdx] : 0.10f;
+    if (oldDelay <= 0.0001f) oldDelay = 0.0001f;
+
+    float remaining = oldDelay - m_animElapsed;
+    if (remaining < 0.0f) remaining = 0.0f;
+    if (remaining > oldDelay) remaining = oldDelay;
+
+    // Clamp frame index into the new clip
+    Clip const& newClip = itNew->second;
+    const uint32_t maxIndex = (newClip.framesPerDir > 0) ? (newClip.framesPerDir - 1u) : 0u;
+    const uint32_t newFrame = (newClip.framesPerDir > 0) ? std::min<uint32_t>(m_currentIndex, maxIndex) : 0u;
+
+    auto linearIndexFor = [&](Clip const& c, uint32_t frameIndex) noexcept -> size_t
+        {
+            const size_t dir = (c.uniDirectional || m_facingRight) ? 0u : 1u;
+            const size_t base = dir * static_cast<size_t>(c.framesPerDir);
+            size_t idx = base + static_cast<size_t>(frameIndex);
+
+            const size_t max = c.uniDirectional ? static_cast<size_t>(c.framesPerDir)
+                : static_cast<size_t>(c.framesPerDir) * 2u;
+            if (max == 0) return 0;
+            if (idx >= max) idx = max - 1;
+            return idx;
+        };
+
+    // Translate remaining-time carryover into the new clip's current frame.
+    const size_t newIdx = linearIndexFor(newClip, newFrame);
+    float newDelay = (newIdx < newClip.delays.size()) ? newClip.delays[newIdx] : 0.10f;
+    if (newDelay <= 0.0001f) newDelay = 0.0001f;
+
+    float newElapsed = newDelay - remaining;
+    if (newElapsed < 0.0f) newElapsed = 0.0f;
+    if (newElapsed > newDelay) newElapsed = newDelay;
+
+    // Commit transition.
+    m_currentClip = itNew->first;
+    m_currentIndex = newFrame;
+    m_animElapsed = newElapsed;
+
+    // We are in the middle of a frame; loop-wait doesn't apply.
+    m_waitingForLoop = false;
+    m_loopElapsed = 0.0f;
+    m_playing = true;
+}
+
+void AnimObject::SetFacingRight(bool right) noexcept
+{
+    if (right == m_facingRight)
+        return;
+
+    // Preserve remaining time on the current frame when switching directions.
+    // (Only matters for clips that have explicit left frames.)
+    if (auto const* clip = currentClip(); clip && !clip->uniDirectional && clip->framesPerDir > 0)
+    {
+        const size_t oldIdx = currentFrameLinearIndex(*clip);
+        float oldDelay = (oldIdx < clip->delays.size()) ? clip->delays[oldIdx] : 0.10f;
+        if (oldDelay <= 0.0001f) oldDelay = 0.0001f;
+
+        float remaining = oldDelay - m_animElapsed;
+        if (remaining < 0.0f) remaining = 0.0f;
+        if (remaining > oldDelay) remaining = oldDelay;
+
+        const size_t dir = (clip->uniDirectional || right) ? 0u : 1u;
+        const size_t base = dir * static_cast<size_t>(clip->framesPerDir);
+        size_t newIdx = base + static_cast<size_t>(m_currentIndex);
+
+        const size_t max = clip->uniDirectional ? static_cast<size_t>(clip->framesPerDir)
+            : static_cast<size_t>(clip->framesPerDir) * 2u;
+        if (max != 0)
+        {
+            if (newIdx >= max) newIdx = max - 1;
+            float newDelay = (newIdx < clip->delays.size()) ? clip->delays[newIdx] : 0.10f;
+            if (newDelay <= 0.0001f) newDelay = 0.0001f;
+
+            float newElapsed = newDelay - remaining;
+            if (newElapsed < 0.0f) newElapsed = 0.0f;
+            if (newElapsed > newDelay) newElapsed = newDelay;
+            m_animElapsed = newElapsed;
+        }
+    }
+
+    m_facingRight = right;
+}
+
 void AnimObject::Play(std::wstring const& name, bool restart, uint32_t startFrame)
 {
     auto key = ToLower(Trim(name));
@@ -827,17 +983,39 @@ void AnimObject::Play(std::wstring const& name, bool restart, uint32_t startFram
         m_animElapsed = 0.0f;
         m_loopElapsed = 0.0f;
         m_waitingForLoop = false;
+
+        m_startDelayRemaining = std::max<float>(0.0f, it->second.startDelay);
     }
 
     m_playing = true;
 }
 
+
+
 void AnimObject::Update(float dt)
 {
+    // Always publish base values after Update(), even on early returns.
+    // This keeps physics + rendering in sync with the current frame.
+    struct SyncOnExit
+    {
+        AnimObject* self{};
+        ~SyncOnExit() { if (self) self->SyncToBase(); }
+    } _sync{ this };
+
     auto* clip = currentClip();
-    if (!clip) return;
-    if (!m_playing) return;
-    if (clip->framesPerDir == 0) return;
+    if (!clip) {  return; }
+    if (!m_playing) {   return; }
+    if (clip->framesPerDir == 0) {  return; }
+
+    // Consumes dt into the start delay first, then uses any remainder for normal frame timing.
+    if (m_startDelayRemaining > 0.0f)
+    {
+        float consume = std::min<float>(dt, m_startDelayRemaining);
+        m_startDelayRemaining -= consume;
+        dt -= consume;
+        if (dt <= 0.0f) return; // still holding on the start frame
+    }
+
 
     // Loop-wait behavior: sit on the last frame until loop_delay expires
     if (m_waitingForLoop)
@@ -852,6 +1030,7 @@ void AnimObject::Update(float dt)
             uint32_t maxIndex = (clip->framesPerDir > 0) ? (clip->framesPerDir - 1u) : 0u;
             m_currentIndex = std::min<uint32_t>(clip->loopFromFrame, maxIndex);
         }
+      
         return;
     }
 
@@ -863,6 +1042,7 @@ void AnimObject::Update(float dt)
 
     if (m_animElapsed < frameDelay)
     {
+      
         return;
     }
 
@@ -872,6 +1052,7 @@ void AnimObject::Update(float dt)
     if (m_currentIndex + 1 < clip->framesPerDir)
     {
         m_currentIndex++;
+       
         return;
     }
 
@@ -883,6 +1064,7 @@ void AnimObject::Update(float dt)
     case Clip::EndMode::Wait:
         // Freeze on last frame until something external calls Play(...)
         m_playing = false;
+       
         return;
 
     case Clip::EndMode::Goto:
@@ -890,6 +1072,7 @@ void AnimObject::Update(float dt)
         if (clip->endToClip.empty())
         {
             m_playing = false;
+         
             return;
         }
 
@@ -903,6 +1086,7 @@ void AnimObject::Update(float dt)
         {
             // Unknown target: fail safe by freezing
             m_playing = false;
+     
             return;
         }
 
@@ -914,7 +1098,9 @@ void AnimObject::Update(float dt)
         m_animElapsed = 0.0f;
         m_loopElapsed = 0.0f;
         m_waitingForLoop = false;
+        m_startDelayRemaining = std::max<float>(0.0f, it->second.startDelay);
         m_playing = true;
+    
         return;
     }
 
@@ -926,6 +1112,7 @@ void AnimObject::Update(float dt)
             m_waitingForLoop = true;
             m_loopElapsed = 0.0f;
             // stay on last frame until delay expires
+      
             return;
         }
 
@@ -938,14 +1125,57 @@ void AnimObject::Update(float dt)
     }
 }
 
+float2 AnimObject::CurrentFrameVelocity() const noexcept
+{
+    auto const* clip = currentClip();
+    if (!clip) return float2{ 0.0f, 0.0f };
+    if (clip->framesPerDir == 0) return float2{ 0.0f, 0.0f };
+    if (clip->velocities.empty()) return float2{ 0.0f, 0.0f };
+
+    const size_t idx = currentFrameLinearIndex(*clip);
+    if (idx >= clip->velocities.size()) return float2{ 0.0f, 0.0f };
+
+    auto v = clip->velocities[idx];
+
+    // Convention: velocities are authored as "facing right"; mirror X when facing left.
+    if (!m_facingRight) v.x = -v.x;
+
+    return v;
+}
+
+
 GameObject* AnimObject::getUnder()
 {
-    if (!under) 
+    // Lazily create the probe once, then keep its rect synced to the actor each time it's requested.
+    if (!under)
     {
-        auto r = this->getWorldRect();
-        under = std::make_unique<GameObject>(Cfg::Textures::Under, float2{ (float)r.X + (r.Width / 2.f), (float)r.Y + r.Height / 2.f}, float2{ this->GetWorldSize().x, 1.f }, float2{ 50.f,1.f }, float2{ 0.f,0.f }, float2{ 0.f,0.f });
+        under = std::make_unique<GameObject>(
+        Cfg::Textures::Under,
+        float2{ 0.0f, 0.0f },
+        float2{ 1.0f, 1.0f },
+        float2{ 1.0f, 1.0f },
+        float2{ 0.0f, 0.0f },
+        float2{ 0.0f, 0.0f }
+        );
+        
+        // It's a probe only (never simulated), but this flag is harmless either way.
+        under->setAffectedByGravity(false);
     }
-
+    
+    // --- Keep the probe as a 1px strip directly under the collider box.
+    // WorldPosition/WorldSize are the COLLIDER box (top-left + size).
+    // This is *not* sprite top-left (that's worldPosition - textureOffset).
+    constexpr float kUnderHeight = 1.0f;  // 1px
+    constexpr float kInsetX = 1.0f;       // shrink a hair so walls don't count as "ground"
+   
+    const auto pos = GetWorldPosition();
+    const auto size = GetWorldSize();
+    
+    const float w = std::max<float>(0.0f, size.x - (kInsetX * 2.0f));
+    
+    under->SetWorldPosition(float2{ pos.x + kInsetX, pos.y + size.y });
+    under->SetWorldSize(float2{ w, kUnderHeight });
+    
     return under.get();
 }
 

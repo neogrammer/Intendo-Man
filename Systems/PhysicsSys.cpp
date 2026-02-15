@@ -21,16 +21,16 @@ namespace phys
 
 				if (r1.Y <= r2.Y)
 				{
-					tmpY =  (long)r1.Y + (long)r1.Height - (long)r2.Y;
-					posX =  (long)r2.X;
-					posY =  (long)r2.Y;
+					tmpY = (long)r1.Y + (long)r1.Height - (long)r2.Y;
+					posX = (long)r2.X;
+					posY = (long)r2.Y;
 					yDir = -1;
 				}
 				else
 				{
-					tmpY =   (long)r2.Y +  (long)r2.Height - (long)r1.Y;
-					posX  =  (long)r1.X + (long)r1.Width - (long)r2.X;
-					posY =   (long)r2.Y + (long)r2.Height - (long)r1.Y;
+					tmpY = (long)r2.Y + (long)r2.Height - (long)r1.Y;
+					posX = (long)r1.X + (long)r1.Width - (long)r2.X;
+					posY = (long)r2.Y + (long)r2.Height - (long)r1.Y;
 					yDir = 1;
 				}
 				xDir = -1;
@@ -57,6 +57,15 @@ namespace phys
 			}
 			if (tmpX > tmpY) { xDir = 0; }
 			else if (tmpX < tmpY) { yDir = 0; }
+
+			if (tmpX == 0)
+			{
+				xDir = 0;
+			}
+			if (tmpY == 0)
+			{
+				yDir = 0;
+			}
 
 			return {(float)posX, (float)posY, (float)tmpX, (float)tmpY};
 		}
@@ -115,6 +124,7 @@ namespace phys
 				if ((r1.X <= r2.X + r2.Width) && (r1.X + r1.Width > r2.X) && (r1.Y <= r2.Y + r2.Height) && (r1.Y + r1.Height > r2.Y))
 				{
 					// under is colliding
+					//a.land();    <- no otherwise i need a bigger inset, and two things making an actor land, this function only tells when to fall so dont do this, just do this after handle collisions within the ongrounded flag to lower in air checks
 					return;
 				}
 		}

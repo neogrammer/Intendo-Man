@@ -115,18 +115,22 @@ loop_delay = 0
 		if (player)
 		{
 			player->Update(dt_);
+		
 		}
 
 		if (actMap && player)
 		{
-			float playerAccumGrav{ 0.f };
-			static bool movedDownYet{ false };
+			static float playerAccumGrav{ 0.f };
+
 			static float amt = 0.f;
 			amt = 0.f;
 			// Player movement (MoveAxis = WASD + left stick)
 			float2 move = actMap->MoveAxis();
 
-			float playerSpeed = 300.f;
+
+	
+			float playerSpeedX = player->CurrentFrameVelocity().x;
+			float playerSpeedY = 300.f;
 
 			auto v = tmap->getSolidTilesOnScreen(*camera);
 			std::vector<game::GameObject*> tiles{};
@@ -134,7 +138,7 @@ loop_delay = 0
 			tiles.reserve(64);
 
 
-			
+
 
 			float2 pan = actMap->PanAxis();
 			float camPanSpeed = 450.0f;
@@ -155,8 +159,8 @@ loop_delay = 0
 			}
 
 			float2 delta{
-	move.x * playerSpeed * dt_,
-	(move.y * playerSpeed * dt_) + playerAccumGrav
+	move.x * playerSpeedX * dt_,
+	(move.y * playerSpeedY * dt_) + playerAccumGrav
 			};
 
 
@@ -184,79 +188,97 @@ loop_delay = 0
 			for (auto* tile : sweepTiles)
 				tiles.push_back(tile);
 
-		
 
-			std::vector<game::GameObject*> vect;
-			if (auto* underObj = player->getUnder())
-			{
-				auto const underRect = underObj->getWorldRect();
-				auto underTiles = tmap->getSolidTilesInRect(underRect, 1);
-				vect.clear();
-				vect.reserve(underTiles.size());
-				for (auto* tile2 : underTiles)
-				{
-					vect.push_back(tile2);
-				}
-				phys::trustFall(*player, vect);
-			}
+			///  GOES TOGETHER LIKE THIS, TRUSTFALL ONLY TELLS WHEN TO FALL NOT WHEN TO LAND. THAT IS HANDLED BY HANDLECOLLISIONS,
+			//     then when grounded, trustfall keeps checking and makes actor begin fallin when neccessary
 			phys::handleCollisions(*player, tiles);
 
-
+			// for all objects affected by gravity
+			if (player->isGrounded() && player->isAffectedByGravity())
+			{
+				std::vector<game::GameObject*> vect;
+				if (auto* underObj = player->getUnder())
+				{
+					auto const underRect = underObj->getWorldRect();
+					auto underTiles = tmap->getSolidTilesInRect(underRect, 1);
+					vect.clear();
+					vect.reserve(underTiles.size());
+					for (auto* tile2 : underTiles)
+					{
+						vect.push_back(tile2);
+					}
+					phys::trustFall(*player, vect);
+				}
+			}
+			//////////////////////////////////////////////////////////////////////////////////////////////
 			
-			auto& ptr = *dynamic_cast<Player*>(player.get());
+			
 
-			if (move.x == -1 && player->IsFacingRight())
+			if (auto* p = dynamic_cast<Player*>(player.get()))
 			{
+				Player::AnimContext animCtx{};
+				animCtx.moveX = move.x;
+				animCtx.grounded = player->isGrounded();
 
+				// Not wired yet in your input map, but you can start with Fire:
+				animCtx.wantShoot = actMap && actMap->Down(engine::Action::Fire);
 
-				if (ptr.GetAnimName() == game::Player::AnimName::Idle || ptr.GetAnimName() == game::Player::AnimName::Idle_Blink)
-				{
-					ptr.SetAnim(game::Player::AnimName::Run);
-				}
-
-				player->SetFacingRight(false);
-
+				p->UpdateAnimation(dt_, animCtx);
 			}
-			else if (move.x == 1 && !player->IsFacingRight())
-			{
 
 
-				if (ptr.GetAnimName() == game::Player::AnimName::Idle || ptr.GetAnimName() == game::Player::AnimName::Idle_Blink)
-				{
-					ptr.SetAnim(game::Player::AnimName::Run);
-				}
-
-				player->SetFacingRight(true);
-
-			}
-			else if (move.x == 1 && player->IsFacingRight())
-			{
+			//if (move.x == -1 && player->IsFacingRight())
+			//{
 
 
-				if (ptr.GetAnimName() != game::Player::AnimName::Run)
-				{
-					ptr.SetAnim(game::Player::AnimName::Run);
-				}
+			//	if (ptr.GetAnimName() == game::Player::AnimName::Idle || ptr.GetAnimName() == game::Player::AnimName::Idle_Blink)
+			//	{
+			//		ptr.SetAnim(game::Player::AnimName::Run);
+			//	}
 
-				player->SetFacingRight(true);
+			//	player->SetFacingRight(false);
 
-			}
-			else if (move.x == -1 && !player->IsFacingRight())
-			{
+			//}
+			//else if (move.x == 1 && !player->IsFacingRight())
+			//{
 
 
-				if (ptr.GetAnimName() != game::Player::AnimName::Run)
-				{
-					ptr.SetAnim(game::Player::AnimName::Run);
-				}
+			//	if (ptr.GetAnimName() == game::Player::AnimName::Idle || ptr.GetAnimName() == game::Player::AnimName::Idle_Blink)
+			//	{
+			//		ptr.SetAnim(game::Player::AnimName::Run);
+			//	}
 
-				player->SetFacingRight(false);
+			//	player->SetFacingRight(true);
 
-			}
-			else if (move.x == 0 && (ptr.GetAnimName() != game::Player::AnimName::Idle && ptr.GetAnimName() != game::Player::AnimName::Idle_Blink))
-			{
-				ptr.SetAnim(game::Player::AnimName::Idle);
-			}
+			//}
+			//else if (move.x == 1 && player->IsFacingRight())
+			//{
+
+
+			//	if (ptr.GetAnimName() != game::Player::AnimName::Run)
+			//	{
+			//		ptr.SetAnim(game::Player::AnimName::Run);
+			//	}
+
+			//	player->SetFacingRight(true);
+
+			//}
+			//else if (move.x == -1 && !player->IsFacingRight())
+			//{
+
+
+			//	if (ptr.GetAnimName() != game::Player::AnimName::Run)
+			//	{
+			//		ptr.SetAnim(game::Player::AnimName::Run);
+			//	}
+
+			//	player->SetFacingRight(false);
+
+			//}
+			//else if (move.x == 0 && (ptr.GetAnimName() != game::Player::AnimName::Idle && ptr.GetAnimName() != game::Player::AnimName::Idle_Blink))
+			//{
+			//	ptr.SetAnim(game::Player::AnimName::Idle);
+			//}
 
 
 
@@ -339,8 +361,9 @@ loop_delay = 0
 	std::vector<engine::Text>& PlayState::render(engine::Renderer2D& renderer_)
 	{
 		tmap->render(renderer_, *camera);
-
-		//uiStrings[0].String = L"Player X = " + std::to_wstring(player->GetWorldPosition().x)
+		
+		uiStrings[0].String = L"Player AnimFrame = " + std::to_wstring(player->CurrentFrameIndex());
+		uiStrings[0].Invalidate();
 
 		if (player)
 		{

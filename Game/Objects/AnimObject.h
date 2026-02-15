@@ -29,6 +29,9 @@ namespace game
     class AnimObject : public GameObject
     {
     public:
+        enum class CollisionMode { Constant, Frame };
+        enum class CollisionAnchor { TopLeft, BottomLeft, BottomCenter, Center };
+
         struct Clip
         {
             // Texture + atlas description
@@ -75,6 +78,11 @@ namespace game
             std::vector<float2> sizes;   // legacy/compat: parsed from .anm, but worldSize is constant (only used for initial default)
             std::vector<float> delays;   // seconds per frame
 
+
+            // New (parsed, but not yet applied until you wire it):
+            float startDelay{ 0.0f };         // seconds to hold on first frame when clip begins
+            std::vector<float2> velocities;   // optional per-frame velocity (x,y)
+
             // Computed source rects (parallel with the arrays above)
             std::vector<Rect> sourceRects;
         };
@@ -90,6 +98,12 @@ namespace game
         float m_animElapsed{ 0.0f };
         float m_loopElapsed{ 0.0f };
         bool m_waitingForLoop{ false };
+        float m_startDelayRemaining{ 0.0f };
+
+
+        // (parsed from [object], but not yet applied until you wire it):
+        CollisionMode   m_collisionMode{ CollisionMode::Constant };
+        CollisionAnchor m_collisionAnchor{ CollisionAnchor::TopLeft };
 
         std::unique_ptr<GameObject> under{ nullptr };
 
@@ -106,13 +120,15 @@ namespace game
         void LoadFromAnmFile(std::wstring const& path);
         void LoadFromAnmText(std::wstring const& text);
 
+        void PlaySynced(std::wstring const& name);
+
         // Animation control
         void Play(std::wstring const& name, bool restart = false, uint32_t startFrame = 0);
         void Stop() noexcept { m_playing = false; }
         void Resume() noexcept { m_playing = true; }
         bool IsPlaying() const noexcept { return m_playing; }
 
-        void SetFacingRight(bool right) noexcept { m_facingRight = right; }
+        void SetFacingRight(bool right) noexcept;
         bool IsFacingRight() const noexcept { return m_facingRight; }
 
         // Advances internal animation timers + current frame index.
@@ -123,6 +139,15 @@ namespace game
 
         // Copies current clip/frame data into the base GameObject values.
         void SyncToBase();
+
+        // --- Introspection (needed by animation state machines)
+        std::wstring const& CurrentClipKey() const noexcept { return m_currentClip; }
+        uint32_t CurrentFrameIndex() const noexcept { return m_currentIndex; }
+
+        // --- Parsed settings (not yet used until you wire logic)
+        CollisionMode GetCollisionMode() const noexcept { return m_collisionMode; }
+        CollisionAnchor GetCollisionAnchor() const noexcept { return m_collisionAnchor; }
+        float2 CurrentFrameVelocity() const noexcept;
 
     private:
         // ---- Parsing helpers
