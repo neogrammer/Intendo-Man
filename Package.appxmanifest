@@ -3,7 +3,7 @@
   <Identity
     Name="fc679e6e-1d5b-4186-a1aa-9cf732b7633b"
     Publisher="CN=neogrammer"
-    Version="1.1.0.0" />
+    Version="1.1.1.0" />
   <mp:PhoneIdentity PhoneProductId="fc679e6e-1d5b-4186-a1aa-9cf732b7633b" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
   <Properties>
     <DisplayName>Intendo Man</DisplayName>
