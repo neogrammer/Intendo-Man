@@ -97,6 +97,9 @@
     <ClCompile Include="Engine\Utils.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
+    <ClCompile Include="Game\Objects\BusterShot.cpp">
+      <Filter>Game\Objects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Math.h">
@@ -216,6 +219,9 @@
     <ClInclude Include="Game\Animation\AnimCommon.h">
       <Filter>Game\Animation</Filter>
     </ClInclude>
+    <ClInclude Include="Game\Objects\BusterShot.h">
+      <Filter>Game\Objects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\Textures\Characters\Player\player_atlas.png">
@@ -251,6 +257,12 @@
     <Image Include="Assets\Textures\Tilesets\tileset2.png" />
     <Image Include="Assets\Textures\Misc\under.png">
       <Filter>Textures\Misc</Filter>
+    </Image>
+    <Image Include="Assets\Textures\Characters\Player\buster_shot_244x26.png">
+      <Filter>Textures\Characters\Player</Filter>
+    </Image>
+    <Image Include="Assets\Textures\Characters\Player\buster_shot_21x26.png">
+      <Filter>Textures\Characters\Player</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>

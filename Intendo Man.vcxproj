@@ -153,6 +153,7 @@
     <ClInclude Include="Game\Mgmt\game_states.h" />
     <ClInclude Include="Game\Mgmt\StageManager.h" />
     <ClInclude Include="Game\Objects\AnimObject.h" />
+    <ClInclude Include="Game\Objects\BusterShot.h" />
     <ClInclude Include="Game\Objects\GameObject.h" />
     <ClInclude Include="Game\Objects\Player.h" />
     <ClInclude Include="Game\Resources\Cfg.h" />
@@ -185,6 +186,8 @@
     <Image Include="Assets\Square44x44Logo.scale-200.png" />
     <Image Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Image Include="Assets\StoreLogo.png" />
+    <Image Include="Assets\Textures\Characters\Player\buster_shot_21x26.png" />
+    <Image Include="Assets\Textures\Characters\Player\buster_shot_244x26.png" />
     <Image Include="Assets\Textures\Characters\Player\player_atlas.png" />
     <Image Include="Assets\Textures\Characters\Player\ship.png" />
     <Image Include="Assets\Textures\Misc\under.png" />
@@ -202,6 +205,7 @@
     <ClCompile Include="Engine\Sprite.cpp" />
     <ClCompile Include="Engine\Text.cpp" />
     <ClCompile Include="Engine\Texture.cpp" />
+    <ClCompile Include="Game\Objects\BusterShot.cpp" />
     <ClCompile Include="Systems\PhysicsSys.cpp" />
     <ClInclude Include="Engine\Texture.h" />
     <ClCompile Include="Engine\TextureStore.cpp" />

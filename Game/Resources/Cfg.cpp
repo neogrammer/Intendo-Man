@@ -66,7 +66,13 @@ winrt::Windows::Foundation::IAsyncAction Cfg::initTextures()
     co_await engine::TextureStore::Instance().RegisterAndLoadAsync(
         L"under",
         Uri(L"ms-appx:///Assets/Textures/Misc/under.png"));
-    textures.emplace(Textures::Ship, L"under");
+    textures.emplace(Textures::Under, L"under");
+
+    co_await engine::TextureStore::Instance().RegisterAndLoadAsync(
+        L"BusterShot",
+        Uri(L"ms-appx:///Assets/Textures/Characters/Player/buster_shot_21x26.png"));
+    textures.emplace(Textures::BusterShot, L"BusterShot");
+
 
     co_return;
 }

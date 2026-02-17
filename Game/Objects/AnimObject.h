@@ -151,6 +151,9 @@ namespace game
         CollisionAnchor GetCollisionAnchor() const noexcept { return m_collisionAnchor; }
         float2 CurrentFrameVelocity() const noexcept;
 
+
+
+
     private:
         // ---- Parsing helpers
         static std::wstring ResolvePath(std::wstring const& path);
@@ -171,11 +174,11 @@ namespace game
         static void ParseLoopingSpec(std::wstring const& s, Clip& clip);
 
         static void BuildSourceRects(Clip& clip);
-
+ 
         size_t currentFrameLinearIndex(Clip const& clip) const noexcept;
-
         Clip* currentClip();
         Clip const* currentClip() const;
+
 
         static Cfg::Textures FindTextureEnum(std::wstring const& token);
     };

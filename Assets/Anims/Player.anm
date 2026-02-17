@@ -40,6 +40,21 @@ sizes          = (58,60)
 delays         = 0.13
 looping        = idle
 
+[anim airdash]
+texture        = PlayerAtlas
+frame_size     = 130 160
+start_px       = 0 0
+start_col      = 16
+start_row      = 1
+start_row_left = 14
+pitch          = 17
+frames         = 1
+uni_directional= false
+offsets        = (40,27)
+sizes          = (58,60)
+delays         = 0.08
+looping        = waits
+
 [anim idle]
 texture        = PlayerAtlas
 frame_size     = 130 160

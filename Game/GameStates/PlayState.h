@@ -7,6 +7,8 @@
 #include <memory>
 
 #include <winrt/Windows.Foundation.Numerics.h>
+#include "../Objects/BusterShot.h"
+#include <array>
 
 namespace engine
 {
@@ -41,6 +43,10 @@ namespace game
 		std::unique_ptr<game::Tilemap> tmap{ nullptr };
 	
 	public:
+
+		std::array<game::BusterShot, 3> m_busterShots{};
+		float m_busterCooldown{ 0.0f };
+
 		void enter() override final;
 		void exit() override final;
 
