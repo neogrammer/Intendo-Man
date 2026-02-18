@@ -10,8 +10,21 @@
 #include "../Map/Tilemap.h"
 #include "../Systems/PhysicsSys.h"
 
+#include "../Objects/Enemies/Bluey/Bluey.h"
+#include "../Objects/Enemies/Bluey/BlueyElectricShot.h"
+#include "../Objects/Enemies/Bluey/BlueyMissileShot.h"
+
 #include <array>
 #include <algorithm>
+
+
+namespace
+{
+    std::unique_ptr<game::Bluey> s_bluey{ nullptr };
+    std::array<game::BlueyElectricShot, 4> s_blueyElectric{};
+    std::array<game::BlueyMissileShot, 4> s_blueyMissiles{};
+}
+
 
 namespace game
 {
@@ -84,7 +97,12 @@ loop_delay = 0
         for (auto& s : m_busterShots) s.Kill();
         m_busterCooldown = 0.0f;
 
-
+                // --- Bluey (enemy)
+        if (s_bluey) { s_bluey.reset(); }
+        s_bluey = std::make_unique<game::Bluey>(float2{ 1000.0f, 186.0f });
+        for (auto& e : s_blueyElectric) e.Kill();
+        for (auto& m : s_blueyMissiles) m.Kill();
+       
 
 
     }
@@ -95,6 +113,10 @@ loop_delay = 0
         for (auto& s : m_busterShots) s.Kill();
         m_busterCooldown = 0.0f;
 
+        for (auto& e : s_blueyElectric) e.Kill();
+        for (auto& m : s_blueyMissiles) m.Kill();
+        s_bluey.reset();
+
         tmap.reset();
         tmap = nullptr;
 
@@ -102,6 +124,10 @@ loop_delay = 0
         uiStrings.clear();
         player.reset();
         player = nullptr;
+
+        
+
+        
 
     }
 
@@ -560,26 +586,26 @@ loop_delay = 0
             // Build sweep rect BEFORE moving (so tile query is correct)
             auto const startPos = player->GetWorldPosition();
             float expectedNewY = startPos.y + delta.y;
+            {
+                auto const r0 = player->getWorldRect();
 
-            auto const r0 = player->getWorldRect();
+                float left = std::min<float>(r0.X, r0.X + delta.x);
+                float top = std::min<float>(r0.Y, r0.Y + delta.y);
+                float right = std::max<float>(r0.X + r0.Width, r0.X + r0.Width + delta.x);
+                float bottom = std::max<float>(r0.Y + r0.Height, r0.Y + r0.Height + delta.y);
 
-            float left = std::min<float>(r0.X, r0.X + delta.x);
-            float top = std::min<float>(r0.Y, r0.Y + delta.y);
-            float right = std::max<float>(r0.X + r0.Width, r0.X + r0.Width + delta.x);
-            float bottom = std::max<float>(r0.Y + r0.Height, r0.Y + r0.Height + delta.y);
+                winrt::Windows::Foundation::Rect sweepR{ left, top, right - left, bottom - top };
+                auto sweepTiles = tmap->getSolidTilesInRect(sweepR, 1);
 
-            winrt::Windows::Foundation::Rect sweepR{ left, top, right - left, bottom - top };
-            auto sweepTiles = tmap->getSolidTilesInRect(sweepR, 1);
+                std::vector<game::GameObject*> tiles;
+                tiles.reserve(sweepTiles.size());
+                for (auto* tile : sweepTiles)
+                    tiles.push_back(tile);
 
-            std::vector<game::GameObject*> tiles;
-            tiles.reserve(sweepTiles.size());
-            for (auto* tile : sweepTiles)
-                tiles.push_back(tile);
-
-            // Move + collide ONCE
-            player->Move(delta);
-            phys::handleCollisions(*player, tiles);
-
+                // Move + collide ONCE
+                player->Move(delta);
+                phys::handleCollisions(*player, tiles);
+            }
             // Stop dash if we slammed into something horizontally (collision pushed us back)
             auto const afterPos = player->GetWorldPosition();
             if (dashTimer > 0.0f || (!wasGrounded && dashJumpCarry))
@@ -867,6 +893,196 @@ loop_delay = 0
                     return { bulletX, bulletY };
                 };
 
+
+
+
+                            // --- BLUEY (enemy)  enemy projectiles ------------------------------
+                    
+                    auto ApplyPlayerHit = [&](float fromDir) -> bool
+                     {
+                    if (dead) return false;
+                    if (invulnTimer > 0.0f) return false;
+                    
+                        invulnTimer = invulnTime;
+                    hitStunTimer = hitStunTime;
+                    
+                                            // Cancel movement states
+                        dashTimer = 0.0f;
+                    dashCooldownTimer = dashCooldown;
+                    airDashTimer = 0.0f;
+                    wallJumpLockTimer = 0.0f;
+                    dashJumpCarry = false;
+                    
+                                            // Don’t allow buffered jump after hit
+                        jumpBufferTimer = 0.0f;
+                    coyoteTimer = 0.0f;
+                    
+                                            // Knockback: push in the direction the projectile is travelling
+                        float kbDir = (fromDir >= 0.0f) ? 1.0f : -1.0f;
+                    hitVelX = kbDir * hitKnockX;
+                    velY = -hitKnockY;
+                    player->inAir();
+                    
+                        Cfg::PlaySfx(L"player_hit", 0.65f);
+                    return true;
+                    };
+                
+                                // Player buster -> Bluey damage (1 dmg per hit, Bluey has 25hp)
+                    if (s_bluey)
+                    {
+                    auto const blueyRect = s_bluey->getWorldRect();
+                    
+                        for (auto& shot : m_busterShots)
+                         {
+                        if (!shot.Active) continue;
+                        
+                            if (Overlaps(shot.getWorldRect(), blueyRect))
+                             {
+                            shot.Kill();
+                            s_bluey->TakeDamage(1);
+                            
+                                if (s_bluey->IsDead())
+                                 {
+                                s_bluey.reset();
+                                break;
+                                }
+                             }
+                         }
+                     }
+                
+                                // Bluey AI update (spawns electric  missiles)
+                    if (s_bluey)
+                    {
+                    auto const pPos = player->GetWorldPosition();
+                    auto const pSz = player->GetWorldSize();
+                    float2 const pCenter{ pPos.x + (pSz.x * 0.5f), pPos.y + (pSz.y * 0.5f) };
+                    auto SpawnElectric = [&](float2 pos, float dir, float targetX) -> game::BlueyElectricShot*
+                        {
+                            for (auto& e : s_blueyElectric)
+                            {
+                                if (!e.Active)
+                                {
+                                    e.Spawn(pos, dir, targetX);
+                                    return &e;
+                                }
+                            }
+                            return nullptr;
+                        };
+
+                    auto SpawnMissile = [&](float2 pos, float dir) -> game::BlueyMissileShot*
+                        {
+                            for (auto& m : s_blueyMissiles)
+                            {
+                                if (!m.Active)
+                                {
+                                    m.Spawn(pos, dir);
+                                    return &m;
+                                }
+                            }
+                            return nullptr;
+                        };
+                    s_bluey->UpdateBluey(dt_, pCenter, SpawnElectric, SpawnMissile);
+                    s_bluey->SyncToBase();
+                    }
+                
+                                // Enemy projectiles: update  collide w/ tiles  hit player
+                    auto const playerRect = player->getWorldRect();
+                
+                                // Electric (falls down, then travels along the ground)
+                    for (auto& e : s_blueyElectric)
+                    {
+                        if (!e.Active) continue;
+
+                        auto before = e.GetWorldPosition();
+                        e.UpdateShot(dt_);
+                        if (!e.Active) continue;
+
+                        auto after = e.GetWorldPosition();
+
+                        auto sz = e.GetWorldSize();
+                        winrt::Windows::Foundation::Rect r0{ before.x, before.y, sz.x, sz.y };
+                        winrt::Windows::Foundation::Rect r1{ after.x,  after.y,  sz.x, sz.y };
+
+                        float l = std::min<float>(r0.X, r1.X);
+                        float t = std::min<float>(r0.Y, r1.Y);
+                        float r = std::max<float>(r0.X + r0.Width, r1.X + r1.Width);
+                        float b = std::max<float>(r0.Y + r0.Height, r1.Y + r1.Height);
+
+                        winrt::Windows::Foundation::Rect sweep{ l, t, r - l, b - t };
+
+                        auto nearTiles = tmap->getSolidTilesInRect(sweep, 1);
+                        for (auto* tile : nearTiles)
+                        {
+                            if (!tile) continue;
+                            auto const tr = tile->getWorldRect();
+
+                            if (!Overlaps(sweep, tr))
+                                continue;
+
+                            if (e.IsFalling())
+                            {
+                                // Snap + pause on ground (then it will auto-start travel after GroundDelay)
+                                e.LandOnGround(tr.Y);
+                            }
+                            else if (e.IsGroundTravel())
+                            {
+                                // Hit a wall while ground-traveling
+                                e.Kill();
+                            }
+                            // If GroundDelay, ignore (it’s sitting on ground intentionally)
+                            break;
+                        }
+
+                        // Hit player: kill projectile always; apply damage only if not invuln
+                        if (e.Active && Overlaps(e.getWorldRect(), playerRect))
+                        {
+                            ApplyPlayerHit(e.Dir);
+                            e.Kill();
+                        }
+                    }
+                
+                                // Missiles (simple horizontal travel)
+                    for (auto& m : s_blueyMissiles)
+                    {
+                        if (!m.Active) continue;
+
+                        auto before = m.GetWorldPosition();
+                        m.UpdateShot(dt_);
+                        if (!m.Active) continue;
+
+                        auto after = m.GetWorldPosition();
+
+                        auto sz = m.GetWorldSize();
+                        winrt::Windows::Foundation::Rect r0{ before.x, before.y, sz.x, sz.y };
+                        winrt::Windows::Foundation::Rect r1{ after.x,  after.y,  sz.x, sz.y };
+
+                        float l = std::min<float>(r0.X, r1.X);
+                        float t = std::min<float>(r0.Y, r1.Y);
+                        float r = std::max<float>(r0.X + r0.Width, r1.X + r1.Width);
+                        float b = std::max<float>(r0.Y + r0.Height, r1.Y + r1.Height);
+
+                        winrt::Windows::Foundation::Rect sweep{ l, t, r - l, b - t };
+
+                        auto nearTiles = tmap->getSolidTilesInRect(sweep, 1);
+                        for (auto* tile : nearTiles)
+                        {
+                            if (!tile) continue;
+                            if (Overlaps(sweep, tile->getWorldRect()))
+                            {
+                                m.Kill();
+                                break;
+                            }
+                        }
+
+                        if (m.Active && Overlaps(m.getWorldRect(), playerRect))
+                        {
+                            ApplyPlayerHit(m.Dir);
+                            m.Kill();
+                        }
+                    }
+                
+
+
             // Spawn (hold-to-fire, 3 shots max)
             if (!controlLocked && wantShoot && m_busterCooldown <= 0.0f)
             {
@@ -916,77 +1132,6 @@ loop_delay = 0
                 }
             }
 
-
-
-
-            //// --- Spawn logic (3 shots max)
-            //if (!controlLocked && wantShoot && m_busterCooldown <= 0.0f)
-            //{
-            //    // Find a free slot
-            //    for (auto& s : m_busterShots)
-            //    {
-            //        if (!s.Active)
-            //        {
-            //            float dir = ComputeShotDir();
-            //            auto muzzle = ComputeMuzzlePos(dir);
-
-            //            s.Spawn(muzzle, dir);
-
-            //            // SFX (replace "blip" later with a real buster sound)
-            //            Cfg::PlaySfx(L"blip", 0.55f);
-
-            //            m_busterCooldown = kFireInterval;
-            //            break;
-            //        }
-            //    }
-            //}
-
-            //// --- Update + collide shots
-            //{
-            //    // Optional: kill shots if too far from camera
-            //    float camHalfW = camera->getWidth() * 0.5f;
-            //    float leftKill = camera->Position.x - camHalfW - 200.0f;
-            //    float rightKill = camera->Position.x + camHalfW + 200.0f;
-
-            //    for (auto& s : m_busterShots)
-            //    {
-            //        if (!s.Active) continue;
-
-            //        auto before = s.GetWorldPosition();
-            //        s.UpdateShot(dt_);
-            //        auto after = s.GetWorldPosition();
-
-            //        // Offscreen kill
-            //        if (after.x < leftKill || after.x > rightKill)
-            //        {
-            //            s.Kill();
-            //            continue;
-            //        }
-
-            //        // Sweep rect from before->after to avoid tunneling
-            //        auto sz = s.GetWorldSize();
-            //        winrt::Windows::Foundation::Rect r02{ before.x, before.y, sz.x, sz.y };
-            //        winrt::Windows::Foundation::Rect r12{ after.x,  after.y,  sz.x, sz.y };
-
-            //        float left2 = std::min<float>(r02.X, r12.X);
-            //        float top2 = std::min<float>(r02.Y, r12.Y);
-            //        float right2 = std::max<float>(r02.X + r02.Width, r12.X + r12.Width);
-            //        float bottom2 = std::max<float>(r02.Y + r02.Height, r12.Y + r12.Height);
-
-            //        winrt::Windows::Foundation::Rect sweepRect{ left2, top2, right2 - left2, bottom2 - top2 };
-
-            //        auto tilesSw = tmap->getSolidTilesInRect(sweepRect, 1);
-            //        for (auto* t : tilesSw)
-            //        {
-            //            if (!t) continue;
-            //            if (Overlaps(s.getWorldRect(), t->getWorldRect()))
-            //            {
-            //                s.Kill();
-            //                break;
-            //            }
-            //        }
-            //    }
-            //}
 
             bool wallSliding =
                 (!nowGrounded) &&
@@ -1112,6 +1257,10 @@ loop_delay = 0
         {
             player->SyncToBase();
         }
+        if (s_bluey)
+        {
+            s_bluey->SyncToBase();
+        }
     }
 
     std::vector<engine::Text>& PlayState::render(engine::Renderer2D& renderer_)
@@ -1120,6 +1269,11 @@ loop_delay = 0
 
         uiStrings[0].String = L"Player AnimFrame = " + std::to_wstring(player->CurrentFrameIndex());
         uiStrings[0].Invalidate();
+
+        if (s_bluey)
+            {
+            renderer_.Draw(s_bluey->getSprite());
+            }
 
         if (player)
         {
@@ -1131,6 +1285,20 @@ loop_delay = 0
             if (shot.Active)
                 renderer_.Draw(shot.getSprite());
         }
+
+
+         for (auto& e : s_blueyElectric)
+             {
+            if (e.Active)
+                 renderer_.Draw(e.getSprite());
+            }
+        
+            for (auto& m : s_blueyMissiles)
+             {
+            if (m.Active)
+                 renderer_.Draw(m.getSprite());
+            }
+
         return uiStrings;
     }
 

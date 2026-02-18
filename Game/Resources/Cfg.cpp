@@ -44,6 +44,13 @@ void Cfg::initSounds()
 {
     engine::SoundManager::Instance().RegisterSfx(L"blip", Uri(L"ms-appx:///Assets/Audio/blip.wav"));
     sounds.emplace(Sounds::Blip, L"blip");
+
+    // Placeholder hit SFX (using blip.wav for now). Swap the wavs later.
+    engine::SoundManager::Instance().RegisterSfx(L"player_hit", Uri(L"ms-appx:///Assets/Audio/blip.wav"));
+    sounds.emplace(Sounds::PlayerHit, L"player_hit");
+
+    engine::SoundManager::Instance().RegisterSfx(L"enemy_hit", Uri(L"ms-appx:///Assets/Audio/blip.wav"));
+    sounds.emplace(Sounds::EnemyHit, L"enemy_hit");
 }
 
 winrt::Windows::Foundation::IAsyncAction Cfg::initTextures()
@@ -73,6 +80,10 @@ winrt::Windows::Foundation::IAsyncAction Cfg::initTextures()
         Uri(L"ms-appx:///Assets/Textures/Characters/Player/buster_shot_21x26.png"));
     textures.emplace(Textures::BusterShot, L"BusterShot");
 
+    co_await engine::TextureStore::Instance().RegisterAndLoadAsync(
+        L"BlueyAtlas",
+        Uri(L"ms-appx:///Assets/Textures/Characters/Enemies/Bluey204x254_Weapons204X135.png"));
+    textures.emplace(Textures::BlueyAtlas, L"BlueyAtlas");
 
     co_return;
 }

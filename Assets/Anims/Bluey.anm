@@ -1,0 +1,62 @@
+# Bluey enemy animation sheet:
+#   - Bluey frames: 204x254, 7 columns
+#     * Row 0: "top" (right)
+#     * Row 1: "lower" (right)
+#     * Row 2: "top" (left)
+#     * Row 3: "lower" (left)
+#   - Weapons live further down the sheet and are handled by projectile classes.
+
+[object]
+position       = 0 0
+world_size     = 112 226
+texture_offset = 52 28
+start_anim     = idle
+
+[anim idle]
+texture         = BlueyAtlas
+frame_size      = 204 254
+start_col       = 0
+start_row       = 0
+start_col_left  = 0
+start_row_left  = 2
+pitch           = 7
+offsets         = (52 28)
+frames          = 1
+uni_directional = false
+
+delays          = 0.12
+looping         = true
+
+[anim top]
+texture         = BlueyAtlas
+frame_size      = 204 254
+start_col       = 0
+start_row       = 0
+start_col_left  = 0
+start_row_left  = 2
+offsets         = (52 28)
+pitch           = 7
+frames          = 7
+uni_directional = false
+
+delays          = 0.08
+
+# When "top" finishes, immediately go to "lower".
+looping         = lower
+
+[anim lower]
+texture         = BlueyAtlas
+frame_size      = 204 254
+start_col       = 0
+start_row       = 1
+start_col_left  = 0
+offsets         = (52 28)
+start_row_left  = 3
+pitch           = 7
+frames          = 5
+uni_directional = false
+
+delays          = 0.09
+
+# Stop on the last frame and hold (Bluey stays in pose while firing).
+looping         = wait

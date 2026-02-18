@@ -100,6 +100,15 @@
     <ClCompile Include="Game\Objects\BusterShot.cpp">
       <Filter>Game\Objects</Filter>
     </ClCompile>
+    <ClCompile Include="Game\Objects\Enemies\Bluey\Bluey.cpp">
+      <Filter>Game\Objects\Enemies\Bluey</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Objects\Enemies\Bluey\BlueyElectricShot.cpp">
+      <Filter>Game\Objects\Enemies\Bluey</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Objects\Enemies\Bluey\BlueyMissileShot.cpp">
+      <Filter>Game\Objects\Enemies\Bluey</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Math.h">
@@ -222,6 +231,12 @@
     <ClInclude Include="Game\Objects\BusterShot.h">
       <Filter>Game\Objects</Filter>
     </ClInclude>
+    <ClInclude Include="Game\Objects\Enemies\Bluey\Bluey.h">
+      <Filter>Game\Objects\Enemies\Bluey</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Objects\Enemies\Bluey\BlueyElectricShot.h">
+      <Filter>Game\Objects\Enemies\Bluey</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\Textures\Characters\Player\player_atlas.png">
@@ -264,6 +279,36 @@
     <Image Include="Assets\Textures\Characters\Player\buster_shot_21x26.png">
       <Filter>Textures\Characters\Player</Filter>
     </Image>
+    <Image Include="Assets\Textures\Characters\Enemies\Bluey204x254_Weapons204X135.png">
+      <Filter>Textures\Characters\Enemies</Filter>
+    </Image>
+    <Image Include="Assets\Textures\Characters\Enemies\mmm-mmxcannon.gif">
+      <Filter>Textures\Characters\Enemies</Filter>
+    </Image>
+    <Image Include="Assets\Textures\Characters\Enemies\mmm-mmxmetoll.gif">
+      <Filter>Textures\Characters\Enemies</Filter>
+    </Image>
+    <Image Include="Assets\Textures\Characters\Enemies\mmm-mmxstomper.gif">
+      <Filter>Textures\Characters\Enemies</Filter>
+    </Image>
+    <Image Include="Assets\Textures\Collectables\mmx1_items.png">
+      <Filter>Textures\Collectables</Filter>
+    </Image>
+    <Image Include="Assets\Textures\NonPlayState\mmx1_password.gif">
+      <Filter>Textures\NonPlayState</Filter>
+    </Image>
+    <Image Include="Assets\Textures\NonPlayState\mmx1_stageselect.png">
+      <Filter>Textures\NonPlayState</Filter>
+    </Image>
+    <Image Include="Assets\Textures\Platforms\mmm-mmxlifter2.gif">
+      <Filter>Textures\Platforms</Filter>
+    </Image>
+    <Image Include="Assets\Textures\UI\mmx_hud.png">
+      <Filter>Textures\UI</Filter>
+    </Image>
+    <Image Include="Assets\Textures\UI\mmx1_weaponsenergy.gif">
+      <Filter>Textures\UI</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="Intendo Man_TemporaryKey.pfx">
@@ -277,6 +322,12 @@
     </None>
     <None Include="Assets\Anims\Player.anm">
       <Filter>Anims</Filter>
+    </None>
+    <None Include="Assets\Anims\Bluey.anm">
+      <Filter>Anims</Filter>
+    </None>
+    <None Include="Game\Objects\Enemies\Bluey\BlueyMissileShot.h">
+      <Filter>Game\Objects\Enemies\Bluey</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -337,12 +388,408 @@
     <Filter Include="Game\Animation">
       <UniqueIdentifier>{60f11ad2-cde4-4162-846f-3bc414edebe5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Textures\Characters\Enemies">
+      <UniqueIdentifier>{c4eb191a-1d21-4ba4-9a06-4ae833a092d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Enemies">
+      <UniqueIdentifier>{41ff6c3d-a1c7-4ab9-9e82-4c6180aa3aa3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Enemies\Bluey">
+      <UniqueIdentifier>{585b55f8-8ed3-474a-a3e8-5282ed2827db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Textures\Collectables">
+      <UniqueIdentifier>{2e498a3e-6ba4-4b50-95d1-3e40d66a6a6c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Textures\NonPlayState">
+      <UniqueIdentifier>{6389c551-60bf-46c7-8a7f-9533ac667027}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Textures\Platforms">
+      <UniqueIdentifier>{170c9fd1-d20b-4283-8f35-81e79904cdf4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Textures\UI">
+      <UniqueIdentifier>{e42bcbe0-e0aa-4a79-b0d1-aa7d05a805c2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Media Include="Assets\Audio\blip.wav">
       <Filter>Audio</Filter>
     </Media>
     <Media Include="Assets\Audio\theme.mp3">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\01 - MMX - X Regular Shot.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\02 - MMX - X Charge Shot.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\03 - MMX - X Super Charge Shot.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\04 - MMX - X Charge.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\05 - MMX - X Charge + Shot.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\06 - MMX - X Charge + Super Shot.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\07 - MMX - X Dash.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\08 - MMX - X Jump.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\09 - MMX - X Land.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\10 - MMX - X Hurt.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\11 - MMX - X Die.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\12 - MMX - X Life Gain.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\13 - MMX - X Extra Life.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\14 - MMX - X Sub Tank-Heart Powerup.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\15 - MMX - X Powerup Infuse.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\16 - MMX - X Upgrade Complete.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\17 - MMX - X Fade In.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\18 - MMX - X Fade Out.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\19 - MMX - X Boomerang Cutter 1 (1).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\19 - MMX - X Boomerang Cutter 1.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\20 - MMX - X Boomerang Cutter 2.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\21 - MMX - X Chameleon Sting.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\22 - MMX - X Chameleon Sting (Charged).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\23 - MMX - X Electric Spark.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\24 - MMX - X Fire Wave.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\26 - MMX - X Rolling Shield.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\27 - MMX - X Rolling Shiled (Charged).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\29 - MMX - Enemy Helmet Hit.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\30 - MMX - Small Hit.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\31 - MMX - Big Hit.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\32 - MMX - Energy Tank Health.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\33 - MMX - Energy Tank Full.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\34 - MMX - Ice.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\35 - MMX - Ice Freeze.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\36 - MMX - Ice Break.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\37 - MMX - Alert 1.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\38 - MMX - Alert 2.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\39 - MMX - Armadillo Charge.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\40 - MMX - Armadillo Laser.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\41 - MMX - Spark Mandrill Punch.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\42 - MMX - Beam Pulse.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\43 - MMX - Beep (1).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\44 - MMX - Beep (2).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\45 - MMX - Beep (3).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\46 - MMX - Beep (4).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\47 - MMX - Beep (5).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\48 - MMX - Boomer Kuwanger Teleport.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\49 - MMX - Boss Door Close.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\50 - MMX - Bulldozer .wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\51 - MMX - Can%27t Exit.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\52 - MMX - Chill Penguin Breath.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\53 - MMX - Door Open.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\54 - MMX - Eagle%27s Tornado.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\55 - MMX - Electric Bolt.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\56 - MMX - Enemy Die (1).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\57 - MMX - Enemy Die (2).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\58 - MMX - Enemy Die (3).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\59 - MMX - Enemy Die (4).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\60 - MMX - Enemy Missle Fire.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\61 - MMX - Enemy Motor 1 .wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\62 - MMX - Enemy Motor 2.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\63 - MMX - Enemy Motor 3 (1).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\63 - MMX - Enemy Motor 3.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\64 - MMX - Enemy Sound (01).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\65 - MMX - Enemy Sound (02).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\66 - MMX - Enemy Sound (03).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\67 - MMX - Enemy Sound (04).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\68 - MMX - Enemy Sound (05).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\69 - MMX - Enemy Sound (06).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\70 - MMX - Enemy Sound (07).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\71 - MMX - Enemy Sound (08).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\72 - MMX - Enemy Sound (09).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\73 - MMX - Enemy Sound (10).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\74 - MMX - Enemy Sound (11).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\75 - MMX - Enemy Sound (12).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\76 - MMX - Flame Mammoth.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\77 - MMX - Heavy Machine (1).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\78 - MMX - Heavy Machine (2).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\79 - MMX - Heavy Machine (3).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\80 - MMX - Heavy Machine (4).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\81 - MMX - Heavy Machine (5).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\82 - MMX - Heavy Machine (6).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\83 - MMX - Heavy Machine (7).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\84 - MMX - Heavy Machine (8).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\85 - MMX - Intro Data Screen.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\86 - MMX - Mechanical Hum 1.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\87 - MMX - Mechanical Hum 2.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\88 - MMX - Mechanical Hum 3.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\89 - MMX - Misc. dash, jump, move (1).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\90 - MMX - Misc. dash, jump, move (2).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\91 - MMX - Misc. dash, jump, move (3).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\92 - MMX - Misc. dash, jump, move (4).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\93 - MMX - Misc. dash, jump, move (5).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\94 - MMX - Misc. dash, jump, move (6).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\95 - MMX - Misc. dash, jump, move (7).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\96 - MMX - Octopus Drain.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\97 - MMX - Robot Suit (1).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\98 - MMX - Robot Suit (2).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\99 - MMX - Robot Suit (3).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\100 - MMX - Robot Suit (4).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\101 - MMX - Robot Suit (5).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\102 - MMX - Robot Suit (6).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\103 - MMX - Robot Suit (7).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\104 - MMX - Rocks (1).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\105 - MMX - Rocks (2).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\106 - MMX - Rocks (3).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\107 - MMX - Sigma Dog.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\108 - MMX - Sigma Teleport.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\109 - MMX - Spring 1.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\110 - MMX - Spring 2.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\111 - MMX - Stage Cursor Move.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\112 - MMX - Submarine 1.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\113 - MMX - Submarine 2.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\114 - MMX - Text Letter.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\115 - MMX - Underwater Bubble.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\116 - MMX - Underwater Sound.wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\117 - MMX - Unknown (1).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\118 - MMX - Unknown (2).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\119 - MMX - Unknown (3).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\120 - MMX - unknown (4).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\121 - MMX - Wing Flap (1).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\122 - MMX - Wing Flap (2).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\123 - MMX - Wing Flap (3).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\124 - MMX - Wing Flap (4).wav">
+      <Filter>Audio</Filter>
+    </Media>
+    <Media Include="Assets\Audio\125 - MMX - Wing Flap (5).wav">
       <Filter>Audio</Filter>
     </Media>
   </ItemGroup>
