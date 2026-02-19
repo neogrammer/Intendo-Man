@@ -216,10 +216,18 @@ if (m_state == State::Attacking)
     // (This matches “direction Bluey is facing” + “beyond his position if missed” cleanly.)
     auto IsAlive = [](BlueyElectricShot* s) { return (s && s->Active); };
 
+    static bool ranonce = false;
+
     switch (m_attackPhase)
     {
     case AttackPhase::Electric:
     {
+        if (!ranonce)
+        {
+            Cfg::PlaySfx(L"electric_shot", 0.65f);
+            ranonce = true;
+        }
+
         // Wait for BOTH electric shots to finish:
         // - either they hit MegaMan (PlayState kills them),
         // - or they pass TargetX (they kill themselves),
@@ -243,7 +251,11 @@ if (m_state == State::Attacking)
         if (spawnMissile)
         {
             m_missile1 = spawnMissile(MissileSpawnPos(), m_attackDir);
-            if (m_missile1) m_missile1->Launch();
+            if (m_missile1)
+            {
+                m_missile1->Launch();
+                Cfg::PlaySfx(L"missile_launch", 0.65f);
+            }
         }
 
         // Missile #2: appears now (while #1 is moving), but waits before moving
@@ -263,7 +275,12 @@ if (m_state == State::Attacking)
         if (m_phaseTimer > -1.0f)
             return;
 
-        if (m_missile2) m_missile2->Launch();
+        if (m_missile2)
+        {
+            m_missile2->Launch();
+            Cfg::PlaySfx(L"missile_launch", 0.65f);
+        }
+
 
         m_attackPhase = AttackPhase::Cooldown;
         m_phaseTimer = m_postAttackCooldown;
@@ -284,6 +301,7 @@ if (m_state == State::Attacking)
             if (hasClip(L"top"))
                 Play(L"top", true, 0);
             m_state = State::Animating;
+            ranonce = false;
         }
         else
         {

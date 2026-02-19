@@ -417,7 +417,7 @@
     <Media Include="Assets\Audio\theme.mp3">
       <Filter>Audio</Filter>
     </Media>
-    <Media Include="Assets\Audio\01 - MMX - X Regular Shot.wav">
+    <Media Include="Assets\Audio\buster_shot.wav">
       <Filter>Audio</Filter>
     </Media>
     <Media Include="Assets\Audio\02 - MMX - X Charge Shot.wav">
@@ -444,7 +444,7 @@
     <Media Include="Assets\Audio\09 - MMX - X Land.wav">
       <Filter>Audio</Filter>
     </Media>
-    <Media Include="Assets\Audio\10 - MMX - X Hurt.wav">
+    <Media Include="Assets\Audio\hurt.wav">
       <Filter>Audio</Filter>
     </Media>
     <Media Include="Assets\Audio\11 - MMX - X Die.wav">
@@ -501,7 +501,7 @@
     <Media Include="Assets\Audio\29 - MMX - Enemy Helmet Hit.wav">
       <Filter>Audio</Filter>
     </Media>
-    <Media Include="Assets\Audio\30 - MMX - Small Hit.wav">
+    <Media Include="Assets\Audio\small_hit.wav">
       <Filter>Audio</Filter>
     </Media>
     <Media Include="Assets\Audio\31 - MMX - Big Hit.wav">

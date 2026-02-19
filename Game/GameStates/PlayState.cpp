@@ -195,6 +195,11 @@ loop_delay = 0
             constexpr float coyoteMax = 0.10f;         // seconds
             constexpr float bufferMax = 0.10f;         // seconds
 
+
+            // Shoot pose latch (prevents idle<->shoot jitter when tapping fire)
+            constexpr float shootPoseHold = 0.20f;     // seconds to keep "shoot" overlay after a tap
+            
+
             // --- State (static for now; you can move to Player later)
             static float velY = 0.0f;
             static bool  jumpCutApplied = false;
@@ -219,6 +224,7 @@ loop_delay = 0
             static float invulnTimer = 0.0f;
             static float hitStunTimer = 0.0f;
             static float hitVelX = 0.0f;
+            static float shootPoseTimer = 0.0f; // seconds remaining to force shoot overlay
 
             // Input
             float2 move = actMap->MoveAxis();  // X only for platformer
@@ -232,6 +238,7 @@ loop_delay = 0
             bool debugHitPressed = actMap->Pressed(engine::Action::RotCCW);  // Z / Left shoulder
             bool debugDiePressed = actMap->Pressed(engine::Action::ZoomIn);  // E / RT (debug)
 
+            bool shootPressed = actMap->Pressed(engine::Action::Fire);
             bool wantShoot = actMap->Down(engine::Action::Fire);
 
             // fire rate (tweak to taste)
@@ -254,6 +261,8 @@ loop_delay = 0
             dashCooldownTimer = std::max<float>(0.0f, dashCooldownTimer - dt_);
             airDashTimer = std::max<float>(0.0f, airDashTimer - dt_);
             wallJumpLockTimer = std::max<float>(0.0f, wallJumpLockTimer - dt_);
+
+            shootPoseTimer = std::max<float>(0.0f, shootPoseTimer - dt_);
 
             coyoteTimer = wasGrounded ? coyoteMax : std::max<float>(0.0f, coyoteTimer - dt_);
             jumpBufferTimer = std::max<float>(0.0f, jumpBufferTimer - dt_);
@@ -404,12 +413,20 @@ loop_delay = 0
                 jumpReleased = false;
                 dashPressed = false;
                 wantShoot = false;
-
+                shootPressed = false;
+                shootPoseTimer = 0.0f;
                 // Don’t allow “buffered jump after hit”
                 jumpBufferTimer = 0.0f;
                 coyoteTimer = 0.0f;
                 dashJumpCarry = false;
             }
+
+            // Keep shoot pose briefly after tapping fire (even if button is released)
+            if (!controlLocked && shootPressed)
+                 {
+                shootPoseTimer = shootPoseHold;
+                }
+            
 
             // --- DASH (ground-only start)
             if (!controlLocked && wasGrounded && dashPressed && dashTimer <= 0.0f && dashCooldownTimer <= 0.0f)
@@ -1155,7 +1172,8 @@ loop_delay = 0
                 animCtx.grounded = nowGrounded;
                 animCtx.justLanded = landedThisFrame;
 
-                animCtx.wantShoot = wantShoot;
+     
+                animCtx.wantShoot = wantShoot || (shootPoseTimer > 0.0f);
                 animCtx.wantDash = (!controlLocked) && (dashTimer > 0.0f) && nowGrounded;
 
                 animCtx.airDashing = (!controlLocked) && (airDashTimer > 0.0f) && (!nowGrounded);

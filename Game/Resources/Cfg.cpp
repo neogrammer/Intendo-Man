@@ -42,15 +42,27 @@ void Cfg::initMusic()
 
 void Cfg::initSounds()
 {
-    engine::SoundManager::Instance().RegisterSfx(L"blip", Uri(L"ms-appx:///Assets/Audio/blip.wav"));
+    engine::SoundManager::Instance().RegisterSfx(L"blip", Uri(L"ms-appx:///Assets/Audio/buster_shot.wav"));
     sounds.emplace(Sounds::Blip, L"blip");
 
     // Placeholder hit SFX (using blip.wav for now). Swap the wavs later.
-    engine::SoundManager::Instance().RegisterSfx(L"player_hit", Uri(L"ms-appx:///Assets/Audio/blip.wav"));
+    engine::SoundManager::Instance().RegisterSfx(L"player_hit", Uri(L"ms-appx:///Assets/Audio/hurt.wav"));
     sounds.emplace(Sounds::PlayerHit, L"player_hit");
 
-    engine::SoundManager::Instance().RegisterSfx(L"enemy_hit", Uri(L"ms-appx:///Assets/Audio/blip.wav"));
+    engine::SoundManager::Instance().RegisterSfx(L"enemy_hit", Uri(L"ms-appx:///Assets/Audio/small_hit.wav"));
     sounds.emplace(Sounds::EnemyHit, L"enemy_hit");
+
+    
+
+        engine::SoundManager::Instance().RegisterSfx(L"electric_shot", Uri(L"ms-appx:///Assets/Audio/electric_shot.wav"));
+    sounds.emplace(Sounds::ElectricShot, L"electric_shot");
+
+    // Placeholder hit SFX (using blip.wav for now). Swap the wavs later.
+    engine::SoundManager::Instance().RegisterSfx(L"missile_launch", Uri(L"ms-appx:///Assets/Audio/missile_launch.wav"));
+    sounds.emplace(Sounds::MissileLaunch, L"missile_launch");
+
+    engine::SoundManager::Instance().RegisterSfx(L"enemy_die", Uri(L"ms-appx:///Assets/Audio/enemy_die.wav"));
+    sounds.emplace(Sounds::EnemyDie, L"enemy_die");
 }
 
 winrt::Windows::Foundation::IAsyncAction Cfg::initTextures()

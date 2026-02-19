@@ -288,7 +288,8 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <Media Include="Assets\Audio\01 - MMX - X Regular Shot.wav" />
+    <Media Include="Assets\Audio\electric_shot.wav" />
+    <Media Include="Assets\Audio\buster_shot.wav" />
     <Media Include="Assets\Audio\02 - MMX - X Charge Shot.wav" />
     <Media Include="Assets\Audio\03 - MMX - X Super Charge Shot.wav" />
     <Media Include="Assets\Audio\04 - MMX - X Charge.wav" />
@@ -297,7 +298,8 @@
     <Media Include="Assets\Audio\07 - MMX - X Dash.wav" />
     <Media Include="Assets\Audio\08 - MMX - X Jump.wav" />
     <Media Include="Assets\Audio\09 - MMX - X Land.wav" />
-    <Media Include="Assets\Audio\10 - MMX - X Hurt.wav" />
+    <Media Include="Assets\Audio\enemy_die.wav" />
+    <Media Include="Assets\Audio\hurt.wav" />
     <Media Include="Assets\Audio\100 - MMX - Robot Suit (4).wav" />
     <Media Include="Assets\Audio\101 - MMX - Robot Suit (5).wav" />
     <Media Include="Assets\Audio\102 - MMX - Robot Suit (6).wav" />
@@ -342,7 +344,8 @@
     <Media Include="Assets\Audio\26 - MMX - X Rolling Shield.wav" />
     <Media Include="Assets\Audio\27 - MMX - X Rolling Shiled (Charged).wav" />
     <Media Include="Assets\Audio\29 - MMX - Enemy Helmet Hit.wav" />
-    <Media Include="Assets\Audio\30 - MMX - Small Hit.wav" />
+    <Media Include="Assets\Audio\missile_launch.wav" />
+    <Media Include="Assets\Audio\small_hit.wav" />
     <Media Include="Assets\Audio\31 - MMX - Big Hit.wav" />
     <Media Include="Assets\Audio\32 - MMX - Energy Tank Health.wav" />
     <Media Include="Assets\Audio\33 - MMX - Energy Tank Full.wav" />
@@ -368,11 +371,9 @@
     <Media Include="Assets\Audio\53 - MMX - Door Open.wav" />
     <Media Include="Assets\Audio\54 - MMX - Eagle%27s Tornado.wav" />
     <Media Include="Assets\Audio\55 - MMX - Electric Bolt.wav" />
-    <Media Include="Assets\Audio\56 - MMX - Enemy Die (1).wav" />
     <Media Include="Assets\Audio\57 - MMX - Enemy Die (2).wav" />
     <Media Include="Assets\Audio\58 - MMX - Enemy Die (3).wav" />
     <Media Include="Assets\Audio\59 - MMX - Enemy Die (4).wav" />
-    <Media Include="Assets\Audio\60 - MMX - Enemy Missle Fire.wav" />
     <Media Include="Assets\Audio\61 - MMX - Enemy Motor 1 .wav" />
     <Media Include="Assets\Audio\62 - MMX - Enemy Motor 2.wav" />
     <Media Include="Assets\Audio\63 - MMX - Enemy Motor 3 (1).wav" />
@@ -393,7 +394,6 @@
     <Media Include="Assets\Audio\77 - MMX - Heavy Machine (1).wav" />
     <Media Include="Assets\Audio\78 - MMX - Heavy Machine (2).wav" />
     <Media Include="Assets\Audio\79 - MMX - Heavy Machine (3).wav" />
-    <Media Include="Assets\Audio\80 - MMX - Heavy Machine (4).wav" />
     <Media Include="Assets\Audio\81 - MMX - Heavy Machine (5).wav" />
     <Media Include="Assets\Audio\82 - MMX - Heavy Machine (6).wav" />
     <Media Include="Assets\Audio\83 - MMX - Heavy Machine (7).wav" />
@@ -408,7 +408,6 @@
     <Media Include="Assets\Audio\92 - MMX - Misc. dash, jump, move (4).wav" />
     <Media Include="Assets\Audio\93 - MMX - Misc. dash, jump, move (5).wav" />
     <Media Include="Assets\Audio\94 - MMX - Misc. dash, jump, move (6).wav" />
-    <Media Include="Assets\Audio\95 - MMX - Misc. dash, jump, move (7).wav" />
     <Media Include="Assets\Audio\96 - MMX - Octopus Drain.wav" />
     <Media Include="Assets\Audio\97 - MMX - Robot Suit (1).wav" />
     <Media Include="Assets\Audio\98 - MMX - Robot Suit (2).wav" />

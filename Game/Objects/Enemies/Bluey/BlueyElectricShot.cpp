@@ -93,7 +93,7 @@ namespace game
         // Miss logic: once traveling on ground, despawn after passing the player's X captured at fire-time
         if (phase == Phase::GroundTravel)
         {
-            float cx = GetWorldPosition().x + (GetWorldSize().x * 0.5f);
+            float cx = GetWorldPosition().x + (GetWorldSize().x * 0.5f) + 800;
             if ((Dir > 0.0f && cx > TargetX) || (Dir < 0.0f && cx < TargetX))
             {
                 Kill();

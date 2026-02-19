@@ -61,18 +61,18 @@ namespace engine
         gameMgr->update(dt);
     }
 
-    static void DrawGrid(winrt::Microsoft::Graphics::Canvas::CanvasDrawingSession const& ds)
-    {
-        for (int i = -20; i <= 20; ++i)
-        {
-            float x = i * 100.0f;
-            ds.DrawLine({ x, -2000.0f }, { x, 2000.0f }, Colors::DimGray());
-            float y = i * 100.0f;
-            ds.DrawLine({ -2000.0f, y }, { 2000.0f, y }, Colors::DimGray());
-        }
-        ds.DrawLine({ -3000.0f, 0.0f }, { 3000.0f, 0.0f }, Colors::DarkRed());
-        ds.DrawLine({ 0.0f, -3000.0f }, { 0.0f, 3000.0f }, Colors::DarkGreen());
-    }
+    //static void DrawGrid(winrt::Microsoft::Graphics::Canvas::CanvasDrawingSession const& ds)
+    //{
+    //    for (int i = -20; i <= 20; ++i)
+    //    {
+    //        float x = i * 100.0f;
+    //        ds.DrawLine({ x, -2000.0f }, { x, 2000.0f }, Colors::DimGray());
+    //        float y = i * 100.0f;
+    //        ds.DrawLine({ -2000.0f, y }, { 2000.0f, y }, Colors::DimGray());
+    //    }
+    //    ds.DrawLine({ -3000.0f, 0.0f }, { 3000.0f, 0.0f }, Colors::DarkRed());
+    //    ds.DrawLine({ 0.0f, -3000.0f }, { 0.0f, 3000.0f }, Colors::DarkGreen());
+    //}
 
     void Game::Draw(
         winrt::Microsoft::Graphics::Canvas::UI::Xaml::ICanvasAnimatedControl const& sender,
@@ -112,7 +112,7 @@ namespace engine
             }
 
             //ds.Transform(cam->WorldToScreen());
-            DrawGrid(ds);
+            //DrawGrid(ds);
 
             std::vector<engine::Text>* uiStrings{};
             {

@@ -36,7 +36,9 @@ struct Cfg
 
 	// Resource Enums 
 	enum class Textures : int { Under, Ship, PlayerAtlas, Tileset1, BusterShot, BlueyAtlas, Default, Count, None };
-	enum class Sounds : int { Blip, PlayerHit, EnemyHit, Default, Count, None };
+	enum class Sounds : int { Blip, PlayerHit, EnemyHit, Default,
+			ElectricShot, MissileLaunch,  EnemyDie,
+		Count, None };
 	enum class Music : int { Theme1, Default, Count, None };
 	enum class Fonts : int { UI, Bubbly, Default, Count, None };
 
