@@ -16,13 +16,22 @@
 
 #include <array>
 #include <algorithm>
+#include <unordered_map>
 
 
 namespace
 {
-    std::unique_ptr<game::Bluey> s_bluey{ nullptr };
+    /// <summary>
+    ///  &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+    /// </summary>
+    //std::unique_ptr<game::Bluey> s_bluey{ nullptr };
+    std::array<std::unique_ptr<game::Bluey>, 2> s_blueys{};
+
     std::array<game::BlueyElectricShot, 4> s_blueyElectric{};
     std::array<game::BlueyMissileShot, 4> s_blueyMissiles{};
+
+    static std::unordered_map<std::string, std::vector<game::AnimObject*>> s_entityMap = {};
+
 }
 
 
@@ -97,12 +106,32 @@ loop_delay = 0
         for (auto& s : m_busterShots) s.Kill();
         m_busterCooldown = 0.0f;
 
-                // --- Bluey (enemy)
-        if (s_bluey) { s_bluey.reset(); }
-        s_bluey = std::make_unique<game::Bluey>(float2{ 1000.0f, 186.0f });
+
+        // --- Blueys (enemies)
+        for (auto& b : s_blueys) b.reset();
+
+        s_blueys[0] = std::make_unique<game::Bluey>(float2{ 1000.0f, 186.0f });
+        s_blueys[1] = std::make_unique<game::Bluey>(float2{ 2000.0f, 186.0f }); // <- second one
+
         for (auto& e : s_blueyElectric) e.Kill();
         for (auto& m : s_blueyMissiles) m.Kill();
+
+        // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+        //        // --- Bluey (enemy)
+        //if (s_bluey) { s_bluey.reset(); }
+        //s_bluey = std::make_unique<game::Bluey>(float2{ 1000.0f, 186.0f });
+        //for (auto& e : s_blueyElectric) e.Kill();
+        //for (auto& m : s_blueyMissiles) m.Kill();
        
+        s_entityMap.clear();
+
+        s_entityMap["bluey"] = std::vector<AnimObject*>{};
+        s_entityMap["bluey"].clear();
+        s_entityMap["bluey"].reserve(2);
+        for (auto& b : s_blueys)
+        {
+            s_entityMap["bluey"].emplace_back(b.get());
+        }
 
 
     }
@@ -113,9 +142,16 @@ loop_delay = 0
         for (auto& s : m_busterShots) s.Kill();
         m_busterCooldown = 0.0f;
 
+
         for (auto& e : s_blueyElectric) e.Kill();
         for (auto& m : s_blueyMissiles) m.Kill();
-        s_bluey.reset();
+        for (auto& e : s_entityMap["bluey"]) e = nullptr;
+        for (auto& b : s_blueys) b.reset();
+
+        // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+        //for (auto& e : s_blueyElectric) e.Kill();
+        //for (auto& m : s_blueyMissiles) m.Kill();
+        //s_bluey.reset();
 
         tmap.reset();
         tmap = nullptr;
@@ -944,39 +980,87 @@ loop_delay = 0
                     return true;
                     };
                 
-                                // Player buster -> Bluey damage (1 dmg per hit, Bluey has 25hp)
-                    if (s_bluey)
+
+                    // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+                    for (auto& b : s_blueys)
                     {
-                    auto const blueyRect = s_bluey->getWorldRect();
-                    
+                        if (!b) continue;
+
+                        auto const blueyRect = b->getWorldRect();
+
                         for (auto& shot : m_busterShots)
-                         {
-                        if (!shot.Active) continue;
-                        
+                        {
+                            if (!shot.Active) continue;
+
                             if (Overlaps(shot.getWorldRect(), blueyRect))
-                             {
-                            shot.Kill();
-                            s_bluey->TakeDamage(1);
-                            
-                                if (s_bluey->IsDead())
-                                 {
-                                s_bluey.reset();
-                                break;
+                            {
+                                shot.Kill();
+                                b->TakeDamage(1);
+
+                                if (b->IsDead())
+                                {
+                                    for (auto& bb : s_entityMap["bluey"])
+                                    {
+
+                                       
+                                        auto iter = s_entityMap["bluey"].begin();
+                                        if (bb == b.get())
+                                        {
+                                            bb = nullptr;
+                                            s_entityMap["bluey"].erase(iter);
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            iter++;
+                                        }
+                                    }
+                                    b.reset();
                                 }
-                             }
-                         }
-                     }
+                                break; // shot is gone; stop checking this Bluey
+                            }
+                        }
+                    }
+                                // Player buster -> Bluey damage (1 dmg per hit, Bluey has 25hp)
+                  
+                                
+                         //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+                                
+                                //if (s_bluey)
+                    //{
+                    //auto const blueyRect = s_bluey->getWorldRect();
+                    //
+                    //    for (auto& shot : m_busterShots)
+                    //     {
+                    //    if (!shot.Active) continue;
+                    //    
+                    //        if (Overlaps(shot.getWorldRect(), blueyRect))
+                    //         {
+                    //        shot.Kill();
+                    //        s_bluey->TakeDamage(1);
+                    //        
+                    //            if (s_bluey->IsDead())
+                    //             {
+                    //            s_bluey.reset();
+                    //            break;
+                    //            }
+                    //         }
+                    //     }
+                    // }
                 
-                                // Bluey AI update (spawns electric  missiles)
-                    if (s_bluey)
-                    {
+                       
+                    
+                    
+                    
                     auto const pPos = player->GetWorldPosition();
                     auto const pSz = player->GetWorldSize();
                     float2 const pCenter{ pPos.x + (pSz.x * 0.5f), pPos.y + (pSz.y * 0.5f) };
+
                     auto SpawnElectric = [&](float2 pos, float dir, float targetX) -> game::BlueyElectricShot*
                         {
                             for (auto& e : s_blueyElectric)
                             {
+                                
                                 if (!e.Active)
                                 {
                                     e.Spawn(pos, dir, targetX);
@@ -998,9 +1082,50 @@ loop_delay = 0
                             }
                             return nullptr;
                         };
-                    s_bluey->UpdateBluey(dt_, pCenter, SpawnElectric, SpawnMissile);
-                    s_bluey->SyncToBase();
+
+                    for (auto& bb : s_entityMap["bluey"])
+                    {
+                        if (!bb) continue;
+                        auto& b = *dynamic_cast<game::Bluey*>(bb);
+                        
+                        b.UpdateBluey(dt_, pCenter, SpawnElectric, SpawnMissile);
+                        b.SyncToBase();
                     }
+                    //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+                    // Bluey AI update (spawns electric  missiles)
+                    //if (s_bluey)
+                    //{
+                    //auto const pPos = player->GetWorldPosition();
+                    //auto const pSz = player->GetWorldSize();
+                    //float2 const pCenter{ pPos.x + (pSz.x * 0.5f), pPos.y + (pSz.y * 0.5f) };
+                    //auto SpawnElectric = [&](float2 pos, float dir, float targetX) -> game::BlueyElectricShot*
+                    //    {
+                    //        for (auto& e : s_blueyElectric)
+                    //        {
+                    //            if (!e.Active)
+                    //            {
+                    //                e.Spawn(pos, dir, targetX);
+                    //                return &e;
+                    //            }
+                    //        }
+                    //        return nullptr;
+                    //    };
+
+                    //auto SpawnMissile = [&](float2 pos, float dir) -> game::BlueyMissileShot*
+                    //    {
+                    //        for (auto& m : s_blueyMissiles)
+                    //        {
+                    //            if (!m.Active)
+                    //            {
+                    //                m.Spawn(pos, dir);
+                    //                return &m;
+                    //            }
+                    //        }
+                    //        return nullptr;
+                    //    };
+                    //s_bluey->UpdateBluey(dt_, pCenter, SpawnElectric, SpawnMissile);
+                    //s_bluey->SyncToBase();
+                    //}
                 
                                 // Enemy projectiles: update  collide w/ tiles  hit player
                     auto const playerRect = player->getWorldRect();
@@ -1275,9 +1400,9 @@ loop_delay = 0
         {
             player->SyncToBase();
         }
-        if (s_bluey)
+        for (auto& b : s_entityMap["bluey"])
         {
-            s_bluey->SyncToBase();
+            if (b) b->SyncToBase();
         }
     }
 
@@ -1288,10 +1413,10 @@ loop_delay = 0
         uiStrings[0].String = L"Player AnimFrame = " + std::to_wstring(player->CurrentFrameIndex());
         uiStrings[0].Invalidate();
 
-        if (s_bluey)
-            {
-            renderer_.Draw(s_bluey->getSprite());
-            }
+        for (auto& b : s_entityMap["bluey"])
+        {
+            if (b) renderer_.Draw(b->getSprite());
+        }
 
         if (player)
         {
