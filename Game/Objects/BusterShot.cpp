@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "BusterShot.h"
-
+#include <cmath>
 namespace game
 {
     using winrt::Windows::Foundation::Numerics::float2;
@@ -55,6 +55,7 @@ namespace game
 
         SetFlip(dir >= 0.0f ? engine::CanvasSpriteFlip::None
             : engine::CanvasSpriteFlip::Horizontal);
+        Reflected = false;
 
         ApplyFrame(0);
     }
@@ -81,5 +82,25 @@ namespace game
 
         // Move
         Move({ Velocity.x * dt, Velocity.y * dt });
+    }
+
+
+    void BusterShot::Reflect45Up()
+    {
+        constexpr float kInvSqrt2 = 0.70710678f;
+
+        float newDirX = (Velocity.x >= 0.0f) ? -1.0f : 1.0f;
+
+        Velocity =
+        {
+            newDirX * Speed * kInvSqrt2,
+            -Speed * kInvSqrt2
+        };
+
+        Reflected = true;
+
+        SetFlip(Velocity.x >= 0.0f
+            ? engine::CanvasSpriteFlip::None
+            : engine::CanvasSpriteFlip::Horizontal);
     }
 }

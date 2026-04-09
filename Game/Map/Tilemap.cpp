@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Tilemap.h"
 #include "../../Engine/Camera2D.h"
-#include "../../Engine/Renderer2D.h"
+#include "../../Engine/SpriteBatchScope.h"
 #include <fstream>
 #include <cassert>
 #include <Engine/Utils.h>
@@ -52,6 +52,11 @@ namespace game
     void Tilemap::loadTilemap(const std::wstring& filename_)
     {
         addTiles(filename_);
+    }
+
+    std::vector<std::unique_ptr<game::Tile>>& Tilemap::getTiles()
+    {
+        return tiles;
     }
 
 
@@ -271,7 +276,7 @@ namespace game
         return out;
     }
 
-    void Tilemap::render(engine::Renderer2D& renderer_, engine::Camera2D camera_)
+    void Tilemap::render(engine::SpriteBatchScope const& batch_, engine::Camera2D camera_)
     {
         // Draw directly from the range (avoids building a temp vector)
         if (!tileset || tiles.empty() || pitch <= 0) return;
@@ -295,7 +300,7 @@ namespace game
             {
                 auto* t = tiles[rowBase + (size_t)x].get();
                 if (!t) continue;
-                renderer_.Draw(t->getSprite());
+                t->getSprite().Draw(batch_);
             }
         }
     }

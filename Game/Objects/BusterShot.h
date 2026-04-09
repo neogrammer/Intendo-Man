@@ -13,6 +13,10 @@ namespace game
         float AnimTimer{ 0.0f };
         int   Frame{ 0 };
 
+        bool Reflected{ false };
+
+        void Reflect45Up();
+
         // Tunables
         static constexpr float Speed = 900.0f;
         static constexpr float LifeMax = 0.90f;

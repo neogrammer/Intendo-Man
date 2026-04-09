@@ -5,9 +5,11 @@
 
 #include "../Resources/Cfg.h"
 #include <memory>
-
+#include "../Objects/Enemies/Shelly/Shelly.h"
+#include "../Objects/Enemies/Shelly/ShellyShot.h"
 #include <winrt/Windows.Foundation.Numerics.h>
 #include "../Objects/BusterShot.h"
+#include "../../Engine/Sprite.h"
 #include <array>
 
 namespace engine
@@ -15,10 +17,15 @@ namespace engine
 	class ActionMap;
 	class Camera2D;
 	struct Text;
-	class Renderer2D;
+	class SpriteBatchScope;
 	
 }
 
+namespace
+{
+	std::unique_ptr<game::Shelly> s_shelly{ nullptr };
+	std::array<game::ShellyShot, 4> s_shellyShots{};
+}
 
 
 namespace game
@@ -56,7 +63,7 @@ namespace game
 		// Called right before rendering (GameManager::SyncObjects)
 		void syncObjects() override final;
 
-		std::vector<engine::Text>& render(engine::Renderer2D& renderer_) override final;
+		std::vector<engine::Text>& render(engine::SpriteBatchScope const& batch_) override final;
 		float getTmapTileHeight();
 
 		PlayState();

@@ -3,7 +3,7 @@
 
 #include "../../Engine/ActionMap.h"
 #include "../../Engine/Camera2D.h"
-#include "../../Engine/Renderer2D.h"
+#include "../../Engine/SpriteBatchScope.h"
 #include "../../Engine/Text.h"
 
 namespace game
@@ -31,14 +31,17 @@ namespace game
 
 	void StartState::processInput(const engine::ActionMap& actMap_)
 	{
+		(actMap_);
 	}
 
 	void StartState::update(float dt_)
 	{
+		(dt_);
 	}
 
-	std::vector<engine::Text>& StartState::render(engine::Renderer2D& renderer_)
+	std::vector<engine::Text>& StartState::render(engine::SpriteBatchScope const& batch_)
 	{
+		(batch_);
 		return uiStrings;
 	}
 

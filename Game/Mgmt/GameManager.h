@@ -2,7 +2,7 @@
 #include "../../Engine/InputState.h"
 #include "../../Engine/ActionMap.h"
 #include "../../Engine/Camera2D.h"
-#include "../../Engine/Renderer2D.h"
+#include "../../Engine/Sprite.h"
 #include "../../Engine/Text.h"
 #include "../../Engine/Matrix2D.h"
 #include <winrt/Windows.Foundation.Numerics.h>
@@ -10,6 +10,10 @@
 #include <memory>
 
 
+namespace engine
+{
+	class SpriteBatchScope;
+}
 
 namespace game
 {
@@ -31,7 +35,7 @@ namespace game
 		std::shared_ptr<engine::Camera2D> getCamera();
 		void update(float dt_);
 		void SyncObjects();
-		std::vector<engine::Text>& render(engine::Renderer2D& renderer_);
+		std::vector<engine::Text>& render(engine::SpriteBatchScope const& batch_);
 
 		bool hasTmap();
 		float getTmapTileHeight();

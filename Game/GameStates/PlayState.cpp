@@ -4,7 +4,7 @@
 #include "../Resources/Cfg.h"
 #include "../../Engine/ActionMap.h"
 #include "../../Engine/Camera2D.h"
-#include "../../Engine/Renderer2D.h"
+#include "../../Engine/SpriteBatchScope.h"
 #include "../../Engine/Text.h"
 #include "../Objects/Player.h"
 #include "../Map/Tilemap.h"
@@ -13,7 +13,7 @@
 #include "../Objects/Enemies/Bluey/Bluey.h"
 #include "../Objects/Enemies/Bluey/BlueyElectricShot.h"
 #include "../Objects/Enemies/Bluey/BlueyMissileShot.h"
-
+#include "../Objects/Enemies/Shelly/Shelly.h"
 #include <array>
 #include <algorithm>
 #include <unordered_map>
@@ -33,6 +33,7 @@ namespace
     static std::unordered_map<std::string, std::vector<game::AnimObject*>> s_entityMap = {};
 
 }
+
 
 
 namespace game
@@ -110,11 +111,26 @@ loop_delay = 0
         // --- Blueys (enemies)
         for (auto& b : s_blueys) b.reset();
 
-        s_blueys[0] = std::make_unique<game::Bluey>(float2{ 1000.0f, 186.0f });
-        s_blueys[1] = std::make_unique<game::Bluey>(float2{ 2000.0f, 186.0f }); // <- second one
-
+        s_blueys[0] = std::make_unique<game::Bluey>(float2{ 650.0f, 316.0f });
+        s_blueys[1] = std::make_unique<game::Bluey>(float2{ 1400.0f, 316.0f });
         for (auto& e : s_blueyElectric) e.Kill();
         for (auto& m : s_blueyMissiles) m.Kill();
+
+        s_shelly = std::make_unique<game::Shelly>(float2{ 1000.0f, 316.0f });
+        for (auto& s : s_shellyShots)
+            s.Kill();
+
+        s_entityMap["bluey"] = std::vector<game::AnimObject*>{};
+        s_entityMap["bluey"].clear();
+        s_entityMap["bluey"].reserve(2);
+        s_entityMap["bluey"].emplace_back(dynamic_cast<game::AnimObject*>(s_blueys[0].get()));
+        s_entityMap["bluey"].emplace_back(dynamic_cast<game::AnimObject*>(s_blueys[1].get()));
+
+        s_entityMap["shelly"] = std::vector<game::AnimObject*>{};
+        s_entityMap["shelly"].clear();
+        s_entityMap["shelly"].reserve(1);
+        s_entityMap["shelly"].emplace_back(dynamic_cast<game::AnimObject*>(s_shelly.get()));
+
 
         // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         //        // --- Bluey (enemy)
@@ -122,17 +138,12 @@ loop_delay = 0
         //s_bluey = std::make_unique<game::Bluey>(float2{ 1000.0f, 186.0f });
         //for (auto& e : s_blueyElectric) e.Kill();
         //for (auto& m : s_blueyMissiles) m.Kill();
-       
-        s_entityMap.clear();
 
-        s_entityMap["bluey"] = std::vector<AnimObject*>{};
-        s_entityMap["bluey"].clear();
-        s_entityMap["bluey"].reserve(2);
-        for (auto& b : s_blueys)
-        {
-            s_entityMap["bluey"].emplace_back(b.get());
-        }
+  
 
+             // --- Shelly
+
+        
 
     }
 
@@ -145,9 +156,7 @@ loop_delay = 0
 
         for (auto& e : s_blueyElectric) e.Kill();
         for (auto& m : s_blueyMissiles) m.Kill();
-        for (auto& e : s_entityMap["bluey"]) e = nullptr;
         for (auto& b : s_blueys) b.reset();
-
         // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         //for (auto& e : s_blueyElectric) e.Kill();
         //for (auto& m : s_blueyMissiles) m.Kill();
@@ -162,7 +171,10 @@ loop_delay = 0
         player = nullptr;
 
         
+        for (auto& s : s_shellyShots)
+            s.Kill();
 
+        s_shelly.reset();
         
 
     }
@@ -947,7 +959,152 @@ loop_delay = 0
                 };
 
 
+            {
+                // =========================================================
+         // SHELLY
+         // =========================================================
+                auto ApplyPlayerHit = [&](float fromDir) -> bool
+                    {
+                        if (dead) return false;
+                        if (invulnTimer > 0.0f) return false;
 
+                        hp = std::max<int>(0, hp - hitDamage);
+
+                        invulnTimer = invulnTime;
+                        hitStunTimer = hitStunTime;
+
+                        dashTimer = 0.0f;
+                        dashCooldownTimer = dashCooldown;
+                        airDashTimer = 0.0f;
+                        wallJumpLockTimer = 0.0f;
+                        dashJumpCarry = false;
+
+                        jumpBufferTimer = 0.0f;
+                        coyoteTimer = 0.0f;
+
+                        float kbDir = (fromDir >= 0.0f) ? 1.0f : -1.0f;
+                        hitVelX = kbDir * hitKnockX;
+                        velY = -hitKnockY;
+                        player->inAir();
+
+                        if (hp <= 0)
+                        {
+                            dead = true;
+                            hitStunTimer = 0.0f;
+                        }
+
+                        return true;
+                    };
+
+                if (s_shelly && player)
+                {
+                    auto const pPos = player->GetWorldPosition();
+                    auto const pSz = player->GetWorldSize();
+
+                    float2 const pCenter
+                    {
+                        pPos.x + (pSz.x * 0.5f),
+                        pPos.y + (pSz.y * 0.5f)
+                    };
+
+                    auto SpawnShellyShot = [&](float2 pos, float2 target) -> game::ShellyShot*
+                        {
+                            for (auto& s : s_shellyShots)
+                            {
+                                if (!s.Active)
+                                {
+                                    s.Spawn(pos, target);
+                                    return &s;
+                                }
+                            }
+                            return nullptr;
+                        };
+
+                    s_shelly->UpdateShelly(dt_, pCenter, player->IsFacingRight(), SpawnShellyShot);
+                    s_shelly->SyncToBase();
+
+                    // ---------------------------------------------
+                    // Player buster vs Shelly
+                    // ---------------------------------------------
+                    auto shellyRect = s_shelly->getWorldRect();
+
+                    for (auto& shot : m_busterShots)
+                    {
+                        if (!shot.Active) continue;
+
+                        if (!Overlaps(shot.getWorldRect(), shellyRect))
+                            continue;
+
+                        if (s_shelly->CanReflectBuster() && !shot.Reflected)
+                        {
+                            shot.Reflect45Up();
+
+                            // Nudge it outside the shell so it doesn't instantly collide again
+                            auto sp = shot.GetWorldPosition();
+                            auto ss = shot.GetWorldSize();
+
+                            if (shot.Velocity.x < 0.0f)
+                                sp.x = shellyRect.X - ss.x - 2.0f;
+                            else
+                                sp.x = shellyRect.X + shellyRect.Width + 2.0f;
+
+                            sp.y = shellyRect.Y - ss.y - 2.0f;
+                            shot.SetWorldPosition(sp);
+                        }
+                        else
+                        {
+                            // For now, Shelly just blocks the shot in non-shell state too.
+                            // If you want him vulnerable while walking later, this is the place.
+                            shot.Kill();
+                        }
+                    }
+                }
+
+                // ---------------------------------------------
+                // Shelly shots
+                // ---------------------------------------------
+                auto playerRectShelly = player->getWorldRect();
+
+                for (auto& s : s_shellyShots)
+                {
+                    if (!s.Active) continue;
+
+                    auto before = s.GetWorldPosition();
+                    s.UpdateShot(dt_);
+                    auto after = s.GetWorldPosition();
+
+                    auto sz = s.GetWorldSize();
+
+                    winrt::Windows::Foundation::Rect r0{ before.x, before.y, sz.x, sz.y };
+                    winrt::Windows::Foundation::Rect r1{ after.x,  after.y,  sz.x, sz.y };
+
+                    float l = std::min<float>(r0.X, r1.X);
+                    float t = std::min<float>(r0.Y, r1.Y);
+                    float r = std::max<float>(r0.X + r0.Width, r1.X + r1.Width);
+                    float b = std::max<float>(r0.Y + r0.Height, r1.Y + r1.Height);
+
+                    winrt::Windows::Foundation::Rect sweep{ l, t, r - l, b - t };
+
+                    auto nearTiles = tmap->getSolidTilesInRect(sweep, 1);
+                    for (auto* tile : nearTiles)
+                    {
+                        if (!tile) continue;
+
+                        if (Overlaps(sweep, tile->getWorldRect()))
+                        {
+                            s.Kill();
+                            break;
+                        }
+                    }
+
+                    if (s.Active && Overlaps(s.getWorldRect(), playerRectShelly))
+                    {
+                        ApplyPlayerHit(s.Dir);
+                        s.Kill();
+                    }
+                }
+
+            }
 
                             // --- BLUEY (enemy)  enemy projectiles ------------------------------
                     
@@ -999,25 +1156,10 @@ loop_delay = 0
 
                                 if (b->IsDead())
                                 {
-                                    for (auto& bb : s_entityMap["bluey"])
-                                    {
-
-                                       
-                                        auto iter = s_entityMap["bluey"].begin();
-                                        if (bb == b.get())
-                                        {
-                                            bb = nullptr;
-                                            s_entityMap["bluey"].erase(iter);
-                                            break;
-                                        }
-                                        else
-                                        {
-                                            iter++;
-                                        }
-                                    }
+                                    Cfg::PlaySfx(Cfg::Sounds::EnemyDie, 0.65f);
                                     b.reset();
                                 }
-                                break; // shot is gone; stop checking this Bluey
+                                break;
                             }
                         }
                     }
@@ -1083,14 +1225,14 @@ loop_delay = 0
                             return nullptr;
                         };
 
-                    for (auto& bb : s_entityMap["bluey"])
+                    for (auto& b : s_blueys)
                     {
-                        if (!bb) continue;
-                        auto& b = *dynamic_cast<game::Bluey*>(bb);
-                        
-                        b.UpdateBluey(dt_, pCenter, SpawnElectric, SpawnMissile);
-                        b.SyncToBase();
+                        if (!b) continue;
+
+                        b->UpdateBluey(dt_, pCenter, SpawnElectric, SpawnMissile);
+                        b->SyncToBase();
                     }
+
                     //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
                     // Bluey AI update (spawns electric  missiles)
                     //if (s_bluey)
@@ -1223,6 +1365,8 @@ loop_delay = 0
                         }
                     }
                 
+
+                   
 
 
             // Spawn (hold-to-fire, 3 shots max)
@@ -1400,46 +1544,79 @@ loop_delay = 0
         {
             player->SyncToBase();
         }
-        for (auto& b : s_entityMap["bluey"])
+        for (auto& b : s_blueys)
         {
             if (b) b->SyncToBase();
         }
+
+        if (s_shelly)
+        {
+            s_shelly->SyncToBase();
+        }
     }
 
-    std::vector<engine::Text>& PlayState::render(engine::Renderer2D& renderer_)
+    std::vector<engine::Text>& PlayState::render(engine::SpriteBatchScope const& batch_)
     {
-        tmap->render(renderer_, *camera);
+     
+        tmap->render(batch_, *camera);
 
         uiStrings[0].String = L"Player AnimFrame = " + std::to_wstring(player->CurrentFrameIndex());
         uiStrings[0].Invalidate();
 
-        for (auto& b : s_entityMap["bluey"])
+        //for (auto& b : s_blueys)
+        //{
+        //    if (b) renderer_.Draw(b->getSprite());
+        //}
+
+        //if (s_shelly)
+        //{
+        //    renderer_.Draw(s_shelly->getSprite());
+        //}
+
+        for (auto& ent : s_entityMap["bluey"])
         {
-            if (b) renderer_.Draw(b->getSprite());
+            if (ent) ent->getSprite().Draw(batch_);
         }
+
+        for (auto& ent : s_entityMap["shelly"])
+        {
+            if (ent) ent->getSprite().Draw(batch_);
+        }
+
+
+        for (auto& s : s_shellyShots)
+        {
+            if (s.Active)
+                s.getSprite().Draw(batch_);
+        }
+
+        //auto spr = player->getSprite();
+        //uiStrings[0].String = spr.IsValid() ? L"sprite valid" : L"sprite invalid";
+        //uiStrings[0].Invalidate();
+        //spr.Draw(batch_);
 
         if (player)
         {
-            renderer_.Draw(player->getSprite());
+            player->getSprite().Draw(batch_);
         }
 
         for (auto& shot : m_busterShots)
         {
             if (shot.Active)
-                renderer_.Draw(shot.getSprite());
+                shot.getSprite().Draw(batch_);
         }
 
 
          for (auto& e : s_blueyElectric)
              {
             if (e.Active)
-                 renderer_.Draw(e.getSprite());
+                e.getSprite().Draw(batch_);
             }
         
             for (auto& m : s_blueyMissiles)
              {
             if (m.Active)
-                 renderer_.Draw(m.getSprite());
+                m.getSprite().Draw(batch_);
             }
 
         return uiStrings;
@@ -1460,649 +1637,3 @@ loop_delay = 0
     {
     }
 }
-
-
-//#include "pch.h"
-//#include "PlayState.h"
-//
-//#include "../Resources/Cfg.h"
-//#include "../../Engine/ActionMap.h"
-//#include "../../Engine/Camera2D.h"
-//#include "../../Engine/Renderer2D.h"
-//#include "../../Engine/Text.h"
-//#include "../Objects/Player.h"
-//#include "../Map/Tilemap.h"
-//#include "../Systems/PhysicsSys.h"
-//
-//namespace game
-//{
-//	using winrt::Windows::Foundation::Numerics::float2;
-//
-//	std::wstring PlayState::type()
-//	{
-//		return L"PlayState";
-//	}
-//
-//	void game::PlayState::enter()
-//	{
-//		Cfg::PlayMusicAsync(L"theme", true, 0.25f);
-//		uiStrings.clear();
-//
-//		// --- Player (AnimObject)
-//		// You can load from a file:
-//		// player = std::make_unique<game::AnimObject>(L"Assets\\Anims\\Player.anm");
-//		// ...or load from text (handy while iterating):
-//		player = std::make_unique<game::Player>();
-//
-//		const std::wstring shipTestAnm = LR"(
-//# Minimal test anim that points at the existing Ship texture.
-//[object]
-//position = 450 450
-//start_anim = idle
-//
-//[anim idle]
-//texture        = ship
-//frame_size     = 481 611
-//start_col      = 0
-//start_row      = 0
-//start_px       = 0 0
-//pitch          = 1
-//frames         = 1
-//uni_directional= true
-//
-//offsets = (0,0)
-//sizes   = (481,611)
-//delays  = 0.10
-//
-//looping    = true
-//loop_wait  = false
-//loop_delay = 0
-//)";
-//
-//		tmap = std::make_unique<game::Tilemap>(Cfg::Textures::Tileset1, winrt::Windows::Foundation::Numerics::float2{ 40.f,40.f }, 16, 256);
-//		tmap->loadTileset(L"ms-appx:///Assets/Datas/Tilesets/tileset2.tst");
-//		tmap->loadTilemap(L"ms-appx:///Assets/Datas/Tilemaps/tilemap1.map");
-//
-//		//player->LoadFromAnmText(shipTestAnm);
-//
-//		// --- HUD
-//		engine::Text m_hud{};
-//
-//		m_hud.FontRef = Cfg::GetFont(L"bubbly");
-//		m_hud.String = L"Cool Text Bitches!";
-//		m_hud.FontSize = 22.0f;
-//		m_hud.OutlineThickness = 2;
-//		m_hud.OutlineColor = winrt::Windows::UI::Colors::White();
-//		m_hud.Color = winrt::Windows::UI::Colors::Green();
-//		m_hud.Position = { 10.0f, 10.0f };
-//		m_hud.Invalidate();
-//
-//		uiStrings.push_back(m_hud);
-//
-//
-//
-//
-//	}
-//
-//	void PlayState::exit()
-//	{
-//		tmap.reset();
-//		tmap = nullptr;
-//
-//		engine::SoundManager::Instance().StopMusic();
-//		uiStrings.clear();
-//		player.reset();
-//		player = nullptr;
-//	}
-//
-//	void PlayState::processInput(const engine::ActionMap& actMap_)
-//	{
-//		// do this in the playstate
-//		if (actMap_.Pressed(engine::Action::ResetView))
-//		{
-//			camera->Reset();
-//			cameraOffset = { 0,0 };
-//		}
-//
-//		if (actMap_.Pressed(engine::Action::Fire))
-//		{
-//			Cfg::PlaySfx(L"blip");
-//		}
-//
-//		actMap = &actMap_;
-//	}
-//
-//
-//    void PlayState::update(float dt_)
-//    {
-//        if (player)
-//        {
-//            player->Update(dt_);
-//        }
-//
-//        if (actMap && player)
-//        {
-//            // --- Tunables
-//            constexpr float playerSpeed = 300.0f;
-//
-//            constexpr float gravity = 1988.88f;       // px/s^2 (down)
-//            constexpr float jumpSpeed = 900.0f;       // px/s (up is negative)
-//            constexpr float jumpCutSpeed = 300.0f;    // release early clamps to this upward speed
-//
-//            // Apex hang (floatier near the top)
-//            constexpr float apexVelWindow = 140.0f;   // px/s (|velY| under this => hang)
-//            constexpr float apexGravityScale = 0.35f; // 0..1
-//
-//            // Wall
-//            constexpr float wallSlideMaxFall = 350.0f; // px/s downward clamp while sliding
-//            constexpr float wallJumpSpeedX = 650.0f;   // px/s horizontal kick-off
-//            constexpr float wallJumpLockMax = 0.15f;   // seconds of forced wall-jump horizontal velocity
-//
-//            // Dash
-//            constexpr float dashSpeed = 650.0f;        // px/s
-//            constexpr float dashDuration = 0.18f;      // seconds
-//            constexpr float dashCooldown = 0.10f;      // seconds (prevents re-trigger spam)
-//
-//            // Hit / Death
-//            constexpr int   hpMax = 8;
-//            constexpr int   hitDamage = 1;
-//            constexpr float invulnTime = 1.00f;        // seconds of i-frames
-//            constexpr float hitStunTime = 0.30f;       // seconds of movement lock / knockback
-//            constexpr float hitKnockX = 420.0f;        // px/s
-//            constexpr float hitKnockY = 520.0f;        // px/s upward pop
-//
-//            // Jump grace
-//            constexpr float coyoteMax = 0.10f;         // seconds
-//            constexpr float bufferMax = 0.10f;         // seconds
-//
-//            // --- State (static for now; you can move to Player later)
-//            static float velY = 0.0f;
-//            static bool  jumpCutApplied = false;
-//            static float coyoteTimer = 0.0f;
-//            static float jumpBufferTimer = 0.0f;
-//
-//            static float wallJumpLockTimer = 0.0f;
-//            static float wallJumpVelX = 0.0f;
-//
-//            static float dashTimer = 0.0f;
-//            static float dashCooldownTimer = 0.0f;
-//            static float dashDir = 1.0f;
-//
-//            static int   hp = hpMax;
-//            static bool  dead = false;
-//            static float invulnTimer = 0.0f;
-//            static float hitStunTimer = 0.0f;
-//            static float hitVelX = 0.0f;
-//
-//            // Input
-//            float2 move = actMap->MoveAxis();  // X only for platformer
-//            bool jumpPressed = actMap->Pressed(engine::Action::MoveUp);
-//            bool jumpHeld = actMap->Down(engine::Action::MoveUp);
-//            bool jumpReleased = actMap->Released(engine::Action::MoveUp);
-//
-//            // TEMP bindings (no engine Action additions needed)
-//            bool dashPressed = actMap->Pressed(engine::Action::RotCW);   // C / Right shoulder
-//            bool debugHitPressed = actMap->Pressed(engine::Action::RotCCW);  // Z / Left shoulder
-//
-//            bool wantShoot = actMap->Down(engine::Action::Fire);
-//
-//            // Camera pan offset (keep your existing cameraOffset logic)
-//            float2 pan = actMap->PanAxis();
-//            constexpr float camPanSpeed = 450.0f;
-//            cameraOffset.x += pan.x * camPanSpeed * dt_;
-//            cameraOffset.y += pan.y * camPanSpeed * dt_;
-//
-//            // Snapshot ground at start of frame
-//            bool wasGrounded = player->isGrounded();
-//
-//            // --- Tick timers
-//            invulnTimer = std::max<float>(0.0f, invulnTimer - dt_);
-//            hitStunTimer = std::max<float>(0.0f, hitStunTimer - dt_);
-//            dashTimer = std::max<float>(0.0f, dashTimer - dt_);
-//            dashCooldownTimer = std::max<float>(0.0f, dashCooldownTimer - dt_);
-//            wallJumpLockTimer = std::max<float>(0.0f, wallJumpLockTimer - dt_);
-//
-//            coyoteTimer = wasGrounded ? coyoteMax : std::max<float>(0.0f, coyoteTimer - dt_);
-//            jumpBufferTimer = std::max<float>(0.0f, jumpBufferTimer - dt_);
-//
-//            // When grounded, reset vertical speed
-//            if (wasGrounded)
-//            {
-//                velY = 0.0f;
-//                jumpCutApplied = false;
-//            }
-//
-//            auto StartJump = [&](bool isHeldNow)
-//                {
-//                    velY = -jumpSpeed;
-//                    player->inAir();          // immediately leave ground
-//                    coyoteTimer = 0.0f;
-//                    jumpBufferTimer = 0.0f;
-//                    jumpCutApplied = false;
-//
-//                    // Short-hop if not held
-//                    if (!isHeldNow)
-//                    {
-//                        if (velY < -jumpCutSpeed) velY = -jumpCutSpeed;
-//                        jumpCutApplied = true;
-//                    }
-//                };
-//
-//            // --- 1px wall probes (same pattern as under-probe)
-//            constexpr float kWallProbeW = 1.0f;
-//            constexpr float kWallProbeInsetY = 2.0f;
-//
-//            auto Overlaps = [](winrt::Windows::Foundation::Rect const& a,
-//                winrt::Windows::Foundation::Rect const& b) noexcept
-//                {
-//                    return (a.X <= b.X + b.Width) && (a.X + a.Width > b.X) &&
-//                        (a.Y <= b.Y + b.Height) && (a.Y + a.Height > b.Y);
-//                };
-//
-//            auto ProbeSolid = [&](winrt::Windows::Foundation::Rect const& probe) -> bool
-//                {
-//                    auto nearTiles = tmap->getSolidTilesInRect(probe, 0);
-//                    for (auto* t : nearTiles)
-//                    {
-//                        if (t && Overlaps(probe, t->getWorldRect()))
-//                            return true;
-//                    }
-//                    return false;
-//                };
-//
-//            // Probe at the start of frame (pre-move)
-//            auto const posPre = player->GetWorldPosition();
-//            auto const sizePre = player->GetWorldSize();
-//            float probeHPre = std::max<float>(0.0f, sizePre.y - (kWallProbeInsetY * 2.0f));
-//
-//            winrt::Windows::Foundation::Rect leftProbePre
-//            {
-//                posPre.x - kWallProbeW,
-//                posPre.y + kWallProbeInsetY,
-//                kWallProbeW,
-//                probeHPre
-//            };
-//
-//            winrt::Windows::Foundation::Rect rightProbePre
-//            {
-//                posPre.x + sizePre.x,
-//                posPre.y + kWallProbeInsetY,
-//                kWallProbeW,
-//                probeHPre
-//            };
-//
-//            bool touchWallLeftPre = (!wasGrounded) && ProbeSolid(leftProbePre);
-//            bool touchWallRightPre = (!wasGrounded) && ProbeSolid(rightProbePre);
-//
-//            bool pressLeft = (move.x < -0.20f);
-//            bool pressRight = (move.x > 0.20f);
-//
-//            bool pressingIntoWallPre =
-//                (touchWallLeftPre && pressLeft) ||
-//                (touchWallRightPre && pressRight);
-//
-//            // --- DAMAGE / HIT (debug trigger for now)
-//            if (debugHitPressed && !dead && invulnTimer <= 0.0f)
-//            {
-//                hp = std::max<int>(0, hp - hitDamage);
-//
-//                invulnTimer = invulnTime;
-//                hitStunTimer = hitStunTime;
-//
-//                // Cancel movement states
-//                dashTimer = 0.0f;
-//                dashCooldownTimer = dashCooldown;
-//                wallJumpLockTimer = 0.0f;
-//
-//                // Knock back opposite of facing (or opposite of input if you’re holding a direction)
-//                float kbDir = player->IsFacingRight() ? -1.0f : 1.0f;
-//                if (pressLeft)  kbDir = 1.0f;
-//                if (pressRight) kbDir = -1.0f;
-//
-//                hitVelX = kbDir * hitKnockX;
-//                velY = -hitKnockY;
-//                player->inAir();
-//
-//                if (hp <= 0)
-//                {
-//                    dead = true;
-//                    hitStunTimer = 0.0f;
-//                }
-//            }
-//
-//            // Control lock during hitstun / dead
-//            bool controlLocked = dead || (hitStunTimer > 0.0f);
-//            if (controlLocked)
-//            {
-//                move = float2{ 0.0f, 0.0f };
-//                jumpPressed = false;
-//                jumpReleased = false;
-//                dashPressed = false;
-//                wantShoot = false;
-//
-//                // Don’t allow “buffered jump after hit”
-//                jumpBufferTimer = 0.0f;
-//                coyoteTimer = 0.0f;
-//            }
-//
-//            // --- DASH (ground-only start)
-//            if (!controlLocked && wasGrounded && dashPressed && dashTimer <= 0.0f && dashCooldownTimer <= 0.0f)
-//            {
-//                if (pressLeft)      dashDir = -1.0f;
-//                else if (pressRight) dashDir = 1.0f;
-//                else                dashDir = player->IsFacingRight() ? 1.0f : -1.0f;
-//
-//                dashTimer = dashDuration;
-//                dashCooldownTimer = dashCooldown;
-//            }
-//
-//            bool justWallJumped = false;
-//
-//            // Jump press routing:
-//            // - wall jump if touching wall and pressing into it
-//            // - else normal jump if grounded/coyote
-//            // - else buffer ONLY while falling
-//            if (!controlLocked && jumpPressed)
-//            {
-//                if (pressingIntoWallPre)
-//                {
-//                    const float pushDir = (touchWallLeftPre && pressLeft) ? 1.0f : -1.0f;
-//
-//                    wallJumpVelX = pushDir * wallJumpSpeedX;
-//                    wallJumpLockTimer = wallJumpLockMax;
-//
-//                    velY = -jumpSpeed;
-//                    player->inAir();
-//                    coyoteTimer = 0.0f;
-//                    jumpBufferTimer = 0.0f;
-//                    jumpCutApplied = false;
-//
-//                    player->SetFacingRight(pushDir > 0.0f);
-//                    justWallJumped = true;
-//                }
-//                else if (wasGrounded || coyoteTimer > 0.0f)
-//                {
-//                    StartJump(jumpHeld);
-//                }
-//                else if (!wasGrounded && velY > 0.0f)
-//                {
-//                    // Buffer ONLY while falling
-//                    jumpBufferTimer = bufferMax;
-//                }
-//            }
-//
-//            // Variable height: release early cuts upward speed once
-//            if (!controlLocked && jumpReleased && velY < 0.0f && !jumpCutApplied)
-//            {
-//                if (velY < -jumpCutSpeed) velY = -jumpCutSpeed;
-//                jumpCutApplied = true;
-//            }
-//
-//            // Gravity (with apex hang)
-//            if (!player->isGrounded())
-//            {
-//                float g = gravity;
-//                if (std::abs(velY) < apexVelWindow)
-//                    g *= apexGravityScale;
-//
-//                velY += g * dt_;
-//            }
-//
-//            // Wall slide clamp (pre-move)
-//            bool wallSlidingPre = (!wasGrounded) && pressingIntoWallPre && (velY > 0.0f);
-//            if (wallSlidingPre && velY > wallSlideMaxFall)
-//            {
-//                velY = wallSlideMaxFall;
-//            }
-//
-//            // Horizontal velocity priority:
-//            // Hitstun > wall-jump lock > dash > wall slide (stops shove) > input
-//            float xVel = move.x * playerSpeed;
-//
-//            if (wallJumpLockTimer > 0.0f)
-//            {
-//                xVel = wallJumpVelX;
-//            }
-//            else if (dashTimer > 0.0f)
-//            {
-//                xVel = dashDir * dashSpeed;
-//            }
-//            else if (wallSlidingPre)
-//            {
-//                xVel = 0.0f;
-//            }
-//
-//            if (hitStunTimer > 0.0f)
-//            {
-//                xVel = hitVelX;
-//            }
-//            if (dead)
-//            {
-//                xVel = 0.0f;
-//            }
-//
-//            float2 delta
-//            {
-//                xVel * dt_,
-//                velY * dt_
-//            };
-//
-//            // Build sweep rect BEFORE moving (so tile query is correct)
-//            auto const startPos = player->GetWorldPosition();
-//            float expectedNewY = startPos.y + delta.y;
-//
-//            auto const r0 = player->getWorldRect();
-//
-//            float left = std::min<float>(r0.X, r0.X + delta.x);
-//            float top = std::min<float>(r0.Y, r0.Y + delta.y);
-//            float right = std::max<float>(r0.X + r0.Width, r0.X + r0.Width + delta.x);
-//            float bottom = std::max<float>(r0.Y + r0.Height, r0.Y + r0.Height + delta.y);
-//
-//            winrt::Windows::Foundation::Rect sweepR{ left, top, right - left, bottom - top };
-//            auto sweepTiles = tmap->getSolidTilesInRect(sweepR, 1);
-//
-//            std::vector<game::GameObject*> tiles;
-//            tiles.reserve(sweepTiles.size());
-//            for (auto* tile : sweepTiles)
-//                tiles.push_back(tile);
-//
-//            // Move + collide ONCE
-//            player->Move(delta);
-//            phys::handleCollisions(*player, tiles);
-//
-//            // Stop dash if we slammed into something horizontally (collision pushed us back)
-//            auto const afterPos = player->GetWorldPosition();
-//            if (dashTimer > 0.0f)
-//            {
-//                float expectedX = startPos.x + delta.x;
-//                if (std::abs(afterPos.x - expectedX) > 0.01f)
-//                {
-//                    dashTimer = 0.0f;
-//                }
-//            }
-//
-//            // trustFall ONCE (only “do I still have support?”)
-//            if (player->isGrounded() && player->isAffectedByGravity())
-//            {
-//                std::vector<game::GameObject*> underVec;
-//                if (auto* underObj = player->getUnder())
-//                {
-//                    auto const underRect = underObj->getWorldRect();
-//                    auto underTiles = tmap->getSolidTilesInRect(underRect, 1);
-//
-//                    underVec.reserve(underTiles.size());
-//                    for (auto* t : underTiles)
-//                        underVec.push_back(t);
-//
-//                    phys::trustFall(*player, underVec);
-//                }
-//            }
-//
-//            bool nowGrounded = player->isGrounded();
-//            bool landedThisFrame = (nowGrounded && !wasGrounded);
-//
-//            // Head bonk: tried to go up but collision pushed us down
-//            auto const endPos = player->GetWorldPosition();
-//            if (velY < 0.0f && endPos.y > expectedNewY + 0.01f)
-//            {
-//                velY = 0.0f;
-//            }
-//
-//            // Kill falling velocity when grounded
-//            if (nowGrounded && velY > 0.0f)
-//            {
-//                velY = 0.0f;
-//            }
-//
-//            // Jump buffer on landing (only if not locked)
-//            if (!controlLocked && nowGrounded && jumpBufferTimer > 0.0f)
-//            {
-//                StartJump(jumpHeld);
-//                nowGrounded = false;
-//                landedThisFrame = false;
-//            }
-//
-//            // Wall contact POST (for animation)
-//            auto const posPost = player->GetWorldPosition();
-//            auto const sizePost = player->GetWorldSize();
-//            float probeHPost = std::max<float>(0.0f, sizePost.y - (kWallProbeInsetY * 2.0f));
-//
-//            winrt::Windows::Foundation::Rect leftProbe
-//            {
-//                posPost.x - kWallProbeW,
-//                posPost.y + kWallProbeInsetY,
-//                kWallProbeW,
-//                probeHPost
-//            };
-//
-//            winrt::Windows::Foundation::Rect rightProbe
-//            {
-//                posPost.x + sizePost.x,
-//                posPost.y + kWallProbeInsetY,
-//                kWallProbeW,
-//                probeHPost
-//            };
-//
-//            bool touchWallLeft = (!nowGrounded) && ProbeSolid(leftProbe);
-//            bool touchWallRight = (!nowGrounded) && ProbeSolid(rightProbe);
-//
-//            bool wallSliding =
-//                (!nowGrounded) &&
-//                (velY > 0.0f) &&
-//                ((touchWallLeft && pressLeft) || (touchWallRight && pressRight));
-//
-//            if (wallSliding && velY > wallSlideMaxFall)
-//                velY = wallSlideMaxFall;
-//
-//            // Animation context
-//            if (auto* p = dynamic_cast<Player*>(player.get()))
-//            {
-//                Player::AnimContext animCtx{};
-//
-//                // For facing: dash uses dashDir; hit/dead don't change facing.
-//                if (dead || hitStunTimer > 0.0f)        animCtx.moveX = 0.0f;
-//                else if (dashTimer > 0.0f)             animCtx.moveX = dashDir;
-//                else                                   animCtx.moveX = move.x;
-//
-//                animCtx.grounded = nowGrounded;
-//                animCtx.justLanded = landedThisFrame;
-//
-//                animCtx.wantShoot = wantShoot;
-//                animCtx.wantDash = (!controlLocked) && (dashTimer > 0.0f) && nowGrounded;
-//
-//                animCtx.gotHit = (!dead) && (hitStunTimer > 0.0f);
-//                animCtx.dead = dead;
-//
-//                animCtx.velY = velY;
-//
-//                animCtx.touchWallLeft = touchWallLeft;
-//                animCtx.touchWallRight = touchWallRight;
-//                animCtx.wallSliding = wallSliding;
-//                animCtx.justWallJumped = justWallJumped;
-//
-//                p->UpdateAnimation(dt_, animCtx);
-//            }
-//
-//            actMap = nullptr;
-//        }
-//
-//        float camHalfW = camera->getWidth() * 0.5f;
-//        float camHalfH = camera->getHeight() * 0.5f;
-//
-//        float leftBound = camera->Position.x - camHalfW + (camera->getWidth() / 3.f);
-//        float rightBound = camera->Position.x + camHalfW - (camera->getWidth() / 3.f);
-//
-//        // Follow player with user pan offset (use center of collider box)
-//        if (player)
-//        {
-//            auto const pos = player->GetWorldPosition();
-//            auto const size = player->GetWorldSize();
-//
-//            float playerCenterX = pos.x + (size.x * 0.5f);
-//
-//            float newCamX = camera->Position.x;
-//
-//            // Only move if outside middle third
-//            if (playerCenterX < leftBound)
-//            {
-//                newCamX -= (leftBound - playerCenterX);
-//            }
-//            else if (playerCenterX > rightBound)
-//            {
-//                newCamX += (playerCenterX - rightBound);
-//            }
-//
-//            // Clamp to tilemap
-//            float worldWidth = tmap->getPitch() * tmap->getTileSize().x;
-//
-//            newCamX = std::min<float>(
-//                std::max<float>(newCamX, camHalfW),
-//                worldWidth - camHalfW
-//            );
-//
-//            camera->Position = { newCamX + cameraOffset.x, camHalfH + cameraOffset.y };
-//        }
-//        else
-//        {
-//            camera->Position = { camHalfW, camHalfH };
-//        }
-//    }
-//
-//	void PlayState::syncObjects()
-//	{
-//		if (player)
-//		{
-//			player->SyncToBase();
-//		}
-//	}
-//
-//	std::vector<engine::Text>& PlayState::render(engine::Renderer2D& renderer_)
-//	{
-//		tmap->render(renderer_, *camera);
-//		
-//		uiStrings[0].String = L"Player AnimFrame = " + std::to_wstring(player->CurrentFrameIndex());
-//		uiStrings[0].Invalidate();
-//
-//		if (player)
-//		{
-//			renderer_.Draw(player->getSprite());
-//		}
-//
-//		return uiStrings;
-//	}
-//
-//	float PlayState::getTmapTileHeight()
-//	{
-//		return tmap->getTileSize().y;
-//	}
-//
-//	PlayState::PlayState()
-//		: GameState{}
-//		, player{ nullptr }
-//	{
-//	}
-//
-//	PlayState::~PlayState()
-//	{
-//	}
-//}

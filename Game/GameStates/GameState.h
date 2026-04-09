@@ -2,13 +2,14 @@
 #include "GameStateBase.h"
 #include "../../Engine/Matrix2D.h"
 
+#include "../../Engine/Sprite.h"
 #include <string>
 
 namespace engine
 {
 	class ActionMap;
 	class Camera2D;
-	class Renderer2D;
+	class SpriteBatchScope;
 	struct Text;
 
 }
@@ -39,7 +40,7 @@ namespace game
 		// Default: no-op (override in states that own AnimObjects).
 		virtual void syncObjects() {}
 
-		virtual std::vector<engine::Text>& render(engine::Renderer2D& renderer_) = 0;
+		virtual std::vector<engine::Text>& render(engine::SpriteBatchScope const& batch_) = 0;
 
 		bool isType(const std::wstring& type_);
 		std::wstring getType();

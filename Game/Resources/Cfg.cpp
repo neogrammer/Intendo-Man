@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "Cfg.h"
-#include "../Engine/TextureStore.h"
+#include "../Engine/Sprite.h"
 #include <chrono>
 #include <algorithm>
 
@@ -18,8 +18,8 @@ winrt::Windows::Foundation::IAsyncAction Cfg::InitializeAsync(winrt::Microsoft::
 {
     // Textures
 
-    engine::TextureStore::Instance().SetResourceCreator(sender);
-    engine::TextureStore::Instance().Clear();
+    engine::Sprite::SetResourceCreator(sender);
+    engine::Sprite::ClearCache();
     co_await initTextures();
 
     engine::FontManager::Instance().Clear();
@@ -67,35 +67,40 @@ void Cfg::initSounds()
 
 winrt::Windows::Foundation::IAsyncAction Cfg::initTextures()
 {
-    co_await engine::TextureStore::Instance().RegisterAndLoadAsync(
+    co_await engine::Sprite::RegisterAndLoadAsync(
         L"ship",
         Uri(L"ms-appx:///Assets/Textures/Characters/Player/ship.png"));
     textures.emplace(Textures::Ship, L"ship");
 
-    co_await engine::TextureStore::Instance().RegisterAndLoadAsync(
+    co_await engine::Sprite::RegisterAndLoadAsync(
         L"PlayerAtlas",
         Uri(L"ms-appx:///Assets/Textures/Characters/Player/player_atlas.png"));
     textures.emplace(Textures::PlayerAtlas, L"PlayerAtlas");
 
-    co_await engine::TextureStore::Instance().RegisterAndLoadAsync(
+    co_await engine::Sprite::RegisterAndLoadAsync(
         L"Tileset1",
         Uri(L"ms-appx:///Assets/Textures/Tilesets/tileset2.png"));
     textures.emplace(Textures::Tileset1, L"Tileset1");
 
-    co_await engine::TextureStore::Instance().RegisterAndLoadAsync(
+    co_await engine::Sprite::RegisterAndLoadAsync(
         L"under",
         Uri(L"ms-appx:///Assets/Textures/Misc/under.png"));
     textures.emplace(Textures::Under, L"under");
 
-    co_await engine::TextureStore::Instance().RegisterAndLoadAsync(
+    co_await engine::Sprite::RegisterAndLoadAsync(
         L"BusterShot",
         Uri(L"ms-appx:///Assets/Textures/Characters/Player/buster_shot_21x26.png"));
     textures.emplace(Textures::BusterShot, L"BusterShot");
 
-    co_await engine::TextureStore::Instance().RegisterAndLoadAsync(
+    co_await engine::Sprite::RegisterAndLoadAsync(
         L"BlueyAtlas",
-        Uri(L"ms-appx:///Assets/Textures/Characters/Enemies/Bluey204x254_Weapons204X135.png"));
+        Uri(L"ms-appx:///Assets/Textures/Characters/Enemies/Bluey102x127_Weapons102X67_5.png"));
     textures.emplace(Textures::BlueyAtlas, L"BlueyAtlas");
+
+    co_await engine::Sprite::RegisterAndLoadAsync(
+        L"ShellyAtlas",
+        Uri(L"ms-appx:///Assets/Textures/Characters/Enemies/shelly.png"));
+    textures.emplace(Textures::ShellyAtlas, L"ShellyAtlas");
 
     co_return;
 }
@@ -111,17 +116,19 @@ std::shared_ptr<engine::Font> Cfg::GetFont(Fonts f_)
     if (it == fonts.end()) return nullptr;
     return engine::FontManager::Instance().Get(it->second);
 }
-
-std::shared_ptr<engine::Texture> Cfg::GetTex(std::wstring tex_)
+std::wstring Cfg::GetTexKey(std::wstring const& tex_)
 {
-    return engine::TextureStore::Instance().Get(tex_);
+    return tex_;
 }
 
-std::shared_ptr<engine::Texture> Cfg::GetTex(Textures tex_)
+std::wstring Cfg::GetTexKey(Textures tex_)
 {
     auto it = textures.find(tex_);
-    if (it == textures.end()) return nullptr;
-    return engine::TextureStore::Instance().Get(it->second);
+    if (it == textures.end())
+    {
+        return L"";
+    }
+    return it->second;
 }
 
 void Cfg::PlaySfx(std::wstring snd_, float volume_)

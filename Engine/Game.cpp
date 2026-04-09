@@ -1,8 +1,7 @@
 #include "pch.h"
 
 #include "Engine/Game.h"
-#include "Engine/TextureStore.h"
-#include "Engine/Renderer2D.h"
+#include "Engine/SpriteBatchScope.h"
 #include "Engine/Matrix2D.h"
 #include "Engine/SoundManager.h"
 
@@ -27,25 +26,52 @@ namespace engine
     winrt::Windows::Foundation::IAsyncAction Game::CreateResourcesAsync(
         winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasAnimatedControl const& sender)
     {
+        try
+        {
+            OutputDebugStringW(L"[DBG] Game::CreateResourcesAsync enter\n");
 
+            co_await Cfg::InitializeAsync(sender);
 
-        co_await Cfg::InitializeAsync(sender);
-        
-        
+            OutputDebugStringW(L"[DBG] Cfg::InitializeAsync finished\n");
 
-        gameMgr = std::make_unique<game::GameManager>();
+            gameMgr = std::make_unique<game::GameManager>();
 
+            OutputDebugStringW(L"[DBG] GameManager created\n");
 
-        m_time = 0.0f;
-  
-  
+            m_time = 0.0f;
+
+            co_return;
+        }
+        catch (winrt::hresult_error const& e)
+        {
+            std::wstring msg = L"[ERR] CreateResourcesAsync hresult_error: ";
+            msg += e.message().c_str();
+            msg += L"\n";
+            OutputDebugStringW(msg.c_str());
+            throw;
+        }
+        catch (std::exception const& e)
+        {
+            std::wstring msg = L"[ERR] CreateResourcesAsync std::exception: ";
+            msg += winrt::to_hstring(e.what()).c_str();
+            msg += L"\n";
+            OutputDebugStringW(msg.c_str());
+            throw;
+        }
+        catch (...)
+        {
+            OutputDebugStringW(L"[ERR] CreateResourcesAsync unknown exception\n");
+            throw;
+        }
     }
-
     void Game::Update(
         winrt::Microsoft::Graphics::Canvas::UI::Xaml::ICanvasAnimatedControl const& sender,
         winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasAnimatedUpdateEventArgs const& args)
     {
-
+        if (!gameMgr)
+        {
+            return;
+        }
 
         auto s = sender.Size();
         auto cam = gameMgr->getCamera();
@@ -78,6 +104,12 @@ namespace engine
         winrt::Microsoft::Graphics::Canvas::UI::Xaml::ICanvasAnimatedControl const& sender,
         winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasAnimatedDrawEventArgs const& args)
     {
+
+        if (!gameMgr)
+        {
+            return;
+        }
+
         auto cam = gameMgr->getCamera();
         auto ds = args.DrawingSession();
         ds.Clear(Colors::Black());
@@ -101,27 +133,24 @@ namespace engine
                 offset = { (actualW - VIRTUAL_W * scale) * 0.5f,(actualH - VIRTUAL_H * scale) * 0.5f };
 
 
-                // world -> virtual screen (camera), then virtual->actual (scale+letterbox)
                 ds.Transform(engine::Multiply(
                     cam->WorldToScreen(),
                     engine::Multiply(engine::Scale(scale), engine::Translation(offset))
                 ));
-                float sx = actualW / VIRTUAL_W;
-                float sy = actualH / VIRTUAL_H;
-                ds.Transform(engine::Multiply(cam->WorldToScreen(), engine::Scale({ sx, sy })));
             }
 
             //ds.Transform(cam->WorldToScreen());
             //DrawGrid(ds);
 
+
+
             std::vector<engine::Text>* uiStrings{};
             {
-                engine::Renderer2D renderer(ds);
-                // pass renderer down to the state
-                uiStrings = &gameMgr->render(renderer);
+                engine::SpriteBatchScope batch(ds);
+                uiStrings = &gameMgr->render(batch);
             }
 
-            engine::Renderer2D renderer(ds);
+            
 
             // render this in state, and after it draws it returns the UI strings that need to be displayed
             // HUD strings to draw = renderer.Draw(m_player);

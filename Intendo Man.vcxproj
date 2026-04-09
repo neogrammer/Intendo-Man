@@ -128,12 +128,10 @@
     <ClInclude Include="Engine\InputState.h" />
     <ClInclude Include="Engine\Math.h" />
     <ClInclude Include="Engine\Matrix2D.h" />
-    <ClInclude Include="Engine\Renderer2D.h" />
     <ClInclude Include="Engine\SoundManager.h" />
     <ClInclude Include="Engine\Sprite.h" />
     <ClInclude Include="Engine\SpriteBatchScope.h" />
     <ClInclude Include="Engine\Text.h" />
-    <ClInclude Include="Engine\TextureStore.h" />
     <ClInclude Include="Engine\Utils.h" />
     <ClInclude Include="Game\Animation\AnimatorSM.h" />
     <ClInclude Include="Game\Animation\AnimCommon.h" />
@@ -156,6 +154,8 @@
     <ClInclude Include="Game\Objects\BusterShot.h" />
     <ClInclude Include="Game\Objects\Enemies\Bluey\Bluey.h" />
     <ClInclude Include="Game\Objects\Enemies\Bluey\BlueyElectricShot.h" />
+    <ClInclude Include="Game\Objects\Enemies\Shelly\Shelly.h" />
+    <ClInclude Include="Game\Objects\Enemies\Shelly\ShellyShot.h" />
     <ClInclude Include="Game\Objects\GameObject.h" />
     <ClInclude Include="Game\Objects\Player.h" />
     <ClInclude Include="Game\Resources\Cfg.h" />
@@ -189,9 +189,10 @@
     <Image Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Image Include="Assets\StoreLogo.png" />
     <Image Include="Assets\Textures\Characters\Enemies\Bluey204x254_Weapons204X135.png" />
+    <Image Include="Assets\Textures\Characters\Enemies\Bluey102x127_Weapons102X67_5.png" />
     <Image Include="Assets\Textures\Characters\Enemies\mmm-mmxcannon.gif" />
-    <Image Include="Assets\Textures\Characters\Enemies\mmm-mmxmetoll.gif" />
     <Image Include="Assets\Textures\Characters\Enemies\mmm-mmxstomper.gif" />
+    <Image Include="Assets\Textures\Characters\Enemies\shelly.png" />
     <Image Include="Assets\Textures\Characters\Player\buster_shot_21x26.png" />
     <Image Include="Assets\Textures\Characters\Player\buster_shot_244x26.png" />
     <Image Include="Assets\Textures\Characters\Player\player_atlas.png" />
@@ -216,14 +217,13 @@
     <ClCompile Include="Engine\SoundManager.cpp" />
     <ClCompile Include="Engine\Sprite.cpp" />
     <ClCompile Include="Engine\Text.cpp" />
-    <ClCompile Include="Engine\Texture.cpp" />
     <ClCompile Include="Game\Objects\BusterShot.cpp" />
     <ClCompile Include="Game\Objects\Enemies\Bluey\Bluey.cpp" />
     <ClCompile Include="Game\Objects\Enemies\Bluey\BlueyElectricShot.cpp" />
     <ClCompile Include="Game\Objects\Enemies\Bluey\BlueyMissileShot.cpp" />
+    <ClCompile Include="Game\Objects\Enemies\Shelly\Shelly.cpp" />
+    <ClCompile Include="Game\Objects\Enemies\Shelly\ShellyShot.cpp" />
     <ClCompile Include="Systems\PhysicsSys.cpp" />
-    <ClInclude Include="Engine\Texture.h" />
-    <ClCompile Include="Engine\TextureStore.cpp" />
     <ClCompile Include="Engine\Utils.cpp" />
     <ClCompile Include="Game\GameStates\GameOverState.cpp" />
     <ClCompile Include="Game\GameStates\GameState.cpp" />
@@ -279,6 +279,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <FileType>Document</FileType>
     </Text>
+    <None Include="Assets\Anims\Shelly.anm">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+    </None>
     <None Include="Game\Objects\Enemies\Bluey\BlueyMissileShot.h" />
     <None Include="Intendo Man_TemporaryKey.pfx" />
     <None Include="packages.config" />

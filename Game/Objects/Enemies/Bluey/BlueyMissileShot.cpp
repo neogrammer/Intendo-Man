@@ -5,14 +5,14 @@ namespace game
 {
     using winrt::Windows::Foundation::Numerics::float2;
 
-    // Weapons grid is 204x135. Missile-with-exhaust at (col=2,row=9).
-    static constexpr float kCellX = 2.0f * 204.0f;
-    static constexpr float kCellY = 9.0f * 135.0f;
+    // Weapons grid is 102x67.5. Missile-with-exhaust at (col=2,row=9).
+    static constexpr float kCellX = 2.0f * 102.0f;
+    static constexpr float kCellY = 9.0f * 67.5f;
 
-    static constexpr float kSrcX = kCellX + 12.0f;
-    static constexpr float kSrcY = kCellY + 35.0f;
-    static constexpr float kSrcW = 129.0f;
-    static constexpr float kSrcH = 43.0f;
+    static constexpr float kSrcX = kCellX + 6.0f;
+    static constexpr float kSrcY = kCellY + 17.5f;
+    static constexpr float kSrcW = 64.5f;
+    static constexpr float kSrcH = 21.5f;
 
     BlueyMissileShot::BlueyMissileShot()
         : GameObject{}

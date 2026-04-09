@@ -3,7 +3,7 @@
 #include "../Resources/Cfg.h"
 #include "../../Engine/ActionMap.h"
 #include "../../Engine/Camera2D.h"
-#include "../../Engine/Renderer2D.h"
+#include "../../Engine/SpriteBatchScope.h"
 #include "../../Engine/Text.h"
 #include "game_states.h"
 
@@ -59,9 +59,9 @@ namespace game
 		}
 	}
 
-	std::vector<engine::Text>& GameStateManager::render(engine::Renderer2D& renderer_)
+	std::vector<engine::Text>& GameStateManager::render(engine::SpriteBatchScope const& batch_)
 	{
-		return currState->render(renderer_);
+		return currState->render(batch_);
 	}
 	float2 GameStateManager::getCamOffset()
 	{

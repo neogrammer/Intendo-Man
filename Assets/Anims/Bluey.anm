@@ -8,19 +8,19 @@
 
 [object]
 position       = 0 0
-world_size     = 112 226
-texture_offset = 52 28
+world_size     = 56 113
+texture_offset = 26 14
 start_anim     = idle
 
 [anim idle]
 texture         = BlueyAtlas
-frame_size      = 204 254
+frame_size      = 102 127
 start_col       = 0
 start_row       = 0
 start_col_left  = 0
 start_row_left  = 2
 pitch           = 7
-offsets         = (52 28)
+offsets         = (26 14)
 frames          = 1
 uni_directional = false
 
@@ -29,12 +29,12 @@ looping         = true
 
 [anim top]
 texture         = BlueyAtlas
-frame_size      = 204 254
+frame_size      = 102 127
 start_col       = 0
 start_row       = 0
 start_col_left  = 0
 start_row_left  = 2
-offsets         = (52 28)
+offsets         = (26 14)
 pitch           = 7
 frames          = 7
 uni_directional = false
@@ -46,11 +46,11 @@ looping         = lower
 
 [anim lower]
 texture         = BlueyAtlas
-frame_size      = 204 254
+frame_size      = 102 127
 start_col       = 0
 start_row       = 1
 start_col_left  = 0
-offsets         = (52 28)
+offsets         = (26 14)
 start_row_left  = 3
 pitch           = 7
 frames          = 5

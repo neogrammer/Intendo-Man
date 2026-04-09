@@ -38,12 +38,12 @@ namespace game
         static constexpr float GroundDelay = 0.14f;
 
         // Sprite source crop (still using small crop inside the weapons cell)
-        static constexpr float FrameW = 64.0f;
-        static constexpr float FrameH = 64.0f;
+        static constexpr float FrameW = 32.0f;
+        static constexpr float FrameH = 32.0f;
 
         // Collider (small)
-        static constexpr float ColliderW = 18.0f;
-        static constexpr float ColliderH = 18.0f;
+        static constexpr float ColliderW = 9.0f;
+        static constexpr float ColliderH = 9.0f;
 
         BlueyElectricShot();
 

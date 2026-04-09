@@ -3,8 +3,9 @@
 
 #include "../../Engine/ActionMap.h"
 #include "../../Engine/Camera2D.h"
-#include "../../Engine/Renderer2D.h"
+#include "../../Engine/Sprite.h"
 #include "../../Engine/Text.h"
+#include "../../Engine/SpriteBatchScope.h"
 
 namespace game
 {
@@ -28,15 +29,19 @@ namespace game
 
 	void TitleState::processInput(const  engine::ActionMap& actMap_)
 	{
+		(actMap_);
 
 	}
 
 	void TitleState::update(float dt_)
 	{
+		(dt_);
 	}
 
-	std::vector<engine::Text>& TitleState::render(engine::Renderer2D& renderer_)
+	std::vector<engine::Text>& TitleState::render(engine::SpriteBatchScope const& batch_)
 	{
+		(batch_);
+
 		return uiStrings;
 	}
 

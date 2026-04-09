@@ -4,11 +4,14 @@
 #include <memory>
 #include <string>
 #include "Tileset.h"
+#include "../../Engine/Sprite.h"
+
+
 
 
 namespace engine
 {
-	class Renderer2D;
+	class SpriteBatchScope;
 	class Camera2D;
 }
 
@@ -56,8 +59,10 @@ namespace game
 
 		void addTiles(const std::wstring& filename_);
 		void addTile(int index_, float2 worldPos_);
+		std::vector<std::unique_ptr<game::Tile>>& getTiles();
 
-		void render(engine::Renderer2D& renderer_, engine::Camera2D camera_);
+
+		void render(engine::SpriteBatchScope const& batch_, engine::Camera2D camera_);
 		inline int getPitch() { return pitch; }
 		float2 getTileSize();
 

@@ -4,7 +4,7 @@
 #include <utility>
 #include <string>
 #include <unordered_map>
-#include "../Engine/TextureStore.h"
+#include "../Engine/Sprite.h"
 #include "../Engine/SoundManager.h"
 #include "../Engine/FontManager.h"
 #include "../Engine/Text.h"
@@ -35,7 +35,7 @@ struct Cfg
 	static winrt::Windows::Foundation::IAsyncAction InitializeAsync(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasAnimatedControl const& sender);
 
 	// Resource Enums 
-	enum class Textures : int { Under, Ship, PlayerAtlas, Tileset1, BusterShot, BlueyAtlas, Default, Count, None };
+	enum class Textures : int { Under, Ship, PlayerAtlas, Tileset1, BusterShot, BlueyAtlas, ShellyAtlas, Default, Count, None };
 	enum class Sounds : int { Blip, PlayerHit, EnemyHit, Default,
 			ElectricShot, MissileLaunch,  EnemyDie,
 		Count, None };
@@ -53,8 +53,8 @@ struct Cfg
 	static std::shared_ptr<engine::Font> GetFont(Fonts f_);
 
 
-	static std::shared_ptr<engine::Texture> GetTex(std::wstring tex_);
-	static std::shared_ptr<engine::Texture> GetTex(Textures tex_);
+	static std::wstring GetTexKey(std::wstring const& tex_);
+	static std::wstring GetTexKey(Textures tex_);
 
 	static void PlaySfx(std::wstring snd_, float volume_ = 1.0f);
 	static void PlaySfx(Sounds snd_, float volume_ = 1.0f);

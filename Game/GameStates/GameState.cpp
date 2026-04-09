@@ -5,7 +5,7 @@
 #include "../Game/Resources/Cfg.h"
 #include "../../Engine/ActionMap.h"
 #include "../../Engine/Camera2D.h"
-#include "../../Engine/Renderer2D.h"
+#include "../../Engine/SpriteBatchScope.h"
 #include "../../Engine/Text.h"
 #include <utility>
 

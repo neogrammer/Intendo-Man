@@ -4,15 +4,6 @@
     <ClCompile Include="Engine\Game.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Sprite.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\TextureStore.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Texture.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\InputState.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
@@ -109,6 +100,15 @@
     <ClCompile Include="Game\Objects\Enemies\Bluey\BlueyMissileShot.cpp">
       <Filter>Game\Objects\Enemies\Bluey</Filter>
     </ClCompile>
+    <ClCompile Include="Game\Objects\Enemies\Shelly\Shelly.cpp">
+      <Filter>Game\Objects\Enemies\Shelly</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Objects\Enemies\Shelly\ShellyShot.cpp">
+      <Filter>Game\Objects\Enemies\Shelly</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Sprite.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Math.h">
@@ -117,16 +117,7 @@
     <ClInclude Include="Engine\Game.h">
       <Filter>Engine</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Renderer2D.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Sprite.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\SpriteBatchScope.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\TextureStore.h">
       <Filter>Engine</Filter>
     </ClInclude>
     <ClInclude Include="Engine\InputState.h">
@@ -195,9 +186,6 @@
     <ClInclude Include="Game\GameStates\TitleState.h">
       <Filter>Game\GameStates</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Texture.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
     <ClInclude Include="Game\Mgmt\StageManager.h">
       <Filter>Game\Mgmt</Filter>
     </ClInclude>
@@ -236,6 +224,15 @@
     </ClInclude>
     <ClInclude Include="Game\Objects\Enemies\Bluey\BlueyElectricShot.h">
       <Filter>Game\Objects\Enemies\Bluey</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Objects\Enemies\Shelly\Shelly.h">
+      <Filter>Game\Objects\Enemies\Shelly</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Objects\Enemies\Shelly\ShellyShot.h">
+      <Filter>Game\Objects\Enemies\Shelly</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Sprite.h">
+      <Filter>Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -285,9 +282,6 @@
     <Image Include="Assets\Textures\Characters\Enemies\mmm-mmxcannon.gif">
       <Filter>Textures\Characters\Enemies</Filter>
     </Image>
-    <Image Include="Assets\Textures\Characters\Enemies\mmm-mmxmetoll.gif">
-      <Filter>Textures\Characters\Enemies</Filter>
-    </Image>
     <Image Include="Assets\Textures\Characters\Enemies\mmm-mmxstomper.gif">
       <Filter>Textures\Characters\Enemies</Filter>
     </Image>
@@ -309,6 +303,12 @@
     <Image Include="Assets\Textures\UI\mmx1_weaponsenergy.gif">
       <Filter>Textures\UI</Filter>
     </Image>
+    <Image Include="Assets\Textures\Characters\Enemies\Bluey102x127_Weapons102X67_5.png">
+      <Filter>Textures\Characters\Enemies</Filter>
+    </Image>
+    <Image Include="Assets\Textures\Characters\Enemies\shelly.png">
+      <Filter>Textures\Characters\Enemies</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="Intendo Man_TemporaryKey.pfx">
@@ -328,6 +328,9 @@
     </None>
     <None Include="Game\Objects\Enemies\Bluey\BlueyMissileShot.h">
       <Filter>Game\Objects\Enemies\Bluey</Filter>
+    </None>
+    <None Include="Assets\Anims\Shelly.anm">
+      <Filter>Anims</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -408,6 +411,9 @@
     </Filter>
     <Filter Include="Textures\UI">
       <UniqueIdentifier>{e42bcbe0-e0aa-4a79-b0d1-aa7d05a805c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Enemies\Shelly">
+      <UniqueIdentifier>{c3ed4959-9836-433a-85fb-a2e8dc641f8d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -579,9 +585,6 @@
     <Media Include="Assets\Audio\55 - MMX - Electric Bolt.wav">
       <Filter>Audio</Filter>
     </Media>
-    <Media Include="Assets\Audio\56 - MMX - Enemy Die (1).wav">
-      <Filter>Audio</Filter>
-    </Media>
     <Media Include="Assets\Audio\57 - MMX - Enemy Die (2).wav">
       <Filter>Audio</Filter>
     </Media>
@@ -589,9 +592,6 @@
       <Filter>Audio</Filter>
     </Media>
     <Media Include="Assets\Audio\59 - MMX - Enemy Die (4).wav">
-      <Filter>Audio</Filter>
-    </Media>
-    <Media Include="Assets\Audio\60 - MMX - Enemy Missle Fire.wav">
       <Filter>Audio</Filter>
     </Media>
     <Media Include="Assets\Audio\61 - MMX - Enemy Motor 1 .wav">
@@ -654,9 +654,6 @@
     <Media Include="Assets\Audio\79 - MMX - Heavy Machine (3).wav">
       <Filter>Audio</Filter>
     </Media>
-    <Media Include="Assets\Audio\80 - MMX - Heavy Machine (4).wav">
-      <Filter>Audio</Filter>
-    </Media>
     <Media Include="Assets\Audio\81 - MMX - Heavy Machine (5).wav">
       <Filter>Audio</Filter>
     </Media>
@@ -697,9 +694,6 @@
       <Filter>Audio</Filter>
     </Media>
     <Media Include="Assets\Audio\94 - MMX - Misc. dash, jump, move (6).wav">
-      <Filter>Audio</Filter>
-    </Media>
-    <Media Include="Assets\Audio\95 - MMX - Misc. dash, jump, move (7).wav">
       <Filter>Audio</Filter>
     </Media>
     <Media Include="Assets\Audio\96 - MMX - Octopus Drain.wav">
@@ -792,6 +786,9 @@
     <Media Include="Assets\Audio\125 - MMX - Wing Flap (5).wav">
       <Filter>Audio</Filter>
     </Media>
+    <Media Include="Assets\Audio\electric_shot.wav" />
+    <Media Include="Assets\Audio\enemy_die.wav" />
+    <Media Include="Assets\Audio\missile_launch.wav" />
   </ItemGroup>
   <ItemGroup>
     <Font Include="Assets\Fonts\bubbly.ttf">

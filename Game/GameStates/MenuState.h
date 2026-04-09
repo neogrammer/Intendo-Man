@@ -1,13 +1,16 @@
 #pragma once
 
 #include "GameState.h"
+#include "../../Engine/Sprite.h"
+
 
 namespace engine
 {
 	class ActionMap;
 	class Camera2D;
 	struct Text;
-	class Renderer2D;
+	class SpriteBatchScope;
+
 }
 namespace game
 {
@@ -22,7 +25,7 @@ namespace game
 
 		void processInput(const engine::ActionMap& actMap_) override final;
 		void update(float dt_) override final;
-		std::vector<engine::Text>& render(engine::Renderer2D& renderer_) override final;
+		std::vector<engine::Text>& render(engine::SpriteBatchScope const& batch_) override final;
 
 		MenuState();
 		MenuState(const MenuState&) = delete;

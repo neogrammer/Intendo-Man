@@ -3,8 +3,8 @@
 
 #include "../../Engine/ActionMap.h"
 #include "../../Engine/Camera2D.h"
-#include "../../Engine/Renderer2D.h"
 #include "../../Engine/Text.h"
+#include "../../Engine/SpriteBatchScope.h"
 
 namespace game
 {
@@ -38,9 +38,9 @@ namespace game
 		(dt_);
 	}
 
-	std::vector<engine::Text>& GameOverState::render(engine::Renderer2D& renderer_)
+	std::vector<engine::Text>& GameOverState::render(engine::SpriteBatchScope const& batch_)
 	{
-		(renderer_);
+		(batch_);
 		return uiStrings;
 	}
 

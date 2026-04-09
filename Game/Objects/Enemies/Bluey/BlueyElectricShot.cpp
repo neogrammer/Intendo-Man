@@ -5,10 +5,10 @@ namespace game
 {
     using winrt::Windows::Foundation::Numerics::float2;
 
-    // Weapons grid is 204x135. First weapons row starts at row 8 => y = 8*135 = 1080.
+    // Weapons grid is 102x67.5. First weapons row starts at row 8 => y = 8*67.5 = 540.
     // Small electric orb crop near the start of that cell.
     static constexpr float kTexX = 0.0f;
-    static constexpr float kTexY = 1080.0f;
+    static constexpr float kTexY = 540.0f;
 
     BlueyElectricShot::BlueyElectricShot()
         : GameObject{}

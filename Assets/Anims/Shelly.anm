@@ -1,0 +1,39 @@
+# Shelly enemy animation sheet:
+#   -shelly frames: 48x54, 8 columns
+#     * Row 0: "top (right)
+#     * Row 1: "top (left)
+
+#   - Weapons live further down the sheet and are handled by projectile classes.
+[object]
+position       = 0 0
+world_size     = 48 53
+texture_offset = 0 0
+start_anim     = walk
+
+[anim idle]
+texture         = ShellyAtlas
+frame_size      = 48 53
+start_col       = 0
+start_row       = 0
+start_col_left  = 0
+start_row_left  = 1
+pitch           = 8
+offsets         = (0 0)
+frames          = 2
+uni_directional = false
+delays          = 0.12
+looping         = true
+
+[anim walk]
+texture         = ShellyAtlas
+frame_size      = 48 53
+start_col       = 2
+start_row       = 0
+start_col_left  = 2
+start_row_left  = 1
+pitch           = 8
+offsets         = (0 0)
+frames          = 6
+uni_directional = false
+delays          = 0.08
+looping         = true

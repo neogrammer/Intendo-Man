@@ -22,7 +22,7 @@ namespace game
     engine::Sprite GameObject::getSprite() const
     {
         // Note: Cfg::GetTex maps enum -> TextureStore key.
-        engine::Sprite out = engine::Sprite{ Cfg::GetTex(texID) };
+        engine::Sprite out = engine::Sprite{ Cfg::GetTexKey(texID) };
 
         // Even if the texture is missing (nullptr), Renderer2D will skip invalid sprites.
         out.Position = Sub(worldPosition, textureOffset);
