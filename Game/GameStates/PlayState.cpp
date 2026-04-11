@@ -16,6 +16,8 @@
 #include "../Objects/Enemies/Shelly/Shelly.h"
 #include <array>
 #include <algorithm>
+#include <cmath>
+#include <cstdint>
 #include <unordered_map>
 
 
@@ -31,6 +33,342 @@ namespace
     std::array<game::BlueyMissileShot, 4> s_blueyMissiles{};
 
     static std::unordered_map<std::string, std::vector<game::AnimObject*>> s_entityMap = {};
+
+    using winrt::Windows::Foundation::Rect;
+    using winrt::Windows::Foundation::Numerics::float2;
+    using winrt::Windows::Foundation::Numerics::float4;
+
+    enum class StagePickupType
+    {
+        EnergyCell,
+        WeaponCore,
+        HeartTank,
+    };
+
+    enum class StageEnemyType
+    {
+        Walker,
+        Turret,
+        Drone,
+        MiniBoss,
+        Boss,
+    };
+
+    struct StagePickup
+    {
+        StagePickupType type{ StagePickupType::EnergyCell };
+        game::GameObject body{};
+        float2 origin{ 0.0f, 0.0f };
+        float bobTimer{ 0.0f };
+        bool active{ true };
+    };
+
+    struct StageProjectile
+    {
+        game::GameObject body{};
+        float2 velocity{ 0.0f, 0.0f };
+        float life{ 0.0f };
+        float dir{ 1.0f };
+        bool active{ false };
+    };
+
+    struct StageEnemy
+    {
+        StageEnemyType type{ StageEnemyType::Walker };
+        game::GameObject body{};
+        float2 origin{ 0.0f, 0.0f };
+        float patrolMinX{ 0.0f };
+        float patrolMaxX{ 0.0f };
+        float minY{ 0.0f };
+        float maxY{ 0.0f };
+        float baseY{ 0.0f };
+        float velocityX{ 0.0f };
+        float velocityY{ 0.0f };
+        float direction{ 1.0f };
+        float actionTimer{ 0.0f };
+        float cooldown{ 0.0f };
+        float flashTimer{ 0.0f };
+        int hp{ 1 };
+        int maxHp{ 1 };
+        bool active{ true };
+        bool grounded{ true };
+        std::wstring displayName{};
+    };
+
+    struct StageRuntime
+    {
+        std::vector<game::GameObject> solids{};
+        std::vector<game::GameObject> spikes{};
+        std::vector<StagePickup> pickups{};
+        std::vector<StageEnemy> enemies{};
+        std::array<StageProjectile, 32> enemyProjectiles{};
+        std::array<game::GameObject, 2> gates{};
+        std::array<bool, 2> gateActive{ false, false };
+
+        StageEnemy miniBoss{};
+        StageEnemy boss{};
+
+        float miniTriggerX{ 1840.0f };
+        float miniArenaLeft{ 1780.0f };
+        float miniArenaRight{ 2400.0f };
+        float bossTriggerX{ 3180.0f };
+        float bossArenaLeft{ 3140.0f };
+        float bossArenaRight{ 3880.0f };
+
+        bool miniIntroActive{ false };
+        bool miniTriggered{ false };
+        bool miniCleared{ false };
+        bool bossIntroActive{ false };
+        bool bossTriggered{ false };
+        bool bossCleared{ false };
+
+        bool cameraLocked{ false };
+        float cameraLockLeft{ 0.0f };
+        float cameraLockRight{ 0.0f };
+
+        float encounterTimer{ 0.0f };
+        float bannerTimer{ 0.0f };
+        std::wstring bannerText{};
+
+        int energyCells{ 0 };
+        int weaponCores{ 0 };
+        int heartTanks{ 0 };
+        std::array<bool, 4> weaponsOwned{ true, false, false, false };
+    };
+
+    static StageRuntime s_stage{};
+
+    static int s_playerHudHp{ 8 };
+    static int s_playerHudHpMax{ 8 };
+    static bool s_showBossBar{ false };
+    static int s_bossHudHp{ 0 };
+    static int s_bossHudHpMax{ 0 };
+
+    constexpr float kGroundTopY = 440.0f;
+    constexpr float kGateTopY = 180.0f;
+    constexpr float kGateHeight = 260.0f;
+
+    constexpr float4 ColorU8(std::uint8_t r, std::uint8_t g, std::uint8_t b, std::uint8_t a = 255) noexcept
+    {
+        return
+        {
+            r / 255.0f,
+            g / 255.0f,
+            b / 255.0f,
+            a / 255.0f
+        };
+    }
+
+    bool RectsOverlap(Rect const& a, Rect const& b) noexcept
+    {
+        return
+            (a.X <= b.X + b.Width) && (a.X + a.Width > b.X) &&
+            (a.Y <= b.Y + b.Height) && (a.Y + a.Height > b.Y);
+    }
+
+    game::GameObject MakeRectObject(float x, float y, float w, float h, float4 tint)
+    {
+        game::GameObject obj{};
+        obj.SetTexID(Cfg::Textures::WhitePixel);
+        obj.SetTexPosition({ 0.0f, 0.0f });
+        obj.SetFrameSize({ 1.0f, 1.0f });
+        obj.SetTextureOffset({ 0.0f, 0.0f });
+        obj.SetWorldPosition({ x, y });
+        obj.SetWorldSize({ w, h });
+        obj.SetScale({ w, h });
+        obj.SetTint(tint);
+        obj.SetRotationRad(0.0f);
+        obj.SetFlip(engine::CanvasSpriteFlip::None);
+        obj.setAffectedByGravity(false);
+        return obj;
+    }
+
+    void SetRectObject(game::GameObject& obj, float x, float y, float w, float h)
+    {
+        obj.SetWorldPosition({ x, y });
+        obj.SetWorldSize({ w, h });
+        obj.SetScale({ w, h });
+    }
+
+    float CenterX(game::GameObject const& obj) noexcept
+    {
+        auto const rect = obj.getWorldRect();
+        return rect.X + (rect.Width * 0.5f);
+    }
+
+    float CenterY(game::GameObject const& obj) noexcept
+    {
+        auto const rect = obj.getWorldRect();
+        return rect.Y + (rect.Height * 0.5f);
+    }
+
+    float2 Center(game::GameObject const& obj) noexcept
+    {
+        auto const rect = obj.getWorldRect();
+        return { rect.X + (rect.Width * 0.5f), rect.Y + (rect.Height * 0.5f) };
+    }
+
+    void DrawRect(engine::SpriteBatchScope const& batch_, Rect const& rect_, float4 tint_)
+    {
+        engine::Sprite spr{ Cfg::GetTexKey(Cfg::Textures::WhitePixel) };
+        spr.Position = { rect_.X, rect_.Y };
+        spr.Scale = { rect_.Width, rect_.Height };
+        spr.SourceRect = Rect{ 0.0f, 0.0f, 1.0f, 1.0f };
+        spr.Tint = tint_;
+        spr.SetOriginTopLeft();
+        spr.Draw(batch_);
+    }
+
+    void DrawPanel(engine::SpriteBatchScope const& batch_, Rect const& rect_, float4 fill_, float4 border_)
+    {
+        DrawRect(batch_, rect_, fill_);
+
+        constexpr float border = 2.0f;
+        DrawRect(batch_, Rect{ rect_.X, rect_.Y, rect_.Width, border }, border_);
+        DrawRect(batch_, Rect{ rect_.X, rect_.Y + rect_.Height - border, rect_.Width, border }, border_);
+        DrawRect(batch_, Rect{ rect_.X, rect_.Y, border, rect_.Height }, border_);
+        DrawRect(batch_, Rect{ rect_.X + rect_.Width - border, rect_.Y, border, rect_.Height }, border_);
+    }
+
+    StageEnemy MakeStageEnemy(
+        StageEnemyType type_,
+        float x_,
+        float y_,
+        float w_,
+        float h_,
+        float4 tint_,
+        int hp_,
+        float patrolMinX_,
+        float patrolMaxX_,
+        std::wstring name_)
+    {
+        StageEnemy out{};
+        out.type = type_;
+        out.body = MakeRectObject(x_, y_, w_, h_, tint_);
+        out.origin = { x_, y_ };
+        out.baseY = y_;
+        out.patrolMinX = patrolMinX_;
+        out.patrolMaxX = patrolMaxX_;
+        out.hp = hp_;
+        out.maxHp = hp_;
+        out.displayName = std::move(name_);
+        return out;
+    }
+
+    StagePickup MakePickup(StagePickupType type_, float x_, float y_, float tintAlpha_, float4 tint_)
+    {
+        StagePickup out{};
+        out.type = type_;
+        out.origin = { x_, y_ };
+        out.body = MakeRectObject(x_, y_, 20.0f, 20.0f, { tint_.x, tint_.y, tint_.z, tintAlpha_ });
+        return out;
+    }
+
+    void DisableGates()
+    {
+        s_stage.gateActive = { false, false };
+        s_stage.cameraLocked = false;
+    }
+
+    void EnableGates(float leftX_, float rightX_, float4 tint_)
+    {
+        s_stage.gates[0] = MakeRectObject(leftX_, kGateTopY, 24.0f, kGateHeight, tint_);
+        s_stage.gates[1] = MakeRectObject(rightX_, kGateTopY, 24.0f, kGateHeight, tint_);
+        s_stage.gateActive = { true, true };
+    }
+
+    StageProjectile* SpawnEnemyProjectile(
+        float x_,
+        float y_,
+        float w_,
+        float h_,
+        float2 velocity_,
+        float life_,
+        float4 tint_)
+    {
+        for (auto& proj : s_stage.enemyProjectiles)
+        {
+            if (proj.active)
+                continue;
+
+            proj.active = true;
+            proj.body = MakeRectObject(x_, y_, w_, h_, tint_);
+            proj.velocity = velocity_;
+            proj.life = life_;
+            proj.dir = (velocity_.x >= 0.0f) ? 1.0f : -1.0f;
+            return &proj;
+        }
+        return nullptr;
+    }
+
+    void ResetStageRuntime()
+    {
+        s_stage = StageRuntime{};
+
+        s_stage.solids.push_back(MakeRectObject(540.0f, 340.0f, 180.0f, 22.0f, ColorU8(84, 148, 188, 255)));
+        s_stage.solids.push_back(MakeRectObject(860.0f, 260.0f, 180.0f, 22.0f, ColorU8(96, 170, 208, 255)));
+        s_stage.solids.push_back(MakeRectObject(1180.0f, 360.0f, 130.0f, 20.0f, ColorU8(104, 176, 214, 255)));
+        s_stage.solids.push_back(MakeRectObject(1480.0f, 240.0f, 220.0f, 22.0f, ColorU8(114, 186, 222, 255)));
+        s_stage.solids.push_back(MakeRectObject(1660.0f, 320.0f, 150.0f, 20.0f, ColorU8(88, 160, 198, 255)));
+        s_stage.solids.push_back(MakeRectObject(1940.0f, 292.0f, 120.0f, 18.0f, ColorU8(214, 156, 72, 255)));
+        s_stage.solids.push_back(MakeRectObject(2220.0f, 292.0f, 120.0f, 18.0f, ColorU8(214, 156, 72, 255)));
+        s_stage.solids.push_back(MakeRectObject(2520.0f, 360.0f, 170.0f, 20.0f, ColorU8(98, 164, 204, 255)));
+        s_stage.solids.push_back(MakeRectObject(2800.0f, 300.0f, 140.0f, 20.0f, ColorU8(104, 172, 214, 255)));
+        s_stage.solids.push_back(MakeRectObject(3360.0f, 300.0f, 130.0f, 18.0f, ColorU8(126, 188, 222, 255)));
+        s_stage.solids.push_back(MakeRectObject(3580.0f, 240.0f, 160.0f, 18.0f, ColorU8(126, 188, 222, 255)));
+
+        s_stage.spikes.push_back(MakeRectObject(1090.0f, 418.0f, 150.0f, 22.0f, ColorU8(240, 92, 80, 220)));
+        s_stage.spikes.push_back(MakeRectObject(1715.0f, 418.0f, 115.0f, 22.0f, ColorU8(240, 92, 80, 220)));
+        s_stage.spikes.push_back(MakeRectObject(2860.0f, 418.0f, 155.0f, 22.0f, ColorU8(240, 92, 80, 220)));
+
+        s_stage.pickups.push_back(MakePickup(StagePickupType::EnergyCell, 615.0f, 306.0f, 0.95f, ColorU8(108, 242, 162, 255)));
+        s_stage.pickups.push_back(MakePickup(StagePickupType::HeartTank, 1560.0f, 206.0f, 0.95f, ColorU8(254, 120, 128, 255)));
+        s_stage.pickups.push_back(MakePickup(StagePickupType::WeaponCore, 2088.0f, 254.0f, 0.95f, ColorU8(246, 210, 96, 255)));
+        s_stage.pickups.push_back(MakePickup(StagePickupType::EnergyCell, 2850.0f, 266.0f, 0.95f, ColorU8(108, 242, 162, 255)));
+
+        auto walkerA = MakeStageEnemy(StageEnemyType::Walker, 780.0f, kGroundTopY - 40.0f, 56.0f, 40.0f, ColorU8(248, 184, 82, 255), 3, 760.0f, 980.0f, L"Strider");
+        walkerA.velocityX = 78.0f;
+        s_stage.enemies.push_back(walkerA);
+
+        auto turretA = MakeStageEnemy(StageEnemyType::Turret, 1235.0f, 316.0f, 42.0f, 44.0f, ColorU8(248, 216, 94, 255), 4, 1235.0f, 1235.0f, L"Needler");
+        turretA.cooldown = 0.85f;
+        s_stage.enemies.push_back(turretA);
+
+        auto droneA = MakeStageEnemy(StageEnemyType::Drone, 1530.0f, 220.0f, 46.0f, 30.0f, ColorU8(92, 224, 232, 255), 3, 1510.0f, 1720.0f, L"Skimmer");
+        droneA.velocityX = 62.0f;
+        droneA.cooldown = 1.2f;
+        droneA.minY = 208.0f;
+        droneA.maxY = 284.0f;
+        s_stage.enemies.push_back(droneA);
+
+        auto walkerB = MakeStageEnemy(StageEnemyType::Walker, 2620.0f, kGroundTopY - 40.0f, 56.0f, 40.0f, ColorU8(248, 184, 82, 255), 3, 2580.0f, 2790.0f, L"Strider");
+        walkerB.velocityX = 88.0f;
+        walkerB.direction = -1.0f;
+        s_stage.enemies.push_back(walkerB);
+
+        auto turretB = MakeStageEnemy(StageEnemyType::Turret, 2910.0f, 256.0f, 42.0f, 44.0f, ColorU8(248, 216, 94, 255), 5, 2910.0f, 2910.0f, L"Needler");
+        turretB.cooldown = 0.35f;
+        s_stage.enemies.push_back(turretB);
+
+        s_stage.miniBoss = MakeStageEnemy(StageEnemyType::MiniBoss, 2025.0f, kGroundTopY - 96.0f, 148.0f, 96.0f, ColorU8(232, 116, 84, 255), 28, 1860.0f, 2240.0f, L"Crusher Unit");
+        s_stage.miniBoss.active = false;
+        s_stage.miniBoss.actionTimer = 1.15f;
+
+        s_stage.boss = MakeStageEnemy(StageEnemyType::Boss, 3440.0f, 172.0f, 160.0f, 110.0f, ColorU8(98, 214, 238, 255), 42, 3300.0f, 3700.0f, L"Volt Warden");
+        s_stage.boss.active = false;
+        s_stage.boss.velocityX = 170.0f;
+        s_stage.boss.minY = 132.0f;
+        s_stage.boss.maxY = 268.0f;
+        s_stage.boss.cooldown = 1.0f;
+
+        DisableGates();
+
+        s_playerHudHp = 8;
+        s_playerHudHpMax = 8;
+        s_showBossBar = false;
+        s_bossHudHp = 0;
+        s_bossHudHpMax = 0;
+    }
 
 }
 
@@ -50,6 +388,7 @@ namespace game
     {
         Cfg::PlayMusicAsync(L"theme", true, 0.25f);
         uiStrings.clear();
+        ResetStageRuntime();
 
         // --- Player (AnimObject)
         // You can load from a file:
@@ -88,19 +427,31 @@ loop_delay = 0
 
         //player->LoadFromAnmText(shipTestAnm);
 
-        // --- HUD
-        engine::Text m_hud{};
+        // --- HUD text
+        auto MakeHudText = [&](float x_, float y_, float size_, winrt::Windows::UI::Color color_) -> engine::Text
+            {
+                engine::Text out{};
+                out.FontRef = Cfg::GetFont(L"bubbly");
+                out.FontSize = size_;
+                out.OutlineThickness = 2.0f;
+                out.OutlineColor = winrt::Windows::UI::Colors::Black();
+                out.Color = color_;
+                out.Position = { x_, y_ };
+                out.Invalidate();
+                return out;
+            };
 
-        m_hud.FontRef = Cfg::GetFont(L"bubbly");
-        m_hud.String = L"Cool Text Bitches!";
-        m_hud.FontSize = 22.0f;
-        m_hud.OutlineThickness = 2;
-        m_hud.OutlineColor = winrt::Windows::UI::Colors::White();
-        m_hud.Color = winrt::Windows::UI::Colors::Green();
-        m_hud.Position = { 10.0f, 10.0f };
-        m_hud.Invalidate();
-
-        uiStrings.push_back(m_hud);
+        uiStrings.push_back(MakeHudText(18.0f, 10.0f, 18.0f, winrt::Windows::UI::Colors::White()));
+        uiStrings.push_back(MakeHudText(18.0f, 40.0f, 18.0f, winrt::Windows::UI::Colors::Green()));
+        uiStrings.push_back(MakeHudText(18.0f, 68.0f, 18.0f, winrt::Windows::UI::Colors::DeepSkyBlue()));
+        uiStrings.push_back(MakeHudText(0.0f, 30.0f, 32.0f, winrt::Windows::UI::Colors::Orange()));
+        uiStrings.back().LayoutBoxSize = { 960.0f, 44.0f };
+        uiStrings.back().HorizontalAlignment = winrt::Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Center;
+        uiStrings.back().Invalidate();
+        uiStrings.push_back(MakeHudText(0.0f, 86.0f, 18.0f, winrt::Windows::UI::Colors::White()));
+        uiStrings.back().LayoutBoxSize = { 960.0f, 30.0f };
+        uiStrings.back().HorizontalAlignment = winrt::Microsoft::Graphics::Canvas::Text::CanvasHorizontalAlignment::Center;
+        uiStrings.back().Invalidate();
 
 
        
@@ -116,7 +467,7 @@ loop_delay = 0
         for (auto& e : s_blueyElectric) e.Kill();
         for (auto& m : s_blueyMissiles) m.Kill();
 
-        s_shelly = std::make_unique<game::Shelly>(float2{ 1000.0f, 316.0f });
+        s_shelly = std::make_unique<game::Shelly>(float2{ 1000.0f, 387.0f });
         for (auto& s : s_shellyShots)
             s.Kill();
 
@@ -149,6 +500,12 @@ loop_delay = 0
 
     void PlayState::exit()
     {
+        s_stage = StageRuntime{};
+        s_playerHudHp = 8;
+        s_playerHudHpMax = 8;
+        s_showBossBar = false;
+        s_bossHudHp = 0;
+        s_bossHudHpMax = 0;
 
         for (auto& s : m_busterShots) s.Kill();
         m_busterCooldown = 0.0f;
@@ -232,7 +589,7 @@ loop_delay = 0
             constexpr float airDashDuration = 0.16f;    // seconds
 
             // Hit / Death
-            constexpr int   hpMax = 8;
+            constexpr int   baseHpMax = 8;
             constexpr int   hitDamage = 1;
             constexpr float invulnTime = 1.00f;        // seconds of i-frames
             constexpr float hitStunTime = 0.30f;       // seconds of movement lock / knockback
@@ -267,7 +624,7 @@ loop_delay = 0
             static bool  dashJumpCarry = false;   // true if we jumped during a ground dash and are carrying dash speed in-air
             static float dashJumpDir = 1.0f;      // direction to carry (+1 or -1)
 
-            static int   hp = hpMax;
+            static int   hp = baseHpMax;
             static bool  dead = false;
             static float invulnTimer = 0.0f;
             static float hitStunTimer = 0.0f;
@@ -314,6 +671,10 @@ loop_delay = 0
 
             coyoteTimer = wasGrounded ? coyoteMax : std::max<float>(0.0f, coyoteTimer - dt_);
             jumpBufferTimer = std::max<float>(0.0f, jumpBufferTimer - dt_);
+            s_stage.bannerTimer = std::max<float>(0.0f, s_stage.bannerTimer - dt_);
+
+            int hpCap = baseHpMax + (s_stage.heartTanks * 2);
+            hp = (std::min)(hp, hpCap);
 
 
             // When grounded, reset vertical speed
@@ -356,10 +717,37 @@ loop_delay = 0
                         (a.Y <= b.Y + b.Height) && (a.Y + a.Height > b.Y);
                 };
 
+            auto CollectSolids = [&](winrt::Windows::Foundation::Rect const& query_, int padTiles_) -> std::vector<game::GameObject*>
+                {
+                    std::vector<game::GameObject*> out;
+
+                    auto tileHits = tmap->getSolidTilesInRect(query_, padTiles_);
+                    out.reserve(tileHits.size() + s_stage.solids.size() + s_stage.gates.size());
+
+                    for (auto* tile : tileHits)
+                    {
+                        out.push_back(tile);
+                    }
+
+                    for (auto& solid : s_stage.solids)
+                    {
+                        if (Overlaps(query_, solid.getWorldRect()))
+                            out.push_back(&solid);
+                    }
+
+                    for (size_t i = 0; i < s_stage.gates.size(); ++i)
+                    {
+                        if (s_stage.gateActive[i] && Overlaps(query_, s_stage.gates[i].getWorldRect()))
+                            out.push_back(&s_stage.gates[i]);
+                    }
+
+                    return out;
+                };
+
             auto ProbeSolid = [&](winrt::Windows::Foundation::Rect const& probe) -> bool
                 {
-                    auto nearTiles = tmap->getSolidTilesInRect(probe, 0);
-                    for (auto* t : nearTiles)
+                    auto nearby = CollectSolids(probe, 0);
+                    for (auto* t : nearby)
                     {
                         if (t && Overlaps(probe, t->getWorldRect()))
                             return true;
@@ -660,12 +1048,7 @@ loop_delay = 0
                 float bottom = std::max<float>(r0.Y + r0.Height, r0.Y + r0.Height + delta.y);
 
                 winrt::Windows::Foundation::Rect sweepR{ left, top, right - left, bottom - top };
-                auto sweepTiles = tmap->getSolidTilesInRect(sweepR, 1);
-
-                std::vector<game::GameObject*> tiles;
-                tiles.reserve(sweepTiles.size());
-                for (auto* tile : sweepTiles)
-                    tiles.push_back(tile);
+                auto tiles = CollectSolids(sweepR, 1);
 
                 // Move + collide ONCE
                 player->Move(delta);
@@ -690,11 +1073,7 @@ loop_delay = 0
                 if (auto* underObj = player->getUnder())
                 {
                     auto const underRect = underObj->getWorldRect();
-                    auto underTiles = tmap->getSolidTilesInRect(underRect, 1);
-
-                    underVec.reserve(underTiles.size());
-                    for (auto* t : underTiles)
-                        underVec.push_back(t);
+                    underVec = CollectSolids(underRect, 1);
 
                     phys::trustFall(*player, underVec);
                 }
@@ -1085,7 +1464,7 @@ loop_delay = 0
 
                     winrt::Windows::Foundation::Rect sweep{ l, t, r - l, b - t };
 
-                    auto nearTiles = tmap->getSolidTilesInRect(sweep, 1);
+                    auto nearTiles = CollectSolids(sweep, 1);
                     for (auto* tile : nearTiles)
                     {
                         if (!tile) continue;
@@ -1112,6 +1491,8 @@ loop_delay = 0
                      {
                     if (dead) return false;
                     if (invulnTimer > 0.0f) return false;
+
+                    hp = std::max<int>(0, hp - hitDamage);
                     
                         invulnTimer = invulnTime;
                     hitStunTimer = hitStunTime;
@@ -1132,6 +1513,12 @@ loop_delay = 0
                     hitVelX = kbDir * hitKnockX;
                     velY = -hitKnockY;
                     player->inAir();
+
+                    if (hp <= 0)
+                    {
+                        dead = true;
+                        hitStunTimer = 0.0f;
+                    }
                     
                         Cfg::PlaySfx(L"player_hit", 0.65f);
                     return true;
@@ -1294,7 +1681,7 @@ loop_delay = 0
 
                         winrt::Windows::Foundation::Rect sweep{ l, t, r - l, b - t };
 
-                        auto nearTiles = tmap->getSolidTilesInRect(sweep, 1);
+                        auto nearTiles = CollectSolids(sweep, 1);
                         for (auto* tile : nearTiles)
                         {
                             if (!tile) continue;
@@ -1347,7 +1734,7 @@ loop_delay = 0
 
                         winrt::Windows::Foundation::Rect sweep{ l, t, r - l, b - t };
 
-                        auto nearTiles = tmap->getSolidTilesInRect(sweep, 1);
+                        auto nearTiles = CollectSolids(sweep, 1);
                         for (auto* tile : nearTiles)
                         {
                             if (!tile) continue;
@@ -1365,9 +1752,511 @@ loop_delay = 0
                         }
                     }
                 
+                    auto SetBanner = [&](std::wstring text_, float time_)
+                        {
+                            s_stage.bannerText = std::move(text_);
+                            s_stage.bannerTimer = time_;
+                        };
 
-                   
+                    auto ApplyStageHit = [&](float fromDir) -> bool
+                        {
+                            if (dead) return false;
+                            if (invulnTimer > 0.0f) return false;
 
+                            hp = std::max<int>(0, hp - hitDamage);
+                            invulnTimer = invulnTime;
+                            hitStunTimer = hitStunTime;
+
+                            dashTimer = 0.0f;
+                            dashCooldownTimer = dashCooldown;
+                            airDashTimer = 0.0f;
+                            wallJumpLockTimer = 0.0f;
+                            dashJumpCarry = false;
+                            jumpBufferTimer = 0.0f;
+                            coyoteTimer = 0.0f;
+
+                            float kbDir = (fromDir >= 0.0f) ? 1.0f : -1.0f;
+                            hitVelX = kbDir * hitKnockX;
+                            velY = -hitKnockY;
+                            player->inAir();
+
+                            if (hp <= 0)
+                            {
+                                dead = true;
+                                hitStunTimer = 0.0f;
+                            }
+
+                            Cfg::PlaySfx(L"player_hit", 0.65f);
+                            return true;
+                        };
+
+                    auto UpdateEnemyFlash = [&](StageEnemy& enemy_)
+                        {
+                            if (!enemy_.active)
+                                return;
+
+                            enemy_.flashTimer = std::max<float>(0.0f, enemy_.flashTimer - dt_);
+                            auto tint = enemy_.body.GetTint();
+                            tint.w = (enemy_.flashTimer > 0.0f) ? 0.35f : 1.0f;
+                            enemy_.body.SetTint(tint);
+                        };
+
+                    auto DamageStageEnemy = [&](StageEnemy& enemy_, int damage_) -> bool
+                        {
+                            if (!enemy_.active)
+                                return false;
+
+                            enemy_.hp = std::max<int>(0, enemy_.hp - damage_);
+                            enemy_.flashTimer = 0.18f;
+
+                            if (enemy_.hp <= 0)
+                            {
+                                enemy_.active = false;
+                                Cfg::PlaySfx(Cfg::Sounds::EnemyDie, 0.70f);
+                            }
+                            else
+                            {
+                                Cfg::PlaySfx(Cfg::Sounds::EnemyHit, 0.65f);
+                            }
+
+                            return true;
+                        };
+
+                    auto FireAtPlayer = [&](StageEnemy const& enemy_, float speed_, float width_, float height_, float4 tint_)
+                        {
+                            float2 const enemyCenter = Center(enemy_.body);
+                            float2 velocity
+                            {
+                                pCenter.x - enemyCenter.x,
+                                pCenter.y - enemyCenter.y
+                            };
+
+                            float len = std::sqrt((velocity.x * velocity.x) + (velocity.y * velocity.y));
+                            if (len < 0.0001f)
+                                len = 1.0f;
+
+                            velocity.x = (velocity.x / len) * speed_;
+                            velocity.y = (velocity.y / len) * speed_;
+
+                            SpawnEnemyProjectile(
+                                enemyCenter.x - (width_ * 0.5f),
+                                enemyCenter.y - (height_ * 0.5f),
+                                width_,
+                                height_,
+                                velocity,
+                                3.0f,
+                                tint_);
+                        };
+
+                    if (!s_stage.miniTriggered && pCenter.x >= s_stage.miniTriggerX)
+                    {
+                        s_stage.miniTriggered = true;
+                        s_stage.miniIntroActive = true;
+                        s_stage.encounterTimer = 1.05f;
+                        s_stage.cameraLocked = true;
+                        s_stage.cameraLockLeft = s_stage.miniArenaLeft;
+                        s_stage.cameraLockRight = s_stage.miniArenaRight;
+                        EnableGates(s_stage.miniArenaLeft, s_stage.miniArenaRight, ColorU8(238, 150, 82, 220));
+                        SetBanner(L"WARNING  MID BOSS BLOCKADE", 1.20f);
+                    }
+
+                    if (s_stage.miniIntroActive)
+                    {
+                        s_stage.encounterTimer = std::max<float>(0.0f, s_stage.encounterTimer - dt_);
+                        if (s_stage.encounterTimer <= 0.0f)
+                        {
+                            s_stage.miniIntroActive = false;
+                            s_stage.miniBoss.active = true;
+                            SetBanner(s_stage.miniBoss.displayName, 1.25f);
+                        }
+                    }
+
+                    if (s_stage.miniCleared && !s_stage.bossTriggered && pCenter.x >= s_stage.bossTriggerX)
+                    {
+                        s_stage.bossTriggered = true;
+                        s_stage.bossIntroActive = true;
+                        s_stage.encounterTimer = 1.20f;
+                        s_stage.cameraLocked = true;
+                        s_stage.cameraLockLeft = s_stage.bossArenaLeft;
+                        s_stage.cameraLockRight = s_stage.bossArenaRight;
+                        EnableGates(s_stage.bossArenaLeft, s_stage.bossArenaRight, ColorU8(84, 210, 236, 220));
+                        SetBanner(L"WARNING  BOSS DOORS SEALED", 1.25f);
+                    }
+
+                    if (s_stage.bossIntroActive)
+                    {
+                        s_stage.encounterTimer = std::max<float>(0.0f, s_stage.encounterTimer - dt_);
+                        if (s_stage.encounterTimer <= 0.0f)
+                        {
+                            s_stage.bossIntroActive = false;
+                            s_stage.boss.active = true;
+                            SetBanner(s_stage.boss.displayName, 1.35f);
+                        }
+                    }
+
+                    auto const playerRectStage = player->getWorldRect();
+
+                    for (auto& pickup : s_stage.pickups)
+                    {
+                        if (!pickup.active)
+                            continue;
+
+                        pickup.bobTimer += dt_ * 2.6f;
+
+                        auto pos = pickup.origin;
+                        pos.y += std::sin(pickup.bobTimer) * 5.0f;
+                        pickup.body.SetWorldPosition(pos);
+
+                        if (!RectsOverlap(playerRectStage, pickup.body.getWorldRect()))
+                            continue;
+
+                        pickup.active = false;
+
+                        switch (pickup.type)
+                        {
+                        case StagePickupType::EnergyCell:
+                            ++s_stage.energyCells;
+                            hp = (std::min)(hp + 2, hpCap);
+                            SetBanner(L"ENERGY CELL RECOVERED", 1.05f);
+                            break;
+
+                        case StagePickupType::WeaponCore:
+                            ++s_stage.weaponCores;
+                            s_stage.weaponsOwned[1] = true;
+                            SetBanner(L"ARC CHIP ACQUIRED", 1.30f);
+                            break;
+
+                        case StagePickupType::HeartTank:
+                            ++s_stage.heartTanks;
+                            hpCap = baseHpMax + (s_stage.heartTanks * 2);
+                            hp = (std::min)(hp + 2, hpCap);
+                            SetBanner(L"HEART TANK INSTALLED", 1.30f);
+                            break;
+                        }
+                    }
+
+                    for (auto& enemy : s_stage.enemies)
+                    {
+                        if (!enemy.active)
+                            continue;
+
+                        UpdateEnemyFlash(enemy);
+
+                        switch (enemy.type)
+                        {
+                        case StageEnemyType::Walker:
+                        {
+                            auto pos = enemy.body.GetWorldPosition();
+                            pos.x += enemy.direction * enemy.velocityX * dt_;
+
+                            if (pos.x <= enemy.patrolMinX)
+                            {
+                                pos.x = enemy.patrolMinX;
+                                enemy.direction = 1.0f;
+                            }
+                            else if (pos.x >= enemy.patrolMaxX)
+                            {
+                                pos.x = enemy.patrolMaxX;
+                                enemy.direction = -1.0f;
+                            }
+
+                            enemy.body.SetWorldPosition(pos);
+                            break;
+                        }
+
+                        case StageEnemyType::Turret:
+                        {
+                            enemy.cooldown = std::max<float>(0.0f, enemy.cooldown - dt_);
+                            if (enemy.cooldown <= 0.0f && std::abs(CenterX(enemy.body) - pCenter.x) < 620.0f)
+                            {
+                                FireAtPlayer(enemy, 330.0f, 12.0f, 12.0f, ColorU8(255, 216, 108, 255));
+                                enemy.cooldown = 1.30f;
+                            }
+                            break;
+                        }
+
+                        case StageEnemyType::Drone:
+                        {
+                            enemy.actionTimer += dt_;
+                            auto pos = enemy.body.GetWorldPosition();
+                            pos.x += enemy.direction * enemy.velocityX * dt_;
+
+                            if (pos.x <= enemy.patrolMinX)
+                            {
+                                pos.x = enemy.patrolMinX;
+                                enemy.direction = 1.0f;
+                            }
+                            else if (pos.x >= enemy.patrolMaxX)
+                            {
+                                pos.x = enemy.patrolMaxX;
+                                enemy.direction = -1.0f;
+                            }
+
+                            pos.y = enemy.origin.y + (std::sin(enemy.actionTimer * 2.0f) * 26.0f);
+                            pos.y = std::clamp(pos.y, enemy.minY, enemy.maxY);
+                            enemy.body.SetWorldPosition(pos);
+
+                            enemy.cooldown = std::max<float>(0.0f, enemy.cooldown - dt_);
+                            if (enemy.cooldown <= 0.0f)
+                            {
+                                FireAtPlayer(enemy, 280.0f, 10.0f, 16.0f, ColorU8(126, 236, 248, 255));
+                                enemy.cooldown = 1.60f;
+                            }
+                            break;
+                        }
+
+                        default:
+                            break;
+                        }
+
+                        if (enemy.active && RectsOverlap(enemy.body.getWorldRect(), playerRectStage))
+                        {
+                            ApplyStageHit((CenterX(enemy.body) >= pCenter.x) ? 1.0f : -1.0f);
+                        }
+                    }
+
+                    if (s_stage.miniBoss.active)
+                    {
+                        auto& enemy = s_stage.miniBoss;
+                        UpdateEnemyFlash(enemy);
+
+                        auto pos = enemy.body.GetWorldPosition();
+
+                        if (enemy.grounded)
+                        {
+                            pos.x += enemy.direction * 92.0f * dt_;
+
+                            if (pos.x <= enemy.patrolMinX)
+                            {
+                                pos.x = enemy.patrolMinX;
+                                enemy.direction = 1.0f;
+                            }
+                            else if (pos.x >= enemy.patrolMaxX)
+                            {
+                                pos.x = enemy.patrolMaxX;
+                                enemy.direction = -1.0f;
+                            }
+
+                            enemy.actionTimer = std::max<float>(0.0f, enemy.actionTimer - dt_);
+                            if (enemy.actionTimer <= 0.0f)
+                            {
+                                enemy.grounded = false;
+                                enemy.velocityY = -780.0f;
+                                enemy.velocityX = (pCenter.x < CenterX(enemy.body)) ? -230.0f : 230.0f;
+                                enemy.direction = (enemy.velocityX >= 0.0f) ? 1.0f : -1.0f;
+                            }
+                        }
+                        else
+                        {
+                            enemy.velocityY += 1940.0f * dt_;
+                            pos.x += enemy.velocityX * dt_;
+                            pos.y += enemy.velocityY * dt_;
+                            pos.x = std::clamp(pos.x, enemy.patrolMinX, enemy.patrolMaxX);
+
+                            if (pos.y >= enemy.baseY)
+                            {
+                                pos.y = enemy.baseY;
+                                enemy.grounded = true;
+                                enemy.velocityY = 0.0f;
+                                enemy.actionTimer = 1.00f;
+
+                                auto const rect = enemy.body.getWorldRect();
+                                SpawnEnemyProjectile(rect.X + 8.0f, kGroundTopY - 10.0f, 28.0f, 10.0f, { -290.0f, 0.0f }, 1.60f, ColorU8(255, 134, 92, 255));
+                                SpawnEnemyProjectile(rect.X + rect.Width - 36.0f, kGroundTopY - 10.0f, 28.0f, 10.0f, { 290.0f, 0.0f }, 1.60f, ColorU8(255, 134, 92, 255));
+                            }
+                        }
+
+                        enemy.body.SetWorldPosition(pos);
+
+                        if (RectsOverlap(enemy.body.getWorldRect(), playerRectStage))
+                        {
+                            ApplyStageHit((CenterX(enemy.body) >= pCenter.x) ? 1.0f : -1.0f);
+                        }
+                    }
+
+                    if (s_stage.boss.active)
+                    {
+                        auto& enemy = s_stage.boss;
+                        UpdateEnemyFlash(enemy);
+
+                        enemy.actionTimer += dt_;
+                        enemy.cooldown = std::max<float>(0.0f, enemy.cooldown - dt_);
+
+                        auto pos = enemy.body.GetWorldPosition();
+                        pos.x += enemy.velocityX * dt_;
+
+                        if (pos.x <= enemy.patrolMinX)
+                        {
+                            pos.x = enemy.patrolMinX;
+                            enemy.velocityX = std::abs(enemy.velocityX);
+                        }
+                        else if (pos.x >= enemy.patrolMaxX)
+                        {
+                            pos.x = enemy.patrolMaxX;
+                            enemy.velocityX = -std::abs(enemy.velocityX);
+                        }
+
+                        float yRange = std::max<float>(10.0f, enemy.maxY - enemy.minY);
+                        pos.y = enemy.minY + (((std::sin(enemy.actionTimer * 1.7f) * 0.5f) + 0.5f) * yRange);
+                        enemy.body.SetWorldPosition(pos);
+
+                        if (enemy.cooldown <= 0.0f)
+                        {
+                            float2 enemyCenter = Center(enemy.body);
+                            float2 toPlayer
+                            {
+                                pCenter.x - enemyCenter.x,
+                                pCenter.y - enemyCenter.y
+                            };
+
+                            float baseLen = std::sqrt((toPlayer.x * toPlayer.x) + (toPlayer.y * toPlayer.y));
+                            if (baseLen < 0.0001f)
+                                baseLen = 1.0f;
+
+                            toPlayer.x /= baseLen;
+                            toPlayer.y /= baseLen;
+
+                            for (float spread : { -0.35f, 0.0f, 0.35f })
+                            {
+                                float2 vel
+                                {
+                                    (toPlayer.x * 320.0f) + (spread * 120.0f),
+                                    (toPlayer.y * 320.0f) + (spread * 45.0f)
+                                };
+
+                                SpawnEnemyProjectile(enemyCenter.x - 7.0f, enemyCenter.y - 7.0f, 14.0f, 14.0f, vel, 3.00f, ColorU8(120, 244, 255, 255));
+                            }
+
+                            enemy.velocityX = (pCenter.x < enemyCenter.x) ? -260.0f : 260.0f;
+                            enemy.cooldown = (enemy.hp <= (enemy.maxHp / 2)) ? 0.95f : 1.35f;
+                        }
+
+                        if (RectsOverlap(enemy.body.getWorldRect(), playerRectStage))
+                        {
+                            ApplyStageHit((CenterX(enemy.body) >= pCenter.x) ? 1.0f : -1.0f);
+                        }
+                    }
+
+                    for (auto& shot : m_busterShots)
+                    {
+                        if (!shot.Active)
+                            continue;
+
+                        for (auto& enemy : s_stage.enemies)
+                        {
+                            if (!enemy.active)
+                                continue;
+
+                            if (!RectsOverlap(shot.getWorldRect(), enemy.body.getWorldRect()))
+                                continue;
+
+                            shot.Kill();
+                            DamageStageEnemy(enemy, 1);
+                            break;
+                        }
+
+                        if (!shot.Active)
+                            continue;
+
+                        if (s_stage.miniBoss.active && RectsOverlap(shot.getWorldRect(), s_stage.miniBoss.body.getWorldRect()))
+                        {
+                            shot.Kill();
+                            DamageStageEnemy(s_stage.miniBoss, 1);
+                        }
+
+                        if (!shot.Active)
+                            continue;
+
+                        if (s_stage.boss.active && RectsOverlap(shot.getWorldRect(), s_stage.boss.body.getWorldRect()))
+                        {
+                            shot.Kill();
+                            DamageStageEnemy(s_stage.boss, 1);
+                        }
+                    }
+
+                    if (!s_stage.miniCleared && s_stage.miniBoss.hp <= 0)
+                    {
+                        s_stage.miniBoss.active = false;
+                        s_stage.miniCleared = true;
+                        s_stage.weaponsOwned[2] = true;
+                        DisableGates();
+                        SetBanner(L"PULSE BREAKER ONLINE", 1.45f);
+                    }
+
+                    if (!s_stage.bossCleared && s_stage.boss.hp <= 0)
+                    {
+                        s_stage.boss.active = false;
+                        s_stage.bossCleared = true;
+                        s_stage.weaponsOwned[3] = true;
+                        DisableGates();
+                        SetBanner(L"VOLT EDGE ACQUIRED", 1.60f);
+                    }
+
+                    for (auto& spike : s_stage.spikes)
+                    {
+                        if (RectsOverlap(playerRectStage, spike.getWorldRect()))
+                        {
+                            ApplyStageHit((CenterX(spike) >= pCenter.x) ? 1.0f : -1.0f);
+                            break;
+                        }
+                    }
+
+                    for (auto& proj : s_stage.enemyProjectiles)
+                    {
+                        if (!proj.active)
+                            continue;
+
+                        proj.life -= dt_;
+                        if (proj.life <= 0.0f)
+                        {
+                            proj.active = false;
+                            continue;
+                        }
+
+                        auto before = proj.body.GetWorldPosition();
+                        proj.body.Move({ proj.velocity.x * dt_, proj.velocity.y * dt_ });
+                        auto after = proj.body.GetWorldPosition();
+                        auto size = proj.body.GetWorldSize();
+
+                        Rect r0{ before.x, before.y, size.x, size.y };
+                        Rect r1{ after.x, after.y, size.x, size.y };
+
+                        float left = std::min<float>(r0.X, r1.X);
+                        float top = std::min<float>(r0.Y, r1.Y);
+                        float right = std::max<float>(r0.X + r0.Width, r1.X + r1.Width);
+                        float bottom = std::max<float>(r0.Y + r0.Height, r1.Y + r1.Height);
+
+                        Rect sweep{ left, top, right - left, bottom - top };
+                        auto solids = CollectSolids(sweep, 1);
+
+                        bool hitSolid = false;
+                        for (auto* solid : solids)
+                        {
+                            if (solid && RectsOverlap(sweep, solid->getWorldRect()))
+                            {
+                                hitSolid = true;
+                                break;
+                            }
+                        }
+
+                        if (hitSolid)
+                        {
+                            proj.active = false;
+                            continue;
+                        }
+
+                        if (RectsOverlap(proj.body.getWorldRect(), playerRectStage))
+                        {
+                            ApplyStageHit(proj.dir);
+                            proj.active = false;
+                        }
+                    }
+
+                    s_showBossBar = s_stage.boss.active;
+                    s_bossHudHp = s_stage.boss.active ? s_stage.boss.hp : 0;
+                    s_bossHudHpMax = s_stage.boss.active ? s_stage.boss.maxHp : 0;
+                    s_playerHudHp = hp;
+                    s_playerHudHpMax = hpCap;
 
             // Spawn (hold-to-fire, 3 shots max)
             if (!controlLocked && wantShoot && m_busterCooldown <= 0.0f)
@@ -1407,7 +2296,7 @@ loop_delay = 0
 
                 winrt::Windows::Foundation::Rect sweep{ l, t, r - l, b - t };
 
-                auto nearTiles = tmap->getSolidTilesInRect(sweep, 1);
+                auto nearTiles = CollectSolids(sweep, 1);
                 for (auto* tile : nearTiles)
                 {
                     if (tile && Overlaps(sweep, tile->getWorldRect()))
@@ -1530,6 +2419,21 @@ loop_delay = 0
                 worldWidth - camHalfW
             );
 
+            if (s_stage.cameraLocked)
+            {
+                float lockMin = s_stage.cameraLockLeft + camHalfW;
+                float lockMax = s_stage.cameraLockRight - camHalfW;
+
+                if (lockMax < lockMin)
+                {
+                    newCamX = (s_stage.cameraLockLeft + s_stage.cameraLockRight) * 0.5f;
+                }
+                else
+                {
+                    newCamX = std::clamp(newCamX, lockMin, lockMax);
+                }
+            }
+
             camera->Position = { newCamX + cameraOffset.x, camHalfH + cameraOffset.y };
         }
         else
@@ -1557,32 +2461,112 @@ loop_delay = 0
 
     std::vector<engine::Text>& PlayState::render(engine::SpriteBatchScope const& batch_)
     {
-     
+        float const viewLeft = camera->Position.x - (camera->getWidth() * 0.5f);
+        float const viewTop = camera->Position.y - (camera->getHeight() * 0.5f);
+        float const viewWidth = camera->getWidth();
+        float const viewHeight = camera->getHeight();
+
+        DrawRect(batch_, Rect{ viewLeft, viewTop, viewWidth, viewHeight }, ColorU8(14, 24, 38, 255));
+        DrawRect(batch_, Rect{ viewLeft, viewTop + 92.0f, viewWidth, viewHeight - 92.0f }, ColorU8(24, 42, 58, 188));
+
+        auto DrawParallaxLayer = [&](float factor_, float baseY_, float spanW_, std::array<float, 6> const& heights_, float4 color_)
+            {
+                float startX = std::floor(((camera->Position.x * (1.0f - factor_)) - spanW_) / spanW_) * spanW_;
+                for (int i = -1; i < 6; ++i)
+                {
+                    float x = startX + (i * spanW_);
+                    float height = heights_[static_cast<size_t>((i + 6) % 6)];
+                    DrawRect(batch_, Rect{ x, viewTop + baseY_ + (200.0f - height), spanW_ - 28.0f, height }, color_);
+                }
+            };
+
+        static constexpr std::array<float, 6> layerAHeights{ 90.0f, 160.0f, 120.0f, 190.0f, 110.0f, 150.0f };
+        static constexpr std::array<float, 6> layerBHeights{ 120.0f, 210.0f, 160.0f, 180.0f, 130.0f, 220.0f };
+        static constexpr std::array<float, 6> layerCHeights{ 150.0f, 240.0f, 200.0f, 170.0f, 220.0f, 195.0f };
+
+        DrawParallaxLayer(0.15f, 280.0f, 240.0f, layerAHeights, ColorU8(42, 78, 96, 88));
+        DrawParallaxLayer(0.30f, 320.0f, 220.0f, layerBHeights, ColorU8(62, 106, 124, 116));
+        DrawParallaxLayer(0.52f, 350.0f, 200.0f, layerCHeights, ColorU8(92, 148, 164, 144));
+
+        if (s_stage.boss.active || s_stage.bossIntroActive)
+        {
+            DrawRect(batch_, Rect{ viewLeft, viewTop, viewWidth, viewHeight }, ColorU8(16, 36, 48, 84));
+        }
+
         tmap->render(batch_, *camera);
 
-        uiStrings[0].String = L"Player AnimFrame = " + std::to_wstring(player->CurrentFrameIndex());
-        uiStrings[0].Invalidate();
-
-        //for (auto& b : s_blueys)
-        //{
-        //    if (b) renderer_.Draw(b->getSprite());
-        //}
-
-        //if (s_shelly)
-        //{
-        //    renderer_.Draw(s_shelly->getSprite());
-        //}
-
-        for (auto& ent : s_entityMap["bluey"])
+        for (auto const& solid : s_stage.solids)
         {
-            if (ent) ent->getSprite().Draw(batch_);
+            DrawPanel(batch_, solid.getWorldRect(), solid.GetTint(), ColorU8(18, 32, 48, 220));
         }
 
-        for (auto& ent : s_entityMap["shelly"])
+        for (auto const& spike : s_stage.spikes)
         {
-            if (ent) ent->getSprite().Draw(batch_);
+            auto const rect = spike.getWorldRect();
+            DrawPanel(batch_, rect, spike.GetTint(), ColorU8(88, 18, 18, 220));
+
+            constexpr float toothW = 18.0f;
+            for (int i = 0; i < 8; ++i)
+            {
+                DrawRect(
+                    batch_,
+                    Rect{ rect.X + (i * toothW), rect.Y - 10.0f, toothW - 4.0f, 10.0f },
+                    ColorU8(255, 154, 138, 220));
+            }
         }
 
+        for (auto const& pickup : s_stage.pickups)
+        {
+            if (!pickup.active)
+                continue;
+
+            DrawPanel(batch_, pickup.body.getWorldRect(), pickup.body.GetTint(), ColorU8(255, 255, 255, 180));
+        }
+
+        for (auto const& enemy : s_stage.enemies)
+        {
+            if (!enemy.active)
+                continue;
+
+            DrawPanel(batch_, enemy.body.getWorldRect(), enemy.body.GetTint(), ColorU8(22, 26, 30, 200));
+        }
+
+        if (s_stage.miniBoss.active)
+        {
+            DrawPanel(batch_, s_stage.miniBoss.body.getWorldRect(), s_stage.miniBoss.body.GetTint(), ColorU8(64, 18, 12, 220));
+        }
+
+        if (s_stage.boss.active)
+        {
+            DrawPanel(batch_, s_stage.boss.body.getWorldRect(), s_stage.boss.body.GetTint(), ColorU8(12, 42, 52, 220));
+        }
+
+        for (size_t i = 0; i < s_stage.gates.size(); ++i)
+        {
+            if (!s_stage.gateActive[i])
+                continue;
+
+            auto const gateRect = s_stage.gates[i].getWorldRect();
+            DrawPanel(batch_, gateRect, s_stage.gates[i].GetTint(), ColorU8(255, 255, 255, 90));
+
+            for (int bar = 0; bar < 4; ++bar)
+            {
+                DrawRect(
+                    batch_,
+                    Rect{ gateRect.X + 4.0f + (bar * 5.0f), gateRect.Y + 8.0f, 2.0f, gateRect.Height - 16.0f },
+                    ColorU8(255, 255, 255, 90));
+            }
+        }
+
+        for (auto& b : s_blueys)
+        {
+            if (b) b->getSprite().Draw(batch_);
+        }
+
+        if (s_shelly)
+        {
+            s_shelly->getSprite().Draw(batch_);
+        }
 
         for (auto& s : s_shellyShots)
         {
@@ -1590,10 +2574,25 @@ loop_delay = 0
                 s.getSprite().Draw(batch_);
         }
 
-        //auto spr = player->getSprite();
-        //uiStrings[0].String = spr.IsValid() ? L"sprite valid" : L"sprite invalid";
-        //uiStrings[0].Invalidate();
-        //spr.Draw(batch_);
+        for (auto& e : s_blueyElectric)
+        {
+            if (e.Active)
+                e.getSprite().Draw(batch_);
+        }
+
+        for (auto& m : s_blueyMissiles)
+        {
+            if (m.Active)
+                m.getSprite().Draw(batch_);
+        }
+
+        for (auto const& proj : s_stage.enemyProjectiles)
+        {
+            if (proj.active)
+            {
+                DrawPanel(batch_, proj.body.getWorldRect(), proj.body.GetTint(), ColorU8(255, 255, 255, 60));
+            }
+        }
 
         if (player)
         {
@@ -1606,18 +2605,83 @@ loop_delay = 0
                 shot.getSprite().Draw(batch_);
         }
 
+        float hudLeft = camera->Position.x - (camera->getWidth() * 0.5f) + 12.0f;
+        float hudTop = camera->Position.y - (camera->getHeight() * 0.5f) + 12.0f;
 
-         for (auto& e : s_blueyElectric)
-             {
-            if (e.Active)
-                e.getSprite().Draw(batch_);
-            }
-        
-            for (auto& m : s_blueyMissiles)
-             {
-            if (m.Active)
-                m.getSprite().Draw(batch_);
-            }
+        DrawPanel(batch_, Rect{ hudLeft, hudTop, 332.0f, 78.0f }, ColorU8(12, 20, 28, 190), ColorU8(98, 192, 224, 210));
+
+        for (int i = 0; i < s_playerHudHpMax; ++i)
+        {
+            int row = i / 8;
+            int col = i % 8;
+            float x = hudLeft + 12.0f + (col * 19.0f);
+            float y = hudTop + 12.0f + (row * 24.0f);
+
+            DrawPanel(
+                batch_,
+                Rect{ x, y, 15.0f, 18.0f },
+                (i < s_playerHudHp) ? ColorU8(255, 108, 92, 255) : ColorU8(62, 70, 78, 255),
+                ColorU8(12, 12, 12, 220));
+        }
+
+        float pickupPanelX = hudLeft + 184.0f;
+        DrawPanel(batch_, Rect{ pickupPanelX, hudTop + 10.0f, 136.0f, 54.0f }, ColorU8(18, 32, 42, 180), ColorU8(88, 160, 198, 210));
+        DrawPanel(batch_, Rect{ pickupPanelX + 8.0f, hudTop + 18.0f, 18.0f, 18.0f }, ColorU8(108, 242, 162, 255), ColorU8(16, 28, 22, 220));
+        DrawPanel(batch_, Rect{ pickupPanelX + 8.0f, hudTop + 40.0f, 18.0f, 18.0f }, ColorU8(246, 210, 96, 255), ColorU8(36, 30, 12, 220));
+        DrawPanel(batch_, Rect{ pickupPanelX + 72.0f, hudTop + 18.0f, 18.0f, 18.0f }, ColorU8(254, 120, 128, 255), ColorU8(42, 14, 18, 220));
+
+        float weaponPanelX = camera->Position.x - (camera->getWidth() * 0.5f) + 356.0f;
+        DrawPanel(batch_, Rect{ weaponPanelX, hudTop, 592.0f, 52.0f }, ColorU8(12, 20, 28, 170), ColorU8(84, 170, 204, 210));
+
+        std::array<float4, 4> weaponColors
+        {
+            ColorU8(84, 196, 246, 255),
+            ColorU8(246, 208, 108, 255),
+            ColorU8(248, 152, 92, 255),
+            ColorU8(118, 244, 255, 255)
+        };
+
+        for (size_t i = 0; i < s_stage.weaponsOwned.size(); ++i)
+        {
+            float x = weaponPanelX + 12.0f + (static_cast<float>(i) * 142.0f);
+            DrawPanel(
+                batch_,
+                Rect{ x, hudTop + 10.0f, 126.0f, 30.0f },
+                s_stage.weaponsOwned[i] ? weaponColors[i] : ColorU8(42, 52, 60, 255),
+                ColorU8(10, 12, 16, 220));
+        }
+
+        if (s_showBossBar && s_bossHudHpMax > 0)
+        {
+            float bossLeft = camera->Position.x - 170.0f;
+            float bossTop = camera->Position.y - (camera->getHeight() * 0.5f) + 22.0f;
+            float ratio = std::clamp(static_cast<float>(s_bossHudHp) / static_cast<float>(s_bossHudHpMax), 0.0f, 1.0f);
+
+            DrawPanel(batch_, Rect{ bossLeft, bossTop, 340.0f, 22.0f }, ColorU8(16, 24, 30, 220), ColorU8(112, 240, 255, 210));
+            DrawRect(batch_, Rect{ bossLeft + 4.0f, bossTop + 4.0f, 332.0f * ratio, 14.0f }, ColorU8(112, 240, 255, 255));
+        }
+
+        uiStrings[0].String = L"STAGE 01   FORGE LINE";
+        uiStrings[0].Invalidate();
+
+        uiStrings[1].String =
+            L"Cells " + std::to_wstring(s_stage.energyCells) +
+            L"   Cores " + std::to_wstring(s_stage.weaponCores) +
+            L"   Hearts " + std::to_wstring(s_stage.heartTanks);
+        uiStrings[1].Invalidate();
+
+        uiStrings[2].String =
+            std::wstring(L"BSTR ") + (s_stage.weaponsOwned[0] ? L"ON" : L"LOCK") +
+            L"   ARC " + (s_stage.weaponsOwned[1] ? L"ON" : L"LOCK") +
+            L"   PLS " + (s_stage.weaponsOwned[2] ? L"ON" : L"LOCK") +
+            L"   VLT " + (s_stage.weaponsOwned[3] ? L"ON" : L"LOCK");
+        uiStrings[2].Invalidate();
+
+        uiStrings[3].String = (s_stage.bannerTimer > 0.0f) ? s_stage.bannerText : L"";
+        uiStrings[3].Invalidate();
+
+        uiStrings[4].String = s_showBossBar ? s_stage.boss.displayName : L"";
+        uiStrings[4].Invalidate();
 
         return uiStrings;
     }

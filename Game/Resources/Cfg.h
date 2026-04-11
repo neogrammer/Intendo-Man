@@ -35,7 +35,7 @@ struct Cfg
 	static winrt::Windows::Foundation::IAsyncAction InitializeAsync(winrt::Microsoft::Graphics::Canvas::UI::Xaml::CanvasAnimatedControl const& sender);
 
 	// Resource Enums 
-	enum class Textures : int { Under, Ship, PlayerAtlas, Tileset1, BusterShot, BlueyAtlas, ShellyAtlas, Default, Count, None };
+	enum class Textures : int { Under, WhitePixel, Ship, PlayerAtlas, Tileset1, BusterShot, BlueyAtlas, ShellyAtlas, Default, Count, None };
 	enum class Sounds : int { Blip, PlayerHit, EnemyHit, Default,
 			ElectricShot, MissileLaunch,  EnemyDie,
 		Count, None };

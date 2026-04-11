@@ -199,6 +199,7 @@
     <Image Include="Assets\Textures\Characters\Player\ship.png" />
     <Image Include="Assets\Textures\Collectables\mmx1_items.png" />
     <Image Include="Assets\Textures\Misc\under.png" />
+    <Image Include="Assets\Textures\Misc\white_pixel.png" />
     <Image Include="Assets\Textures\NonPlayState\mmx1_password.gif" />
     <Image Include="Assets\Textures\NonPlayState\mmx1_stageselect.png" />
     <Image Include="Assets\Textures\Platforms\mmm-mmxlifter2.gif" />

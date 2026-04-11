@@ -88,6 +88,11 @@ winrt::Windows::Foundation::IAsyncAction Cfg::initTextures()
     textures.emplace(Textures::Under, L"under");
 
     co_await engine::Sprite::RegisterAndLoadAsync(
+        L"WhitePixel",
+        Uri(L"ms-appx:///Assets/Textures/Misc/white_pixel.png"));
+    textures.emplace(Textures::WhitePixel, L"WhitePixel");
+
+    co_await engine::Sprite::RegisterAndLoadAsync(
         L"BusterShot",
         Uri(L"ms-appx:///Assets/Textures/Characters/Player/buster_shot_21x26.png"));
     textures.emplace(Textures::BusterShot, L"BusterShot");
